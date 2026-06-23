@@ -1,0 +1,227 @@
+@page
+@model CarProject.Pages.IndexModel
+
+@{
+    ViewData["Title"] = "AutoVibes - Showroom Ô Tô Cao Cấp";
+    var brandColors = new Dictionary<string, string>
+    {
+        {"Toyota", "#e2361c"}, {"Honda", "#0072b7"}, {"Ford", "#1a3a5c"},
+        {"BMW", "#1a6fb5"}, {"Vinfast", "#003d7a"}
+    };
+    var brandGradients = new Dictionary<string, string>
+    {
+        {"Toyota", "linear-gradient(135deg, #e2361c, #b82a12)"},
+        {"Honda", "linear-gradient(135deg, #0072b7, #004e80)"},
+        {"Ford", "linear-gradient(135deg, #1a3a5c, #0f2740)"},
+        {"BMW", "linear-gradient(135deg, #1a6fb5, #0e4d80)"},
+        {"Vinfast", "linear-gradient(135deg, #003d7a, #00264d)"}
+    };
+    var carBgList = new List<string>
+    {
+        "linear-gradient(135deg, #0a0a0a, #1a1111)", "linear-gradient(135deg, #0a0a0a, #111122)",
+        "linear-gradient(135deg, #0a0a0a, #1a1a0a)", "linear-gradient(135deg, #0a0a0a, #1a0a1a)",
+        "linear-gradient(135deg, #0a0a0a, #0a1a1a)", "linear-gradient(135deg, #0a0a0a, #111111)",
+    };
+    var carIconMap = new Dictionary<string, string>
+    {
+        {"Toyota Camry", "🚗"}, {"Toyota Hilux", "🚙"}, {"Honda Civic", "🚗"},
+        {"Honda Pilot", "🚙"}, {"Ford Explorer", "🚙"}, {"BMW 3 Series", "🚗"},
+        {"VinFast Lux SA", "🚙"}, {"VinFast Fadil", "🚕"}
+    };
+    var testimonials = new[]
+    {
+        new { Name = "Nguyễn Văn An", Car = "BMW 320i", Stars = 5, Text = "Dịch vụ tuyệt vời! Xe bàn giao đúng hẹn, thủ tục nhanh gọn. Tôi rất hài lòng." },
+        new { Name = "Trần Thị Mai", Car = "VinFast Lux SA", Stars = 5, Text = "Đội ngũ tư vấn nhiệt tình, chuyên nghiệp. Xe chính hãng chất lượng." },
+        new { Name = "Lê Hoàng Nam", Car = "Honda Civic", Stars = 5, Text = "Đặt cọc online nhanh chóng, nhân viên hỗ trợ tận tình. Sẽ giới thiệu bạn bè." },
+    };
+}
+
+<!-- Hero -->
+<section class="hero-premium">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="hero-subtitle-top anim-fade-up">Premium Automotive Showroom</p>
+                <h1 class="hero-title anim-fade-up delay-1">
+                    Nâng tầm<br>
+                    <span class="highlight">đẳng cấp</span><br>
+                    cùng AutoVibes
+                </h1>
+                <p class="hero-desc anim-fade-up delay-2">
+                    Khám phá bộ sưu tập xe hơi cao cấp từ những thương hiệu danh tiếng nhất thế giới.
+                    Trải nghiệm lái thử và sở hữu chiếc xe trong mơ của bạn ngay hôm nay.
+                </p>
+                <div class="hero-actions anim-fade-up delay-3">
+                    <a asp-page="/Cars" class="btn-primary-premium">
+                        <i class="bi bi-search"></i> Khám phá ngay
+                    </a>
+                    <a asp-page="/Account/Login" class="btn-outline-premium">
+                        <i class="bi bi-person-plus"></i> Đăng ký tư vấn
+                    </a>
+                </div>
+                <div class="hero-stats anim-fade-up delay-4">
+                    <div class="stat">
+                        <h3>@Model.TotalBrands</h3>
+                        <p>Thương hiệu</p>
+                    </div>
+                    <div class="stat">
+                        <h3>@Model.TotalModels</h3>
+                        <p>Dòng xe</p>
+                    </div>
+                    <div class="stat">
+                        <h3>@Model.TotalVersions</h3>
+                        <p>Phiên bản</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block anim-fade-up delay-2">
+                <div class="hero-car-display">
+                    <div class="car-icon">🏎️</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brands -->
+<section class="section-premium section-premium-alt">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Đối tác toàn cầu</p>
+            <h2 class="section-heading text-center">Thương hiệu danh tiếng</h2>
+            <p class="section-desc mx-auto text-center">Hợp tác với những nhà sản xuất ô tô hàng đầu thế giới</p>
+        </div>
+        <div class="brand-grid">
+            @foreach (var brand in Model.HangXeList)
+            {
+                var color = brandColors.GetValueOrDefault(brand.TenHang, "#333");
+                var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
+                <div class="brand-item anim-fade-up">
+                    <div class="brand-letter" style="background: @grad;">@brand.TenHang[0]</div>
+                    <h6>@brand.TenHang</h6>
+                    <p>@brand.QuocGia</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Cars -->
+<section class="section-premium" id="danh-sach-xe">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <p class="section-label">Danh mục xe</p>
+                <h2 class="section-heading">Dòng xe nổi bật</h2>
+            </div>
+            <a asp-page="/Cars" style="font-size: 0.85rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+                Xem tất cả <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        @if (!Model.DongXeList.Any())
+        {
+            <div class="text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"><i class="bi bi-car-front-fill"></i></div>
+                <h4>Chưa có xe nào</h4>
+                <p style="color: var(--gray);">Danh sách xe đang được cập nhật.</p>
+            </div>
+        }
+
+        <div class="car-grid">
+            @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
+            {
+                var delay = (d.idx % 4) * 0.1;
+                var bg = carBgList[d.item.MaDong % carBgList.Count];
+                var brandInfo = d.item.HangXe;
+                var brandColor = brandColors.GetValueOrDefault(brandInfo?.TenHang ?? "", "#333");
+                var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "🚗");
+                <div class="car-card-premium anim-fade-up" style="animation-delay: @(delay)s">
+                    <div class="card-image" style="background: @bg;">
+                        @if (brandInfo != null)
+                        {
+                            <span class="brand-tag" style="background: @brandColor;">@brandInfo.TenHang</span>
+                        }
+                        <span class="card-badge">@d.item.KieuDang</span>
+                        <span class="car-icon">@carIcon</span>
+                    </div>
+                    <div class="card-body">
+                        <h5>@d.item.TenDong</h5>
+                        <div class="quick-specs">
+                            @if (brandInfo != null)
+                            {
+                                <span><i class="bi bi-flag-fill"></i> @brandInfo.TenHang</span>
+                            }
+                            <span><i class="bi bi-speedometer2"></i> @d.item.KieuDang</span>
+                        </div>
+                        <div class="price">
+                            <span>Từ <small>Giá niêm yết</small></span>
+                            <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
+                                Xem chi tiết <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Why Us -->
+<section class="section-premium section-premium-alt">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Cam kết</p>
+            <h2 class="section-heading text-center">Tại sao chọn chúng tôi?</h2>
+        </div>
+        <div class="why-grid">
+            <div class="why-item anim-fade-up">
+                <div class="icon"><i class="bi bi-shield-check"></i></div>
+                <h5>Chất lượng đảm bảo</h5>
+                <p>Xe chính hãng 100% từ nhà sản xuất, bảo hành toàn diện, dịch vụ hậu mãi chu đáo.</p>
+            </div>
+            <div class="why-item anim-fade-up delay-1">
+                <div class="icon"><i class="bi bi-currency-dollar"></i></div>
+                <h5>Giá tốt nhất</h5>
+                <p>Cam kết giá cạnh tranh, nhiều ưu đãi đặc biệt và hỗ trợ trả góp lãi suất thấp.</p>
+            </div>
+            <div class="why-item anim-fade-up delay-2">
+                <div class="icon"><i class="bi bi-headset"></i></div>
+                <h5>Hỗ trợ 24/7</h5>
+                <p>Đội ngũ tư vấn chuyên nghiệp, hỗ trợ khách hàng mọi lúc mọi nơi.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section-premium">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Khách hàng nói gì</p>
+            <h2 class="section-heading text-center">Cảm nhận từ khách hàng</h2>
+        </div>
+        <div class="row g-4">
+            @foreach (var t in testimonials.Select((item, idx) => new { item, idx }))
+            {
+                <div class="col-md-4 anim-fade-up" style="animation-delay: @(t.idx * 0.1)s">
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            @for (int i = 0; i < t.item.Stars; i++) { <i class="bi bi-star-fill"></i> }
+                        </div>
+                        <p>"@t.item.Text"</p>
+                        <div class="author">
+                            <div class="avatar"><i class="bi bi-person-fill"></i></div>
+                            <div class="info">
+                                <strong>@t.item.Name</strong>
+                                <span>@t.item.Car</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

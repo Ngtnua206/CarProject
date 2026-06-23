@@ -1,0 +1,55 @@
+@page
+@model CarProject.Pages.Account.LoginModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="section-premium">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 64px; height: 64px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: #fff;">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <h4 style="font-weight: 800; color: var(--black-2); font-family: var(--font-display);">Đăng nhập</h4>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Đăng nhập để quản lý và đặt xe</p>
+                </div>
+
+                <div style="background: var(--white); border: 1px solid var(--silver-2); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-sm);">
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger" style="font-size: 0.85rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm);">@Model.ErrorMessage</div>
+                    }
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="TenDangNhap" class="form-label" style="font-weight: 600; font-size: 0.85rem; color: var(--black-2);">Tên đăng nhập</label>
+                            <input asp-for="TenDangNhap" class="form-control" required placeholder="Nhập tên đăng nhập" style="border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; border-color: var(--silver-2);" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MatKhau" class="form-label" style="font-weight: 600; font-size: 0.85rem; color: var(--black-2);">Mật khẩu</label>
+                            <input asp-for="MatKhau" type="password" class="form-control" required placeholder="Nhập mật khẩu" style="border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; border-color: var(--silver-2);" />
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" type="checkbox" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label" style="font-size: 0.85rem; color: var(--gray);">Ghi nhớ đăng nhập</label>
+                        </div>
+
+                        <button type="submit" class="btn-primary-premium w-100" style="justify-content: center;">
+                            <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                        </button>
+                    </form>
+
+                    <hr style="margin: 1.5rem 0; border-color: var(--silver-2);" />
+                    <p style="text-align: center; color: var(--light-gray); font-size: 0.78rem; margin: 0;">
+                        Tài khoản demo: <strong style="color: var(--black-2);">admin</strong> / <strong style="color: var(--black-2);">admin123</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

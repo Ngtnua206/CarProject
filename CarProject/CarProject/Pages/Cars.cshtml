@@ -1,0 +1,148 @@
+@page
+@model CarProject.Pages.CarsModel
+
+@{
+    ViewData["Title"] = "Danh sách xe";
+    var carIconMap = new Dictionary<string, string>
+    {
+        {"Toyota Camry", "🚗"}, {"Toyota Hilux", "🚙"}, {"Honda Civic", "🚗"},
+        {"Honda Pilot", "🚙"}, {"Ford Explorer", "🚙"}, {"BMW 3 Series", "🚗"},
+        {"VinFast Lux SA", "🚙"}, {"VinFast Fadil", "🚕"}
+    };
+    var carBgList = new List<string>
+    {
+        "linear-gradient(135deg, #0a0a0a, #1a1111)", "linear-gradient(135deg, #0a0a0a, #111122)",
+        "linear-gradient(135deg, #0a0a0a, #1a1a0a)", "linear-gradient(135deg, #0a0a0a, #1a0a1a)",
+        "linear-gradient(135deg, #0a0a0a, #0a1a1a)", "linear-gradient(135deg, #0a0a0a, #111111)",
+    };
+    var brandColors = new Dictionary<string, string>
+    {
+        {"Toyota", "#e2361c"}, {"Honda", "#0072b7"}, {"Ford", "#1a3a5c"},
+        {"BMW", "#1a6fb5"}, {"Vinfast", "#003d7a"}
+    };
+    var bodyTypes = Model.DongXeList.Select(d => d.KieuDang).Distinct().ToList();
+}
+
+<div class="listing-page">
+    <div class="container py-4">
+        <nav class="breadcrumb-premium">
+            <a asp-page="/Index"><i class="bi bi-house-fill"></i> Trang chủ</a>
+            <span>/</span>
+            <span>Danh sách xe</span>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3">
+                <div class="filter-sidebar">
+                    <h6><i class="bi bi-funnel"></i> Bộ lọc</h6>
+
+                    <form method="get" id="filterForm">
+                        <div class="filter-group">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--black-2); margin-bottom: 0.4rem; display: block;">Tìm kiếm</label>
+                            <input type="text" name="Search" value="@Model.Search" class="form-control" placeholder="Nhập tên xe..." style="border-radius: 50px; padding: 0.4rem 0.8rem; font-size: 0.82rem;" />
+                        </div>
+
+                        <div class="filter-group">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--black-2); margin-bottom: 0.4rem; display: block;">Hãng xe</label>
+                            @foreach (var brand in Model.HangXeList)
+                            {
+                                <label>
+                                    <input type="radio" name="Brand" value="@brand.MaHang"
+                                           onchange="document.getElementById('filterForm').submit()"
+                                           checked="@(Model.Brand == brand.MaHang.ToString())" />
+                                    @brand.TenHang
+                                </label>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Brand))
+                            {
+                                <a asp-page="/Cars" style="font-size: 0.75rem; color: var(--accent); display: block; margin-top: 0.3rem;">Bỏ lọc</a>
+                            }
+                        </div>
+
+                        <div class="filter-group">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--black-2); margin-bottom: 0.4rem; display: block;">Kiểu dáng</label>
+                            @foreach (var type in bodyTypes)
+                            {
+                                <label>
+                                    <input type="radio" name="BodyType" value="@type"
+                                           onchange="document.getElementById('filterForm').submit()"
+                                           checked="@(Model.BodyType == type)" />
+                                    @type
+                                </label>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Brand) || !string.IsNullOrEmpty(Model.BodyType))
+                        {
+                            <a asp-page="/Cars" class="btn-primary-premium" style="width: 100%; justify-content: center; padding: 0.5rem; font-size: 0.78rem;">
+                                <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                            </a>
+                        }
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="listing-header">
+                    <span class="result-count"><strong>@Model.TotalCount</strong> xe được tìm thấy</span>
+                    <div class="sort-group">
+                        <label>Sắp xếp:</label>
+                        <select onchange="window.location.href='?sort='+this.value">
+                            <option value="">Mặc định</option>
+                            <option value="name_asc" selected="@(Model.Sort == "name_asc")">Tên A-Z</option>
+                            <option value="name_desc" selected="@(Model.Sort == "name_desc")">Tên Z-A</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (!Model.DongXeList.Any())
+                {
+                    <div class="text-center py-5">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"><i class="bi bi-search"></i></div>
+                        <h4>Không tìm thấy xe</h4>
+                        <p style="color: var(--gray);">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                    </div>
+                }
+
+                <div class="car-grid">
+                    @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
+                    {
+                        var delay = (d.idx % 4) * 0.08;
+                        var bg = carBgList[d.item.MaDong % carBgList.Count];
+                        var brandInfo = d.item.HangXe;
+                        var brandColor = brandColors.GetValueOrDefault(brandInfo?.TenHang ?? "", "#333");
+                        var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "🚗");
+                        <div class="car-card-premium anim-fade-up" style="animation-delay: @(delay)s">
+                            <div class="card-image" style="background: @bg;">
+                                @if (brandInfo != null)
+                                {
+                                    <span class="brand-tag" style="background: @brandColor;">@brandInfo.TenHang</span>
+                                }
+                                <span class="card-badge">@d.item.KieuDang</span>
+                                <span class="car-icon">@carIcon</span>
+                            </div>
+                            <div class="card-body">
+                                <h5>@d.item.TenDong</h5>
+                                <div class="quick-specs">
+                                    @if (brandInfo != null)
+                                    {
+                                        <span><i class="bi bi-flag-fill"></i> @brandInfo.TenHang</span>
+                                    }
+                                    <span><i class="bi bi-geo-alt-fill"></i> @brandInfo?.QuocGia</span>
+                                </div>
+                                <div class="price">
+                                    <span>Từ <small>Giá niêm yết</small></span>
+                                    <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
+                                        Xem chi tiết <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

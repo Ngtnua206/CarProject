@@ -1,0 +1,36 @@
+@page
+@model CarProject.Pages.Admin.Banner.CreateModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Thêm Banner Quảng Cáo</h2>
+            <form method="post">
+                <div class="mb-3">
+                    <label asp-for="Banner.DuongDanAnh" class="form-label">Đường Dẫn Ảnh</label>
+                    <input asp-for="Banner.DuongDanAnh" class="form-control" required />
+                    <small class="form-text text-muted">VD: /images/banners/banner1.jpg</small>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Banner.DuongDanLienKet" class="form-label">Đường Dẫn Liên Kết</label>
+                    <input asp-for="Banner.DuongDanLienKet" class="form-control" />
+                    <small class="form-text text-muted">VD: /Details/1</small>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Banner.ThuTuHienThi" class="form-label">Thứ Tự Hiển Thị</label>
+                    <input asp-for="Banner.ThuTuHienThi" type="number" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input asp-for="Banner.TrangThaiKichHoat" type="checkbox" class="form-check-input" />
+                        <label asp-for="Banner.TrangThaiKichHoat" class="form-check-label">Kích Hoạt</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                    <a asp-page="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,192 @@
+@page "{id:int}"
+@model CarProject.Pages.DetailsModel
+
+@{
+    ViewData["Title"] = Model.Dong?.TenDong ?? "Chi tiết xe";
+    var carIcons = new List<string> { "🚗", "🚙" };
+}
+
+<div class="detail-premium">
+    <!-- Gallery Section -->
+    <div class="gallery-section">
+        <div class="container">
+            <nav class="breadcrumb-premium" style="position: absolute; top: 1rem; left: 1rem; z-index: 2;">
+                <a asp-page="/Index" style="color: rgba(255,255,255,0.5);"><i class="bi bi-house-fill"></i> Trang chủ</a>
+                <span style="color: rgba(255,255,255,0.3);">/</span>
+                <a asp-page="/Cars" style="color: rgba(255,255,255,0.5);">Danh sách xe</a>
+                <span style="color: rgba(255,255,255,0.3);">/</span>
+                <span style="color: rgba(255,255,255,0.7);">@Model.Dong?.TenDong</span>
+            </nav>
+            <div class="row align-items-center">
+                <div class="col-lg-6 offset-lg-3 text-center">
+                    @{
+                        var carIcon = carIcons[Model.Dong?.MaDong % 2 ?? 0];
+                    }
+                    <div class="car-display">@carIcon</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" style="max-width: 1200px; margin: 0 auto;">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    @if (Model.HangXe != null)
+                    {
+                        <span class="brand-badge"><i class="bi bi-trophy-fill"></i> @Model.HangXe.TenHang</span>
+                    }
+                    <span class="brand-badge"><i class="bi bi-tag-fill"></i> @Model.Dong?.KieuDang</span>
+                    @if (Model.HangXe != null)
+                    {
+                        <span class="brand-badge"><i class="bi bi-flag-fill"></i> @Model.HangXe.QuocGia</span>
+                    }
+                </div>
+                <h1>@Model.Dong?.TenDong</h1>
+                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 2rem;">
+                    <i class="bi bi-collection-fill me-1"></i> @Model.PhienBans.Count phiên bản · <i class="bi bi-box-seam me-1"></i>
+                    @{
+                        var totalStock = Model.PhienBans.Sum(p => p.SoLuongTrongKho);
+                    }
+                    @totalStock xe trong kho
+                </p>
+
+                <!-- Version Tabs -->
+                @if (Model.PhienBans.Any())
+                {
+                    <div class="version-tabs" id="versionTabs">
+                        @foreach (var p in Model.PhienBans.Select((item, idx) => new { item, idx }))
+                        {
+                            <div class="tab @(p.idx == 0 ? "active" : "")"
+                                 onclick="selectVersion(@p.idx)">
+                                @p.item.TenPhienBan
+                            </div>
+                        }
+                    </div>
+                }
+
+                @foreach (var p in Model.PhienBans.Select((item, idx) => new { item, idx }))
+                {
+                    var priceFormatted = p.item.GiaNiemYet >= 1_000_000_000
+                        ? $"{p.item.GiaNiemYet / 1_000_000_000:N1} tỷ"
+                        : $"{p.item.GiaNiemYet / 1_000_000:N0} triệu";
+                    var statusClass = "in";
+                    var statusText = "Còn hàng";
+                    if (p.item.SoLuongTrongKho <= 0) { statusClass = "out"; statusText = "Hết hàng"; }
+                    else if (p.item.SoLuongTrongKho <= 3) { statusClass = "low"; statusText = "Sắp hết"; }
+
+                    <div class="version-content" id="version-@p.idx" style="display: @(p.idx == 0 ? "block" : "none")">
+                        <div class="price-hero">
+                            @priceFormatted <small>VNĐ</small>
+                            <span class="badge-stock @statusClass" style="margin-left: 1rem; font-size: 0.75rem; vertical-align: middle;">@statusText</span>
+                        </div>
+
+                        <div class="quick-specs-grid">
+                            <div class="spec-item">
+                                <div class="label">Màu sắc</div>
+                                <div class="value">@p.item.MauSac</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="label">Động cơ</div>
+                                <div class="value">@p.item.DongCo</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="label">Hộp số</div>
+                                <div class="value">@p.item.HopSo</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="label">Nhiên liệu</div>
+                                <div class="value">@p.item.LoaiNhietLieu</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-group">
+                            <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
+                                <i class="bi bi-credit-card"></i> Đặt cọc ngay
+                            </a>
+                            <a href="#" class="btn-cta btn-testdrive">
+                                <i class="bi bi-calendar-check"></i> Đăng ký lái thử
+                            </a>
+                            <a href="#" class="btn-cta btn-zalo-cta">
+                                <i class="bi bi-chat-dots-fill"></i> Tư vấn Zalo
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Quick specs sidebar -->
+            <div class="col-lg-4">
+                @if (Model.PhienBans.Any())
+                {
+                    var first = Model.PhienBans.First();
+                    <div style="background: var(--off-white); border-radius: var(--radius); padding: 1.5rem;">
+                        <h6 style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem;">Thông số kỹ thuật</h6>
+                        <table class="specs-table">
+                            <tr><td>Động cơ</td><td>@first.DongCo</td></tr>
+                            <tr><td>Hộp số</td><td>@first.HopSo</td></tr>
+                            <tr><td>Dẫn động</td><td>@(first.LoaiNhietLieu.Contains("Điện") ? "Điện" : "Động cơ đốt trong")</td></tr>
+                            <tr><td>Nhiên liệu</td><td>@first.LoaiNhietLieu</td></tr>
+                            <tr><td>Màu sắc</td><td>@first.MauSac</td></tr>
+                            <tr><td>Tồn kho</td><td>@first.SoLuongTrongKho xe</td></tr>
+                        </table>
+                    </div>
+                }
+
+                <div style="background: var(--navy); border-radius: var(--radius); padding: 1.5rem; margin-top: 1rem; color: #fff;">
+                    <h6 style="font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; color: #fff;">
+                        <i class="bi bi-headset"></i> Cần tư vấn?
+                    </h6>
+                    <p style="font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-bottom: 1rem;">
+                        Đội ngũ chuyên viên của chúng tôi sẵn sàng hỗ trợ bạn.
+                    </p>
+                    <a href="tel:1900xxxx" style="display: block; background: var(--accent); color: #fff; padding: 0.6rem; border-radius: var(--radius-sm); text-align: center; font-weight: 600; font-size: 0.85rem;">
+                        <i class="bi bi-telephone-fill"></i> Gọi 1900 xxxx
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.PhienBans.Any())
+{
+    <div class="section-premium section-premium-alt">
+        <div class="container">
+            <div class="text-center mb-5">
+                <p class="section-label justify-content-center">Chi tiết</p>
+                <h2 class="section-heading text-center">Thông số kỹ thuật chi tiết</h2>
+            </div>
+
+            @{
+                var firstPb = Model.PhienBans.First();
+            }
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div style="background: var(--white); border: 1px solid var(--silver-2); border-radius: var(--radius); padding: 2rem;">
+                        <table class="specs-table">
+                            <tr><td>Động cơ</td><td>@firstPb.DongCo</td></tr>
+                            <tr><td>Hộp số</td><td>@firstPb.HopSo</td></tr>
+                            <tr><td>Loại nhiên liệu</td><td>@firstPb.LoaiNhietLieu</td></tr>
+                            <tr><td>Màu sắc ngoại thất</td><td>@firstPb.MauSac</td></tr>
+                            <tr><td>Giá niêm yết</td><td style="color: var(--accent); font-weight: 800;">@(firstPb.GiaNiemYet.ToString("N0")) VNĐ</td></tr>
+                            <tr><td>Tình trạng</td><td>Mới 100%</td></tr>
+                            <tr><td>Bảo hành</td><td>3 năm hoặc 100.000 km</td></tr>
+                            <tr><td>Xuất xứ</td><td>@(Model.HangXe?.TenHang ?? "N/A") - @(Model.HangXe?.QuocGia ?? "N/A")</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    function selectVersion(idx) {
+        document.querySelectorAll('.version-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.version-tabs .tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('version-' + idx).style.display = 'block';
+        document.querySelectorAll('.version-tabs .tab')[idx].classList.add('active');
+    }
+</script>
