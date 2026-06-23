@@ -2,21 +2,24 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
+using CarProject.Services;
 
 namespace CarProject.Pages;
 
 public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
     public List<HangXe> HangXeList { get; set; } = new();
     public List<DongXe> DongXeList { get; set; } = new();
     public int TotalModels { get; set; }
     public int TotalBrands { get; set; }
     public int TotalVersions { get; set; }
 
-    public IndexModel(AppDbContext db)
+    public IndexModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task OnGetAsync()
@@ -26,5 +29,6 @@ public class IndexModel : PageModel
         TotalBrands = HangXeList.Count;
         TotalModels = DongXeList.Count;
         TotalVersions = await _db.PhienBanXe.CountAsync();
+        await _log.LogAsync("Xem trang chủ");
     }
 }

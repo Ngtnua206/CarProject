@@ -128,6 +128,24 @@ public class KenhTuVan
     public string UrlSMS { get; set; }
 }
 
+public class NhatKyHeThong
+{
+    [Key]
+    public int MaNhatKy { get; set; }
+    public int? MaTaiKhoan { get; set; }
+    public string TenDangNhap { get; set; }
+    public string VaiTro { get; set; }
+    public string HanhDong { get; set; }
+    public string ChiTiet { get; set; }
+    public string DiaChiIP { get; set; }
+    public string TrinhDuyet { get; set; }
+    public string DuongDan { get; set; }
+    public DateTime ThoiGian { get; set; }
+
+    [ForeignKey("MaTaiKhoan")]
+    public TaiKhoan TaiKhoan { get; set; }
+}
+
 public class ThongKeTongHop_Boss
 {
     [Key]

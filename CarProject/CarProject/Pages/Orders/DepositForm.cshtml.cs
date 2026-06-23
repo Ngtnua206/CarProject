@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
+using CarProject.Services;
 
 namespace CarProject.Pages.Orders;
 
 public class DepositFormModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
 
     public PhienBanXe PhienBan { get; set; }
     public string SuccessMessage { get; set; }
@@ -16,9 +18,10 @@ public class DepositFormModel : PageModel
     [BindProperty]
     public DepositRequest DepositData { get; set; }
 
-    public DepositFormModel(AppDbContext db)
+    public DepositFormModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -30,6 +33,7 @@ public class DepositFormModel : PageModel
         if (PhienBan == null)
             return NotFound();
 
+        await _log.LogAsync("Xem form đặt cọc", $"{PhienBan.TenPhienBan} (ID={id})");
         return Page();
     }
 
@@ -50,6 +54,9 @@ public class DepositFormModel : PageModel
         PhienBan = await _db.PhienBanXe
             .Include(p => p.DongXe)
             .FirstOrDefaultAsync(p => p.MaPhienBan == DepositData.MaPhienBan);
+
+        await _log.LogAsync("Gửi đơn đặt cọc",
+            $"{DepositData.HoTen} - {DepositData.SoDienThoai} - {PhienBan?.TenPhienBan} - {DepositData.SoTienCoc:N0} VNĐ");
 
         return Page();
     }

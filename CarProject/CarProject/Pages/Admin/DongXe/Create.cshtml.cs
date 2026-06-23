@@ -4,21 +4,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
+using CarProject.Services;
 
 namespace CarProject.Pages.Admin.DongXe;
 
 public class CreateModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
 
     [BindProperty]
     public Models.DongXe DongXe { get; set; }
 
     public SelectList HangList { get; set; }
 
-    public CreateModel(AppDbContext db)
+    public CreateModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task OnGetAsync()
@@ -37,6 +40,7 @@ public class CreateModel : PageModel
 
         _db.DongXe.Add(DongXe);
         await _db.SaveChangesAsync();
+        await _log.LogAsync("Admin Thêm dòng xe", $"{DongXe.TenDong} - {DongXe.KieuDang}");
         return RedirectToPage("Index");
     }
 }

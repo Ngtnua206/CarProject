@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
+using CarProject.Services;
 
 namespace CarProject.Pages;
 
 public class CarsModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
     public List<DongXe> DongXeList { get; set; } = new();
     public List<HangXe> HangXeList { get; set; } = new();
     public int TotalCount { get; set; }
@@ -25,9 +27,10 @@ public class CarsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? Sort { get; set; }
 
-    public CarsModel(AppDbContext db)
+    public CarsModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task OnGetAsync()
@@ -54,5 +57,8 @@ public class CarsModel : PageModel
 
         DongXeList = await query.ToListAsync();
         TotalCount = DongXeList.Count;
+
+        var detail = $"Tìm kiếm=\"{Search}\" Hãng={Brand} Kiểu={BodyType} Sắp xếp={Sort} Kết quả={TotalCount}";
+        await _log.LogAsync("Xem danh sách xe", detail);
     }
 }

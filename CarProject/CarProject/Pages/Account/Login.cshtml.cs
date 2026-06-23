@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
+using CarProject.Services;
 
 namespace CarProject.Pages.Account;
 
 public class LoginModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
 
     [BindProperty]
     public string TenDangNhap { get; set; }
@@ -20,9 +22,10 @@ public class LoginModel : PageModel
 
     public string ErrorMessage { get; set; }
 
-    public LoginModel(AppDbContext db)
+    public LoginModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -30,6 +33,7 @@ public class LoginModel : PageModel
         if (string.IsNullOrEmpty(TenDangNhap) || string.IsNullOrEmpty(MatKhau))
         {
             ErrorMessage = "Vui lòng nhập tên đăng nhập và mật khẩu.";
+            await _log.LogAsync("Đăng nhập thất bại", $"Tài khoản rỗng");
             return Page();
         }
 
@@ -39,6 +43,7 @@ public class LoginModel : PageModel
         if (user == null)
         {
             ErrorMessage = "Tên đăng nhập hoặc mật khẩu không đúng.";
+            await _log.LogAsync("Đăng nhập thất bại", $"Tài khoản \"{TenDangNhap}\" không đúng");
             return Page();
         }
 
@@ -53,6 +58,12 @@ public class LoginModel : PageModel
             Response.Cookies.Append("UserId", user.MaTaiKhoan.ToString(), 
                 new Microsoft.AspNetCore.Http.CookieOptions { Expires = DateTime.UtcNow.AddDays(30) });
         }
+
+        await _log.LogAsync("Đăng nhập thành công", $"Tài khoản \"{user.TenDangNhap}\" vai trò {user.VaiTro}");
+
+        // Admin -> /Admin, user thường -> /Index
+        if (user.VaiTro == "Admin")
+            return RedirectToPage("/Admin/Index");
 
         return RedirectToPage("/Index");
     }

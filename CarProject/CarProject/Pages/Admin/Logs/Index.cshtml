@@ -1,0 +1,83 @@
+@page
+@model CarProject.Pages.Admin.Logs.IndexModel
+
+@{
+    ViewData["Title"] = "Nhật ký hoạt động";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Nhật ký hoạt động</h2>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <input name="SearchAction" class="form-control" placeholder="Tìm theo hành động..." value="@Model.SearchAction" />
+        </div>
+        <div class="col-md-3">
+            <input name="SearchUser" class="form-control" placeholder="Tìm theo tài khoản..." value="@Model.SearchUser" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Lọc</button>
+        </div>
+        <div class="col-md-2">
+            <a asp-page="Index" class="btn btn-outline-secondary w-100">Xóa lọc</a>
+        </div>
+        <div class="col-md-1 d-flex align-items-center">
+            <small class="text-muted">Tổng: @Model.TotalCount</small>
+        </div>
+    </form>
+
+    @if (Model.Logs.Count == 0)
+    {
+        <div class="alert alert-info">Chưa có nhật ký nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Người dùng</th>
+                        <th>Vai trò</th>
+                        <th>Hành động</th>
+                        <th>Chi tiết</th>
+                        <th>IP</th>
+                        <th>Đường dẫn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.Logs)
+                    {
+                        <tr>
+                            <td class="text-nowrap small">@log.ThoiGian.ToLocalTime().ToString("dd/MM HH:mm:ss")</td>
+                            <td>@log.TenDangNhap</td>
+                            <td><span class="badge bg-@(log.VaiTro == "Admin" ? "danger" : "secondary")">@log.VaiTro</span></td>
+                            <td>@log.HanhDong</td>
+                            <td class="small" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@log.ChiTiet</td>
+                            <td class="small">@log.DiaChiIP</td>
+                            <td class="small">@log.DuongDan</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                            <a class="page-link" asp-page="Index" asp-route-p="@i" asp-route-SearchAction="@Model.SearchAction" asp-route-SearchUser="@Model.SearchUser">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+
+    <div class="mt-2">
+        <a asp-page="/Admin/Index" class="btn btn-outline-secondary btn-sm">← Về Dashboard</a>
+    </div>
+</div>

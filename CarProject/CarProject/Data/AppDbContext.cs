@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<ChuongTrinhKhuyenMai> ChuongTrinhKhuyenMai { get; set; }
     public DbSet<QuangCaoBanner> QuangCaoBanner { get; set; }
     public DbSet<KenhTuVan> KenhTuVan { get; set; }
+    public DbSet<NhatKyHeThong> NhatKyHeThong { get; set; }
     public DbSet<ThongKeTongHop_Boss> ThongKeTongHop_Boss { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,6 +58,9 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<KenhTuVan>().ToTable("KenhTuVan");
         modelBuilder.Entity<KenhTuVan>().HasKey(k => k.MaKenh);
+
+        modelBuilder.Entity<NhatKyHeThong>().ToTable("NhatKyHeThong");
+        modelBuilder.Entity<NhatKyHeThong>().HasKey(n => n.MaNhatKy);
 
         modelBuilder.Entity<ThongKeTongHop_Boss>().ToTable("ThongKeTongHop_Boss");
         modelBuilder.Entity<ThongKeTongHop_Boss>().HasKey(t => t.MaThongKe);

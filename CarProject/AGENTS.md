@@ -17,6 +17,17 @@
 
 ## Progress
 ### Done
+- Added `Models/NhatKyHeThong` entity for activity logging with fields: MaTaiKhoan, TenDangNhap, VaiTro, HanhDong, ChiTiet, DiaChiIP, TrinhDuyet, DuongDan, ThoiGian
+- Added `NhatKyHeThong` DbSet and table mapping in AppDbContext
+- Created migration `AddNhatKyHeThong` for new log table
+- Created `Services/ActivityLogService.cs` (IActivityLogService + ActivityLogService) with IHttpContextAccessor
+- Registered ActivityLogService + HttpContextAccessor in Program.cs
+- Added `await _log.LogAsync(...)` to all 20 page handlers:
+  - Public: Index, Cars (with filter detail), Details (with car name), Login (success/fail), Logout, Deposit (view + submit)
+  - Admin: Dashboard, all HangXe/DongXe/PhienBan/Banner CRUD (Create/Edit/Delete + list views)
+- Created `Pages/Admin/Logs/Index.cshtml + .cs` with search/filter by action & user, paginated table view, time/user/role/action/detail/IP/path columns
+- Updated `Pages/Admin/Index.cshtml + .cs` with TotalLogs count card + link to Logs viewer
+- Added request logging middleware in Program.cs (console output with timing)
 - Rewrote `wwwroot/css/site.css` with luxury automotive theme (CSS variables, Inter + Playfair Display fonts, animations, premium section components, glassmorphism navbar, floating contact buttons, car cards with hover effects, filter sidebar, specs table, testimonials, responsive breakpoints)
 - Rewrote `Views/Shared/_Layout.cshtml` with premium navbar (brand icon, brand-sub "Premium Showroom", uppercase nav links, outline login button), page-transition wrapper, floating contact buttons (Messenger/Zalo/Phone), dark footer with social links
 - Rewrote `Pages/Index.cshtml` luxury homepage: hero-fullscreen with overlay/stats/badge, brand grid with gradient circles, car grid with premium cards (dark image bg, badge, car emoji), testimonials section (3 cards with stars), "Tại sao chọn chúng tôi" section
@@ -43,9 +54,11 @@
 - Dark theme hero, light theme content sections to match luxury automotive sites
 - Use Razor Pages instead of MVC Controllers for page-based routes
 - Remove stale Controller files in favor of Razor Pages
+- Admin area uses Bootstrap (not luxury theme) for functional CRUD UX
 
 ## Next Steps
 - (none — all major redesign files are complete)
+- Admin dashboard accessible at /Admin after login with admin/admin123
 
 ## Critical Context
 - No actual car images exist in wwwroot/images; using emoji as placeholder

@@ -4,21 +4,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
+using CarProject.Services;
 
 namespace CarProject.Pages.Admin.PhienBan;
 
 public class CreateModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IActivityLogService _log;
 
     [BindProperty]
     public PhienBanXe PhienBan { get; set; }
 
     public SelectList DongList { get; set; }
 
-    public CreateModel(AppDbContext db)
+    public CreateModel(AppDbContext db, IActivityLogService log)
     {
         _db = db;
+        _log = log;
     }
 
     public async Task OnGetAsync()
@@ -37,6 +40,7 @@ public class CreateModel : PageModel
 
         _db.PhienBanXe.Add(PhienBan);
         await _db.SaveChangesAsync();
+        await _log.LogAsync("Admin Thêm phiên bản", $"{PhienBan.TenPhienBan} - {PhienBan.GiaNiemYet:N0} VNĐ");
         return RedirectToPage("Index");
     }
 }

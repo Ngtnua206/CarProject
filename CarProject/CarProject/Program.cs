@@ -1,5 +1,6 @@
 namespace CarProject;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 public class Program
 {
@@ -18,6 +19,10 @@ public class Program
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
         });
+        // ActivityLogService
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<CarProject.Services.IActivityLogService, CarProject.Services.ActivityLogService>();
+
         // Register EF Core DbContext
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         if (!string.IsNullOrEmpty(connectionString))
@@ -56,6 +61,18 @@ public class Program
 
         app.UseHttpsRedirection();
         app.UseRouting();
+
+        // Request logging middleware
+        app.Use(async (context, next) =>
+        {
+            var sw = Stopwatch.StartNew();
+            var method = context.Request.Method;
+            var path = context.Request.Path;
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] --> {method} {path}");
+            await next(context);
+            sw.Stop();
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] <-- {method} {path} => {context.Response.StatusCode} ({sw.ElapsedMilliseconds}ms)");
+        });
 
         // AddSession middleware
         app.UseSession();
