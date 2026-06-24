@@ -680,3 +680,525 @@ System.ArgumentException: The value cannot be an empty string. (Parameter 'Clien
 2026-06-24 17:07:38.006 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
 2026-06-24 17:07:38.007 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 1.2108ms
 2026-06-24 17:07:38.037 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 31.3945ms
+2026-06-24 17:10:02.740 [WRN] No store type was specified for the decimal property 'GiaTriGiam' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:10:02.800 [WRN] No store type was specified for the decimal property 'MucGiamToiDa' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:10:02.800 [WRN] No store type was specified for the decimal property 'SoTienCoc' on entity type 'DonDatCoc'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:10:03.299 [INF] Executed DbCommand (23ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-06-24 17:10:03.336 [INF] Executed DbCommand (24ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-06-24 17:10:03.340 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-06-24 17:10:03.343 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-06-24 17:10:03.366 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-06-24 17:10:03.393 [INF] No migrations were applied. The database is already up to date.
+2026-06-24 17:10:03.650 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [HangXe] AS [h]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:10:03.666 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [DongXe] AS [d]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:10:03.679 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [PhienBanXe_SanPham] AS [p]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:10:03.690 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [QuangCaoBanner] AS [q]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:10:03.700 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [KenhTuVan] AS [k]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:10:03.721 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+
+                IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AppReader')
+                BEGIN
+                    CREATE LOGIN AppReader WITH PASSWORD = 'Abc@123456';
+                    CREATE USER AppReader FOR LOGIN AppReader;
+                    ALTER ROLE db_datareader ADD MEMBER AppReader;
+                END
+2026-06-24 17:10:03.867 [INF] User profile is available. Using 'C:\Users\Tu\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-06-24 17:10:04.393 [INF] Now listening on: https://localhost:61290
+2026-06-24 17:10:04.394 [INF] Now listening on: http://localhost:61291
+2026-06-24 17:10:04.474 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-24 17:10:04.475 [INF] Hosting environment: Development
+2026-06-24 17:10:04.475 [INF] Content root path: D:\Code\Code\WebMVC\CarProject\CarProject
+2026-06-24 17:10:04.912 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-24 17:10:05.084 [INF] --> GET /
+2026-06-24 17:10:05.126 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:05.127 [INF] Executing endpoint '/Index'
+2026-06-24 17:10:05.164 [INF] Route matched with {page = "/Index", action = "", controller = ""}. Executing page /Index
+2026-06-24 17:10:05.182 [INF] Executing handler method CarProject.Pages.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-24 17:10:05.283 [INF] Executed DbCommand (23ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [HangXe] AS [h]
+2026-06-24 17:10:05.471 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[MaDong], [d].[KieuDang], [d].[MaHang], [d].[TenDong], [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [DongXe] AS [d]
+INNER JOIN [HangXe] AS [h] ON [d].[MaHang] = [h].[MaHang]
+2026-06-24 17:10:05.541 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-24 17:10:05.859 [INF] Executed DbCommand (113ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-24 17:10:05.889 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-24 17:10:05.892 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-24 17:10:05.892 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:10:06.086 [INF] Executed page /Index in 914.3484ms
+2026-06-24 17:10:06.087 [INF] Executed endpoint '/Index'
+2026-06-24 17:10:06.092 [INF] <-- GET / => 200 (1008ms)
+2026-06-24 17:10:06.107 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:10:06.110 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:10:06.110 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:10:06.112 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:10:06.138 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:10:06.138 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:10:06.170 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 200 null text/html; charset=utf-8 1216.3106ms
+2026-06-24 17:10:06.171 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:10:06.174 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:10:06.180 [INF] --> GET /css/site.css
+2026-06-24 17:10:06.180 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:10:06.180 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:10:06.180 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:10:06.180 [INF] --> GET /js/site.js
+2026-06-24 17:10:06.180 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:10:06.183 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.183 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.183 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.183 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.184 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.184 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.184 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.184 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.183 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:06.184 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.184 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.184 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.193 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 77.0708ms
+2026-06-24 17:10:06.211 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:10:06.211 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:10:06.211 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.211 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.212 [INF] <-- GET /CarProject.styles.css => 200 (31ms)
+2026-06-24 17:10:06.212 [INF] <-- GET /js/site.js => 200 (31ms)
+2026-06-24 17:10:06.212 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 102.5243ms
+2026-06-24 17:10:06.212 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 41.6628ms
+2026-06-24 17:10:06.229 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:10:06.231 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.231 [INF] <-- GET /css/site.css => 200 (51ms)
+2026-06-24 17:10:06.232 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 121.8528ms
+2026-06-24 17:10:06.235 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:10:06.235 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.236 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (55ms)
+2026-06-24 17:10:06.236 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 97.7635ms
+2026-06-24 17:10:06.237 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:10:06.237 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.237 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (57ms)
+2026-06-24 17:10:06.237 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 125.4814ms
+2026-06-24 17:10:06.239 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:10:06.239 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:06.240 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (59ms)
+2026-06-24 17:10:06.240 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 133.5444ms
+2026-06-24 17:10:06.261 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 87.4024ms
+2026-06-24 17:10:13.038 [INF] Request starting HTTP/2 GET https://localhost:7185/admin - null null
+2026-06-24 17:10:13.054 [INF] --> GET /admin
+2026-06-24 17:10:13.059 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.059 [INF] <-- GET /admin => 302 (4ms)
+2026-06-24 17:10:13.059 [INF] Request finished HTTP/2 GET https://localhost:7185/admin - 302 null null 21.759ms
+2026-06-24 17:10:13.069 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Login - null null
+2026-06-24 17:10:13.073 [INF] --> GET /Account/Login
+2026-06-24 17:10:13.073 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.073 [INF] Executing endpoint '/Account/Login'
+2026-06-24 17:10:13.106 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-24 17:10:13.122 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnGet - ModelState is "Valid"
+2026-06-24 17:10:13.123 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:10:13.188 [INF] Executed page /Account/Login in 82.1855ms
+2026-06-24 17:10:13.189 [INF] Executed endpoint '/Account/Login'
+2026-06-24 17:10:13.189 [INF] <-- GET /Account/Login => 200 (115ms)
+2026-06-24 17:10:13.189 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Login - 200 null text/html; charset=utf-8 120.5866ms
+2026-06-24 17:10:13.231 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:10:13.231 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:10:13.231 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:10:13.232 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:10:13.232 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:10:13.232 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:10:13.232 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:10:13.232 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:10:13.232 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.232 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:10:13.232 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.233 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.8923ms
+2026-06-24 17:10:13.233 [INF] --> GET /css/site.css
+2026-06-24 17:10:13.234 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.234 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.234 [INF] --> GET /js/site.js
+2026-06-24 17:10:13.234 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:10:13.236 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.236 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.235 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:10:13.271 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.272 [INF] <-- GET /CarProject.styles.css => 200 (39ms)
+2026-06-24 17:10:13.272 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:10:13.272 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.272 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.272 [INF] <-- GET /js/site.js => 200 (38ms)
+2026-06-24 17:10:13.273 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.273 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:10:13.272 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 40.9499ms
+2026-06-24 17:10:13.273 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.273 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 40.4779ms
+2026-06-24 17:10:13.273 [INF] <-- GET /css/site.css => 200 (39ms)
+2026-06-24 17:10:13.274 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 42.4266ms
+2026-06-24 17:10:13.291 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:10:13.291 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.291 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (55ms)
+2026-06-24 17:10:13.291 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 60.1342ms
+2026-06-24 17:10:13.298 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:10:13.300 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.301 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.307 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:10:13.307 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.308 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (9ms)
+2026-06-24 17:10:13.308 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 75.8485ms
+2026-06-24 17:10:13.319 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 86.514ms
+2026-06-24 17:10:13.364 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:10:13.365 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:13.365 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.369 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:10:13.370 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:13.371 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (7ms)
+2026-06-24 17:10:13.372 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 139.9293ms
+2026-06-24 17:10:36.931 [INF] Request starting HTTP/2 POST https://localhost:7185/Account/Login - application/x-www-form-urlencoded 251
+2026-06-24 17:10:36.935 [INF] --> POST /Account/Login
+2026-06-24 17:10:36.936 [INF] Accessing expired session, Key:43c9e267-d750-2213-b3cf-9e016856410e
+2026-06-24 17:10:36.936 [INF] Executing endpoint '/Account/Login'
+2026-06-24 17:10:36.936 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-24 17:10:36.954 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnPostAsync - ModelState is "Valid"
+2026-06-24 17:10:37.059 [INF] Executed DbCommand (5ms) [Parameters=[@__TenDangNhap_0='?' (Size = 4000), @__MatKhau_1='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [t].[MaTaiKhoan], [t].[MatKhau], [t].[TenDangNhap], [t].[TrangThai], [t].[VaiTro]
+FROM [TaiKhoan] AS [t]
+WHERE [t].[TenDangNhap] = @__TenDangNhap_0 AND [t].[MatKhau] = @__MatKhau_1
+2026-06-24 17:10:37.098 [INF] Executed DbCommand (6ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-24 17:10:37.102 [INF] Executed handler method OnPostAsync, returned result Microsoft.AspNetCore.Mvc.RedirectToPageResult.
+2026-06-24 17:10:37.103 [INF] Executing RedirectToPageResult, redirecting to /Admin/Index.
+2026-06-24 17:10:37.103 [INF] Executed page /Account/Login in 167.5936ms
+2026-06-24 17:10:37.104 [INF] Executed endpoint '/Account/Login'
+2026-06-24 17:10:37.104 [INF] Session started; Key:43c9e267-d750-2213-b3cf-9e016856410e, Id:1a5a3417-32f6-c0b3-31be-f20054896224
+2026-06-24 17:10:37.105 [INF] <-- POST /Account/Login => 302 (170ms)
+2026-06-24 17:10:37.106 [INF] Request finished HTTP/2 POST https://localhost:7185/Account/Login - 302 null null 175.5133ms
+2026-06-24 17:10:37.111 [INF] Request starting HTTP/2 GET https://localhost:7185/Admin - null null
+2026-06-24 17:10:37.113 [INF] --> GET /Admin
+2026-06-24 17:10:37.113 [INF] Executing endpoint '/Admin/Index'
+2026-06-24 17:10:37.120 [INF] Route matched with {page = "/Admin/Index", action = "", controller = ""}. Executing page /Admin/Index
+2026-06-24 17:10:37.121 [INF] Executing handler method CarProject.Pages.Admin.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-24 17:10:37.129 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [HangXe] AS [h]
+2026-06-24 17:10:37.136 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [DongXe] AS [d]
+2026-06-24 17:10:37.140 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-24 17:10:37.146 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [QuangCaoBanner] AS [q]
+2026-06-24 17:10:37.152 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NhatKyHeThong] AS [n]
+2026-06-24 17:10:37.158 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [TaiKhoan] AS [t]
+2026-06-24 17:10:37.165 [INF] Executed DbCommand (6ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-24 17:10:37.166 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-24 17:10:37.166 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-24 17:10:37.166 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:10:37.187 [INF] Executed page /Admin/Index in 66.4953ms
+2026-06-24 17:10:37.187 [INF] Executed endpoint '/Admin/Index'
+2026-06-24 17:10:37.187 [INF] <-- GET /Admin => 200 (74ms)
+2026-06-24 17:10:37.187 [INF] Request finished HTTP/2 GET https://localhost:7185/Admin - 200 null text/html; charset=utf-8 76.2014ms
+2026-06-24 17:10:37.225 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:10:37.225 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:10:37.225 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:10:37.225 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:10:37.225 [INF] --> GET /css/site.css
+2026-06-24 17:10:37.225 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:10:37.225 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:10:37.225 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:10:37.225 [INF] --> GET /js/site.js
+2026-06-24 17:10:37.225 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.225 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.225 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.225 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.225 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.5466ms
+2026-06-24 17:10:37.226 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:10:37.226 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:10:37.226 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.227 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.227 [INF] <-- GET /CarProject.styles.css => 200 (1ms)
+2026-06-24 17:10:37.227 [INF] <-- GET /js/site.js => 200 (1ms)
+2026-06-24 17:10:37.227 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 2.0412ms
+2026-06-24 17:10:37.227 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 1.8371ms
+2026-06-24 17:10:37.260 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:10:37.260 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.260 [INF] <-- GET /css/site.css => 200 (35ms)
+2026-06-24 17:10:37.260 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:10:37.261 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 35.9654ms
+2026-06-24 17:10:37.261 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:10:37.261 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:10:37.261 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:10:37.261 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:10:37.261 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.262 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.290 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:10:37.291 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.291 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (65ms)
+2026-06-24 17:10:37.291 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 66.748ms
+2026-06-24 17:10:37.292 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:10:37.292 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.292 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:10:37.292 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:37.292 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (30ms)
+2026-06-24 17:10:37.293 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (32ms)
+2026-06-24 17:10:37.294 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 32.7733ms
+2026-06-24 17:10:37.294 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 33.2701ms
+2026-06-24 17:10:37.297 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 36.2463ms
+2026-06-24 17:10:46.428 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Logout - null null
+2026-06-24 17:10:46.430 [INF] --> GET /Account/Logout
+2026-06-24 17:10:46.431 [INF] Executing endpoint '/Account/Logout'
+2026-06-24 17:10:46.440 [INF] Route matched with {page = "/Account/Logout", action = "", controller = ""}. Executing page /Account/Logout
+2026-06-24 17:10:46.440 [INF] Executing handler method CarProject.Pages.Account.LogoutModel.OnGet - ModelState is "Valid"
+2026-06-24 17:10:46.450 [INF] Executed DbCommand (7ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-24 17:10:46.453 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RedirectToPageResult.
+2026-06-24 17:10:46.454 [INF] Executing RedirectToPageResult, redirecting to /Index.
+2026-06-24 17:10:46.454 [INF] Executed page /Account/Logout in 14.1574ms
+2026-06-24 17:10:46.454 [INF] Executed endpoint '/Account/Logout'
+2026-06-24 17:10:46.454 [INF] <-- GET /Account/Logout => 302 (23ms)
+2026-06-24 17:10:46.454 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Logout - 302 null null 26.4809ms
+2026-06-24 17:10:46.460 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-24 17:10:46.461 [INF] --> GET /
+2026-06-24 17:10:46.462 [INF] Executing endpoint '/Index'
+2026-06-24 17:10:46.462 [INF] Route matched with {page = "/Index", action = "", controller = ""}. Executing page /Index
+2026-06-24 17:10:46.463 [INF] Executing handler method CarProject.Pages.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-24 17:10:46.467 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [HangXe] AS [h]
+2026-06-24 17:10:46.474 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[MaDong], [d].[KieuDang], [d].[MaHang], [d].[TenDong], [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [DongXe] AS [d]
+INNER JOIN [HangXe] AS [h] ON [d].[MaHang] = [h].[MaHang]
+2026-06-24 17:10:46.477 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-24 17:10:46.485 [INF] Executed DbCommand (7ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-24 17:10:46.486 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-24 17:10:46.486 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-24 17:10:46.486 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:10:46.488 [INF] Executed page /Index in 25.9136ms
+2026-06-24 17:10:46.488 [INF] Executed endpoint '/Index'
+2026-06-24 17:10:46.488 [INF] <-- GET / => 200 (27ms)
+2026-06-24 17:10:46.489 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 200 null text/html; charset=utf-8 28.4738ms
+2026-06-24 17:10:46.534 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:10:46.534 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:10:46.534 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:10:46.534 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:10:46.534 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:10:46.534 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:10:46.534 [INF] --> GET /css/site.css
+2026-06-24 17:10:46.535 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.535 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.535 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.535 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.4065ms
+2026-06-24 17:10:46.535 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:10:46.535 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:10:46.535 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:10:46.535 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:10:46.535 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:10:46.535 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:10:46.536 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.536 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.536 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.536 [INF] <-- GET /CarProject.styles.css => 200 (1ms)
+2026-06-24 17:10:46.536 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 1.6536ms
+2026-06-24 17:10:46.536 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:10:46.536 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.536 [INF] <-- GET /css/site.css => 200 (1ms)
+2026-06-24 17:10:46.536 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 2.1052ms
+2026-06-24 17:10:46.537 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:10:46.538 [INF] --> GET /js/site.js
+2026-06-24 17:10:46.540 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.574 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:10:46.574 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.574 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (39ms)
+2026-06-24 17:10:46.575 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:10:46.575 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 39.7695ms
+2026-06-24 17:10:46.575 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.575 [INF] <-- GET /js/site.js => 200 (36ms)
+2026-06-24 17:10:46.575 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 37.6245ms
+2026-06-24 17:10:46.576 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:10:46.576 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.576 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (41ms)
+2026-06-24 17:10:46.576 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:10:46.576 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:10:46.576 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 42.249ms
+2026-06-24 17:10:46.577 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (41ms)
+2026-06-24 17:10:46.577 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 41.6043ms
+2026-06-24 17:10:46.578 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 43.2356ms
+2026-06-24 17:12:43.381 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Login - null null
+2026-06-24 17:12:43.391 [INF] --> GET /Account/Login
+2026-06-24 17:12:43.392 [INF] Executing endpoint '/Account/Login'
+2026-06-24 17:12:43.392 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-24 17:12:43.394 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnGet - ModelState is "Valid"
+2026-06-24 17:12:43.394 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:12:43.404 [INF] Executed page /Account/Login in 11.258ms
+2026-06-24 17:12:43.404 [INF] Executed endpoint '/Account/Login'
+2026-06-24 17:12:43.404 [INF] <-- GET /Account/Login => 200 (12ms)
+2026-06-24 17:12:43.404 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Login - 200 null text/html; charset=utf-8 23.8819ms
+2026-06-24 17:12:43.458 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:12:43.458 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:12:43.458 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:12:43.459 [INF] --> GET /css/site.css
+2026-06-24 17:12:43.459 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:12:43.459 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:12:43.459 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.459 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.459 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.461 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:12:43.462 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.462 [INF] <-- GET /CarProject.styles.css => 200 (2ms)
+2026-06-24 17:12:43.462 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 3.324ms
+2026-06-24 17:12:43.462 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:12:43.462 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:12:43.462 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:12:43.462 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:12:43.462 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:12:43.462 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:12:43.462 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.462 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.463 [INF] --> GET /js/site.js
+2026-06-24 17:12:43.463 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.463 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:12:43.463 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.463 [INF] <-- GET /js/site.js => 200 (0ms)
+2026-06-24 17:12:43.463 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 1.2325ms
+2026-06-24 17:12:43.464 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:12:43.464 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:12:43.464 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.465 [INF] <-- GET /css/site.css => 200 (5ms)
+2026-06-24 17:12:43.465 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 6.7371ms
+2026-06-24 17:12:43.466 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 3.6418ms
+2026-06-24 17:12:43.466 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:12:43.466 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.466 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (4ms)
+2026-06-24 17:12:43.466 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 4.5629ms
+2026-06-24 17:12:43.471 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:12:43.472 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.472 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (13ms)
+2026-06-24 17:12:43.472 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 13.6294ms
+2026-06-24 17:12:43.473 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:12:43.473 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:43.473 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (10ms)
+2026-06-24 17:12:43.473 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 11.0731ms
+2026-06-24 17:12:43.528 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 63.9597ms
+2026-06-24 17:12:58.229 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Register - null null
+2026-06-24 17:12:58.231 [INF] --> GET /Account/Register
+2026-06-24 17:12:58.231 [INF] Executing endpoint '/Account/Register'
+2026-06-24 17:12:58.241 [INF] Route matched with {page = "/Account/Register", action = "", controller = ""}. Executing page /Account/Register
+2026-06-24 17:12:58.242 [INF] Executing handler method CarProject.Pages.Account.RegisterModel.OnGet - ModelState is "Valid"
+2026-06-24 17:12:58.242 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-24 17:12:58.259 [INF] Executed page /Account/Register in 18.3161ms
+2026-06-24 17:12:58.260 [INF] Executed endpoint '/Account/Register'
+2026-06-24 17:12:58.260 [INF] <-- GET /Account/Register => 200 (28ms)
+2026-06-24 17:12:58.260 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Register - 200 null text/html; charset=utf-8 31.991ms
+2026-06-24 17:12:58.300 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-24 17:12:58.300 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-24 17:12:58.300 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-24 17:12:58.301 [INF] --> GET /CarProject.styles.css
+2026-06-24 17:12:58.301 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-24 17:12:58.301 [INF] --> GET /css/site.css
+2026-06-24 17:12:58.301 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.301 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.301 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.301 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-24 17:12:58.301 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:12:58.301 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-24 17:12:58.302 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-24 17:12:58.302 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.302 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-24 17:12:58.302 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.9489ms
+2026-06-24 17:12:58.302 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.303 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-24 17:12:58.303 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.303 [INF] <-- GET /CarProject.styles.css => 200 (2ms)
+2026-06-24 17:12:58.303 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 2.6728ms
+2026-06-24 17:12:58.304 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-24 17:12:58.304 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.304 [INF] <-- GET /css/site.css => 200 (3ms)
+2026-06-24 17:12:58.305 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 4.0873ms
+2026-06-24 17:12:58.305 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-24 17:12:58.305 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.305 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (3ms)
+2026-06-24 17:12:58.305 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 3.6988ms
+2026-06-24 17:12:58.305 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-24 17:12:58.305 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.305 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (3ms)
+2026-06-24 17:12:58.305 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 3.8631ms
+2026-06-24 17:12:58.336 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-24 17:12:58.336 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:12:58.336 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-24 17:12:58.336 [INF] --> GET /js/site.js
+2026-06-24 17:12:58.336 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.336 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (35ms)
+2026-06-24 17:12:58.336 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.336 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 36.1201ms
+2026-06-24 17:12:58.337 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-24 17:12:58.338 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-24 17:12:58.338 [INF] <-- GET /js/site.js => 200 (1ms)
+2026-06-24 17:12:58.338 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 2.1028ms
+2026-06-24 17:12:58.342 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 6.0476ms
