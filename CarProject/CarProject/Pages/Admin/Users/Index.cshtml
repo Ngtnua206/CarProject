@@ -1,0 +1,58 @@
+@page
+@model CarProject.Pages.Admin.Users.IndexModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-people-fill"></i> Quản lý người dùng</h2>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.MaTaiKhoan</td>
+                        <td>@user.TenDangNhap</td>
+                        <td>
+                            <span class="badge bg-@(user.VaiTro == "Admin" ? "danger" : user.VaiTro == "Quản Lý" ? "warning" : "secondary")">
+                                @user.VaiTro
+                            </span>
+                        </td>
+                        <td>@user.TrangThai</td>
+                        <td>
+                            @if (user.VaiTro != "Admin")
+                            {
+                                <form method="post" asp-page-handler="UpdateRole" style="display:inline">
+                                    <input type="hidden" name="maTaiKhoan" value="@user.MaTaiKhoan" />
+                                    <select name="vaiTroMoi" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                                        <option value="User" selected="@(user.VaiTro == "User")">User</option>
+                                        <option value="Quản Lý" selected="@(user.VaiTro == "Quản Lý")">Quản Lý</option>
+                                    </select>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-2">
+        <a asp-page="/Admin/Index" class="btn btn-outline-secondary btn-sm">← Về Dashboard</a>
+    </div>
+</div>

@@ -16,6 +16,7 @@ public class IndexModel : PageModel
     public int TotalPhienBan { get; set; }
     public int TotalBanner { get; set; }
     public int TotalLogs { get; set; }
+    public int TotalUsers { get; set; }
 
     public IndexModel(AppDbContext db, IActivityLogService log)
     {
@@ -37,6 +38,7 @@ public class IndexModel : PageModel
         TotalPhienBan = await _db.PhienBanXe.CountAsync();
         TotalBanner = await _db.QuangCaoBanner.CountAsync();
         TotalLogs = await _db.NhatKyHeThong.CountAsync();
+        TotalUsers = await _db.TaiKhoan.CountAsync();
 
         await _log.LogAsync("Xem Admin Dashboard");
     }

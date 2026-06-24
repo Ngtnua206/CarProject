@@ -12,9 +12,12 @@
         <div class="col-md-4">
             <input name="SearchAction" class="form-control" placeholder="Tìm theo hành động..." value="@Model.SearchAction" />
         </div>
-        <div class="col-md-3">
-            <input name="SearchUser" class="form-control" placeholder="Tìm theo tài khoản..." value="@Model.SearchUser" />
-        </div>
+        @if (HttpContext.Session.GetString("UserRole") == "Admin")
+        {
+            <div class="col-md-3">
+                <input name="SearchUser" class="form-control" placeholder="Tìm theo tài khoản..." value="@Model.SearchUser" />
+            </div>
+        }
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Lọc</button>
         </div>

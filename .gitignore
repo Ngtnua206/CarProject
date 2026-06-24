@@ -3,3 +3,8 @@ bin/
 obj/
 *.user
 *.suo
+
+appsettings.Development.json
+CarProject/Logs/
+create_users.sql
+fix_perms.sql

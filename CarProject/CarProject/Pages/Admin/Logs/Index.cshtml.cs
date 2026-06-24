@@ -42,11 +42,17 @@ public class IndexModel : PageModel
         if (PageIndex < 1) PageIndex = 1;
 
         var query = _db.NhatKyHeThong.AsQueryable();
+        var role = HttpContext.Session.GetString("UserRole") ?? "Guest";
+        var userName = HttpContext.Session.GetString("UserName") ?? "";
+
+        // Admin: xem tất cả; User thường: chỉ xem log của mình
+        if (role != "Admin")
+            query = query.Where(l => l.TenDangNhap == userName);
 
         if (!string.IsNullOrEmpty(SearchAction))
             query = query.Where(l => l.HanhDong.Contains(SearchAction));
 
-        if (!string.IsNullOrEmpty(SearchUser))
+        if (!string.IsNullOrEmpty(SearchUser) && role == "Admin")
             query = query.Where(l => l.TenDangNhap.Contains(SearchUser));
 
         TotalCount = await query.CountAsync();

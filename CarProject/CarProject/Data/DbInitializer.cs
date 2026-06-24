@@ -77,8 +77,10 @@ public static class DbInitializer
         {
             var taiKhoanList = new List<TaiKhoan>
             {
-                new TaiKhoan { MaTaiKhoan = 1, TenDangNhap = "admin", MatKhau = "admin123", VaiTro = "Admin", TrangThai = "Active" },
-                new TaiKhoan { MaTaiKhoan = 2, TenDangNhap = "quanly1", MatKhau = "pass123", VaiTro = "QuanLy", TrangThai = "Active" }
+                new TaiKhoan { MaTaiKhoan = 1, TenDangNhap = "Ngttu2006@gmail.com", MatKhau = "Iumaioanhh@2024", VaiTro = "Admin", TrangThai = "Active" },
+                new TaiKhoan { MaTaiKhoan = 2, TenDangNhap = "quanly1", MatKhau = "pass123", VaiTro = "Quản Lý", TrangThai = "Active" },
+                new TaiKhoan { MaTaiKhoan = 3, TenDangNhap = "user1", MatKhau = "user123", VaiTro = "User", TrangThai = "Active" },
+                new TaiKhoan { MaTaiKhoan = 4, TenDangNhap = "Vanh280306@gmail.com", MatKhau = "Vanh2803", VaiTro = "User", TrangThai = "Active" }
             };
             context.TaiKhoan.AddRange(taiKhoanList);
             context.SaveChanges();
