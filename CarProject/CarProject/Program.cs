@@ -27,21 +27,30 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<CarProject.Services.IActivityLogService, CarProject.Services.ActivityLogService>();
 
-    // Google OAuth
-    builder.Services.AddAuthentication(options =>
+    // Google OAuth (only if configured)
+    var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+    var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    var useGoogle = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
+
+    var authBuilder = builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultSignInScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = useGoogle ? GoogleDefaults.AuthenticationScheme
+            : Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
     })
-    .AddCookie()
-    .AddGoogle(options =>
+    .AddCookie();
+
+    if (useGoogle)
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
-        options.CallbackPath = "/Account/GoogleCallback";
-        options.SaveTokens = true;
-    });
+        authBuilder.AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            options.CallbackPath = "/Account/GoogleCallback";
+            options.SaveTokens = true;
+        });
+    }
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (!string.IsNullOrEmpty(connectionString))

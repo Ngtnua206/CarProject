@@ -557,3 +557,126 @@ VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
 2026-06-24 10:23:44.058 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (5ms)
 2026-06-24 10:23:44.058 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 6.2743ms
 2026-06-24 10:23:44.060 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 8.5371ms
+2026-06-24 17:07:01.599 [WRN] No store type was specified for the decimal property 'GiaTriGiam' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:07:01.635 [WRN] No store type was specified for the decimal property 'MucGiamToiDa' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:07:01.635 [WRN] No store type was specified for the decimal property 'SoTienCoc' on entity type 'DonDatCoc'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-24 17:07:03.745 [INF] Executed DbCommand (24ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-06-24 17:07:03.773 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-06-24 17:07:03.778 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-06-24 17:07:03.781 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-06-24 17:07:03.804 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-06-24 17:07:03.827 [INF] No migrations were applied. The database is already up to date.
+2026-06-24 17:07:04.036 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [HangXe] AS [h]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:07:04.046 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [DongXe] AS [d]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:07:04.055 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [PhienBanXe_SanPham] AS [p]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:07:04.061 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [QuangCaoBanner] AS [q]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:07:04.068 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [KenhTuVan] AS [k]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2026-06-24 17:07:04.102 [INF] Executed DbCommand (30ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+
+                IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AppReader')
+                BEGIN
+                    CREATE LOGIN AppReader WITH PASSWORD = 'Abc@123456';
+                    CREATE USER AppReader FOR LOGIN AppReader;
+                    ALTER ROLE db_datareader ADD MEMBER AppReader;
+                END
+2026-06-24 17:07:04.299 [INF] User profile is available. Using 'C:\Users\Tu\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-06-24 17:07:04.807 [INF] Now listening on: https://localhost:61325
+2026-06-24 17:07:04.808 [INF] Now listening on: http://localhost:61326
+2026-06-24 17:07:04.849 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-24 17:07:04.849 [INF] Hosting environment: Development
+2026-06-24 17:07:04.849 [INF] Content root path: D:\Code\Code\WebMVC\CarProject\CarProject
+2026-06-24 17:07:07.959 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-24 17:07:08.062 [INF] --> GET /
+2026-06-24 17:07:08.241 [ERR] An unhandled exception has occurred while executing the request.
+System.ArgumentException: The value cannot be an empty string. (Parameter 'ClientId')
+   at System.ArgumentException.ThrowNullOrEmptyException(String argument, String paramName)
+   at System.ArgumentException.ThrowIfNullOrEmpty(String argument, String paramName)
+   at Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.Validate()
+   at Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions.Validate(String scheme)
+   at Microsoft.AspNetCore.Authentication.AuthenticationBuilder.<>c__DisplayClass4_0`2.<AddSchemeHelper>b__1(TOptions o)
+   at Microsoft.Extensions.Options.ValidateOptions`1.Validate(String name, TOptions options)
+   at Microsoft.Extensions.Options.OptionsFactory`1.Create(String name)
+   at System.Lazy`1.ViaFactory(LazyThreadSafetyMode mode)
+   at System.Lazy`1.ExecutionAndPublication(LazyHelper executionAndPublication, Boolean useDefaultConstructor)
+   at System.Lazy`1.CreateValue()
+   at Microsoft.Extensions.Options.OptionsCache`1.GetOrAdd[TArg](String name, Func`3 createOptions, TArg factoryArgument)
+   at Microsoft.Extensions.Options.OptionsMonitor`1.Get(String name)
+   at Microsoft.AspNetCore.Authentication.AuthenticationHandler`1.InitializeAsync(AuthenticationScheme scheme, HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationHandlerProvider.GetHandlerAsync(HttpContext context, String authenticationScheme)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Program.<>c.<<<Main>$>b__0_4>d.MoveNext() in D:\Code\Code\WebMVC\CarProject\CarProject\Program.cs:line 91
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-06-24 17:07:25.025 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 500 null text/html; charset=utf-8 17077.6306ms
+2026-06-24 17:07:25.040 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:07:25.040 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:07:25.051 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 11.1576ms
+2026-06-24 17:07:25.101 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 61.2271ms
+2026-06-24 17:07:35.276 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-24 17:07:35.280 [INF] --> GET /
+2026-06-24 17:07:35.317 [ERR] An unhandled exception has occurred while executing the request.
+System.ArgumentException: The value cannot be an empty string. (Parameter 'ClientId')
+   at System.ArgumentException.ThrowNullOrEmptyException(String argument, String paramName)
+   at System.ArgumentException.ThrowIfNullOrEmpty(String argument, String paramName)
+   at Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.Validate()
+   at Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions.Validate(String scheme)
+   at Microsoft.AspNetCore.Authentication.AuthenticationBuilder.<>c__DisplayClass4_0`2.<AddSchemeHelper>b__1(TOptions o)
+   at Microsoft.Extensions.Options.ValidateOptions`1.Validate(String name, TOptions options)
+   at Microsoft.Extensions.Options.OptionsFactory`1.Create(String name)
+   at System.Lazy`1.ViaFactory(LazyThreadSafetyMode mode)
+--- End of stack trace from previous location ---
+   at System.Lazy`1.CreateValue()
+   at Microsoft.Extensions.Options.OptionsCache`1.GetOrAdd[TArg](String name, Func`3 createOptions, TArg factoryArgument)
+   at Microsoft.Extensions.Options.OptionsMonitor`1.Get(String name)
+   at Microsoft.AspNetCore.Authentication.AuthenticationHandler`1.InitializeAsync(AuthenticationScheme scheme, HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationHandlerProvider.GetHandlerAsync(HttpContext context, String authenticationScheme)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Program.<>c.<<<Main>$>b__0_4>d.MoveNext() in D:\Code\Code\WebMVC\CarProject\CarProject\Program.cs:line 91
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-06-24 17:07:37.963 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 500 null text/html; charset=utf-8 2687.7135ms
+2026-06-24 17:07:38.006 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-24 17:07:38.006 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-24 17:07:38.007 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 1.2108ms
+2026-06-24 17:07:38.037 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 31.3945ms

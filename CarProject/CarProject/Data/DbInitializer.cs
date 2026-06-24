@@ -1,4 +1,5 @@
 using CarProject.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarProject.Data;
 
@@ -72,20 +73,6 @@ public static class DbInitializer
             context.SaveChanges();
         }
 
-        // Seed tài khoản quản lý mẫu
-        if (!context.TaiKhoan.Any())
-        {
-            var taiKhoanList = new List<TaiKhoan>
-            {
-                new TaiKhoan { MaTaiKhoan = 1, TenDangNhap = "Ngttu2006@gmail.com", MatKhau = "Iumaioanhh@2024", VaiTro = "Admin", TrangThai = "Active" },
-                new TaiKhoan { MaTaiKhoan = 2, TenDangNhap = "quanly1", MatKhau = "pass123", VaiTro = "Quản Lý", TrangThai = "Active" },
-                new TaiKhoan { MaTaiKhoan = 3, TenDangNhap = "user1", MatKhau = "user123", VaiTro = "User", TrangThai = "Active" },
-                new TaiKhoan { MaTaiKhoan = 4, TenDangNhap = "Vanh280306@gmail.com", MatKhau = "Vanh2803", VaiTro = "User", TrangThai = "Active" }
-            };
-            context.TaiKhoan.AddRange(taiKhoanList);
-            context.SaveChanges();
-        }
-
         // Seed Kênh Tư vấn
         if (!context.KenhTuVan.Any())
         {
@@ -96,5 +83,18 @@ public static class DbInitializer
             context.KenhTuVan.AddRange(kenhTuVanList);
             context.SaveChanges();
         }
+        // Tạo SQL Login AppReader (chỉ chạy trên Docker mới - ignore lỗi nếu đã tồn tại)
+        try
+        {
+            context.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AppReader')
+                BEGIN
+                    CREATE LOGIN AppReader WITH PASSWORD = 'Abc@123456';
+                    CREATE USER AppReader FOR LOGIN AppReader;
+                    ALTER ROLE db_datareader ADD MEMBER AppReader;
+                END
+            ");
+        }
+        catch { /* login may already exist or not supported */ }
     }
 }
