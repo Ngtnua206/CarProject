@@ -4,7 +4,6 @@ obj/
 *.user
 *.suo
 
-appsettings.json
 appsettings.Development.json
 CarProject/Logs/
 create_users.sql
