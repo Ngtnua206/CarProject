@@ -83,7 +83,7 @@ public static class DbInitializer
             context.KenhTuVan.AddRange(kenhTuVanList);
             context.SaveChanges();
         }
-        // Tạo SQL Login AppReader (chỉ chạy trên Docker mới - ignore lỗi nếu đã tồn tại)
+        // Tạo SQL Login AppReader (chỉ đọc, KHÔNG xem được bảng TaiKhoan)
         try
         {
             context.Database.ExecuteSqlRaw(@"
@@ -93,6 +93,8 @@ public static class DbInitializer
                     CREATE USER AppReader FOR LOGIN AppReader;
                     ALTER ROLE db_datareader ADD MEMBER AppReader;
                 END
+                DENY SELECT ON TaiKhoan TO AppReader;
+                DENY SELECT ON NhatKyHeThong TO AppReader;
             ");
         }
         catch { /* login may already exist or not supported */ }

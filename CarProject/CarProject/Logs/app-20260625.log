@@ -1,0 +1,617 @@
+2026-06-25 07:11:38.326 [WRN] No store type was specified for the decimal property 'GiaTriGiam' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-25 07:11:38.369 [WRN] No store type was specified for the decimal property 'MucGiamToiDa' on entity type 'ChuongTrinhKhuyenMai'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-25 07:11:38.369 [WRN] No store type was specified for the decimal property 'SoTienCoc' on entity type 'DonDatCoc'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-06-25 07:12:04.626 [ERR] Error seeding database
+Microsoft.Data.SqlClient.SqlException (0x80131904): A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No connection could be made because the target machine actively refused it.)
+ ---> System.ComponentModel.Win32Exception (10061): No connection could be made because the target machine actively refused it.
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.Connect(ServerInfo serverInfo, SqlInternalConnectionTds connHandler, Boolean ignoreSniOpenTimeout, Int64 timerExpire, SqlConnectionString connectionOptions, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.AttemptOneLogin(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean ignoreSniOpenTimeout, TimeoutTimer timeout, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerConnection.OpenDbConnection(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternal(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.Open(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass18_0.<Exists>b__0(DateTime giveUp)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.<>c__DisplayClass12_0`2.<Execute>b__0(DbContext _, TState s)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.Execute[TState,TResult](IExecutionStrategy strategy, TState state, Func`2 operation, Func`2 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.Exists(Boolean retryOnNotExists)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.Exists()
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in D:\Code\Code\WebMVC\CarProject\CarProject\Program.cs:line 73
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:10061,State:0,Class:20
+2026-06-25 07:12:05.092 [INF] User profile is available. Using 'C:\Users\Tu\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-06-25 07:12:06.177 [INF] Now listening on: https://localhost:58625
+2026-06-25 07:12:06.178 [INF] Now listening on: http://localhost:58626
+2026-06-25 07:12:06.274 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-25 07:12:06.275 [INF] Hosting environment: Development
+2026-06-25 07:12:06.275 [INF] Content root path: D:\Code\Code\WebMVC\CarProject\CarProject
+2026-06-25 07:12:09.581 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-25 07:12:09.837 [INF] --> GET /
+2026-06-25 07:12:09.876 [INF] Executing endpoint '/Index'
+2026-06-25 07:12:09.927 [INF] Route matched with {page = "/Index", action = "", controller = ""}. Executing page /Index
+2026-06-25 07:12:09.946 [INF] Executing handler method CarProject.Pages.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-25 07:12:35.086 [ERR] An error occurred using the connection to database 'CarShopDb' on server 'localhost,1433'.
+2026-06-25 07:12:35.113 [ERR] An exception occurred while iterating over the results of a query for context type 'CarProject.Data.AppDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No connection could be made because the target machine actively refused it.)
+ ---> System.ComponentModel.Win32Exception (10061): No connection could be made because the target machine actively refused it.
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.Connect(ServerInfo serverInfo, SqlInternalConnectionTds connHandler, Boolean ignoreSniOpenTimeout, Int64 timerExpire, SqlConnectionString connectionOptions, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.AttemptOneLogin(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean ignoreSniOpenTimeout, TimeoutTimer timeout, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:10061,State:0,Class:20
+Microsoft.Data.SqlClient.SqlException (0x80131904): A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No connection could be made because the target machine actively refused it.)
+ ---> System.ComponentModel.Win32Exception (10061): No connection could be made because the target machine actively refused it.
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.Connect(ServerInfo serverInfo, SqlInternalConnectionTds connHandler, Boolean ignoreSniOpenTimeout, Int64 timerExpire, SqlConnectionString connectionOptions, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.AttemptOneLogin(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean ignoreSniOpenTimeout, TimeoutTimer timeout, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:10061,State:0,Class:20
+2026-06-25 07:13:22.683 [INF] Executed page /Index in 72744.7779ms
+2026-06-25 07:13:22.688 [INF] Executed endpoint '/Index'
+2026-06-25 07:13:24.563 [ERR] An unhandled exception has occurred while executing the request.
+Microsoft.Data.SqlClient.SqlException (0x80131904): A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No connection could be made because the target machine actively refused it.)
+ ---> System.ComponentModel.Win32Exception (10061): No connection could be made because the target machine actively refused it.
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.Connect(ServerInfo serverInfo, SqlInternalConnectionTds connHandler, Boolean ignoreSniOpenTimeout, Int64 timerExpire, SqlConnectionString connectionOptions, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.AttemptOneLogin(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean ignoreSniOpenTimeout, TimeoutTimer timeout, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at CarProject.Pages.IndexModel.OnGetAsync() in D:\Code\Code\WebMVC\CarProject\CarProject\Pages\Index.cshtml.cs:line 27
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.ExecutorFactory.NonGenericTaskHandlerMethod.Execute(Object receiver, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeHandlerMethodAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeNextPageFilterAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Rethrow(PageHandlerExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Program.<>c.<<<Main>$>b__0_5>d.MoveNext() in D:\Code\Code\WebMVC\CarProject\CarProject\Program.cs:line 138
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Program.<>c.<<<Main>$>b__0_4>d.MoveNext() in D:\Code\Code\WebMVC\CarProject\CarProject\Program.cs:line 100
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:10061,State:0,Class:20
+2026-06-25 07:13:25.990 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 500 null text/html; charset=utf-8 76440.3305ms
+2026-06-25 07:13:26.029 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 07:13:26.029 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 07:13:26.042 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 13.7661ms
+2026-06-25 07:13:26.113 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 84.2555ms
+2026-06-25 07:13:29.825 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-25 07:13:29.839 [INF] --> GET /
+2026-06-25 07:13:29.841 [INF] Executing endpoint '/Index'
+2026-06-25 07:13:29.842 [INF] Route matched with {page = "/Index", action = "", controller = ""}. Executing page /Index
+2026-06-25 07:13:29.846 [INF] Executing handler method CarProject.Pages.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-25 07:13:30.182 [INF] Executed DbCommand (94ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [HangXe] AS [h]
+2026-06-25 07:13:30.485 [INF] Executed DbCommand (18ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[MaDong], [d].[KieuDang], [d].[MaHang], [d].[TenDong], [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [DongXe] AS [d]
+INNER JOIN [HangXe] AS [h] ON [d].[MaHang] = [h].[MaHang]
+2026-06-25 07:13:30.574 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-25 07:13:30.885 [INF] Executed DbCommand (88ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-25 07:13:30.938 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-25 07:13:30.943 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-25 07:13:30.943 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 07:13:31.163 [INF] Executed page /Index in 1320.683ms
+2026-06-25 07:13:31.163 [INF] Executed endpoint '/Index'
+2026-06-25 07:13:31.164 [INF] <-- GET / => 200 (1323ms)
+2026-06-25 07:13:31.168 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 200 null text/html; charset=utf-8 1342.4653ms
+2026-06-25 07:13:31.197 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 07:13:31.200 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 07:13:31.201 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 07:13:31.201 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 07:13:31.203 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 07:13:31.201 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 07:13:31.210 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 07:13:31.238 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 07:13:31.238 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 07:13:31.238 [INF] --> GET /js/site.js
+2026-06-25 07:13:31.238 [INF] --> GET /CarProject.styles.css
+2026-06-25 07:13:31.238 [INF] --> GET /css/site.css
+2026-06-25 07:13:31.241 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 07:13:31.245 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 07:13:31.250 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 48.0786ms
+2026-06-25 07:13:31.285 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.285 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.286 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.285 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.285 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.285 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.377 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 07:13:31.377 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 07:13:31.378 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.378 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.378 [INF] <-- GET /CarProject.styles.css => 200 (139ms)
+2026-06-25 07:13:31.378 [INF] <-- GET /js/site.js => 200 (139ms)
+2026-06-25 07:13:31.378 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 178.7135ms
+2026-06-25 07:13:31.379 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 177.4687ms
+2026-06-25 07:13:31.397 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 07:13:31.397 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 07:13:31.399 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.399 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.400 [INF] <-- GET /css/site.css => 200 (162ms)
+2026-06-25 07:13:31.401 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (162ms)
+2026-06-25 07:13:31.401 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 199.5255ms
+2026-06-25 07:13:31.401 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 190.6897ms
+2026-06-25 07:13:31.406 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 07:13:31.407 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.407 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (168ms)
+2026-06-25 07:13:31.407 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 204.5861ms
+2026-06-25 07:13:31.409 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 07:13:31.409 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:31.409 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (163ms)
+2026-06-25 07:13:31.410 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 212.1389ms
+2026-06-25 07:13:31.412 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 170.471ms
+2026-06-25 07:13:38.655 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Login - null null
+2026-06-25 07:13:38.673 [INF] --> GET /Account/Login
+2026-06-25 07:13:38.675 [INF] Executing endpoint '/Account/Login'
+2026-06-25 07:13:38.708 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-25 07:13:38.722 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnGet - ModelState is "Valid"
+2026-06-25 07:13:38.723 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 07:13:38.823 [INF] Executed page /Account/Login in 114.6605ms
+2026-06-25 07:13:38.823 [INF] Executed endpoint '/Account/Login'
+2026-06-25 07:13:38.823 [INF] <-- GET /Account/Login => 200 (150ms)
+2026-06-25 07:13:38.824 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Login - 200 null text/html; charset=utf-8 169.6197ms
+2026-06-25 07:13:38.905 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 07:13:38.908 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 07:13:38.908 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 07:13:38.909 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 07:13:38.910 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 07:13:38.910 [INF] --> GET /CarProject.styles.css
+2026-06-25 07:13:38.911 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.911 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 07:13:38.911 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 07:13:38.912 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 07:13:38.912 [INF] --> GET /css/site.css
+2026-06-25 07:13:38.912 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 1.1312ms
+2026-06-25 07:13:38.913 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.914 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 07:13:38.914 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.914 [INF] <-- GET /CarProject.styles.css => 200 (3ms)
+2026-06-25 07:13:38.914 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 07:13:38.914 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 5.3104ms
+2026-06-25 07:13:38.915 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.915 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 07:13:38.916 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.916 [INF] <-- GET /css/site.css => 200 (3ms)
+2026-06-25 07:13:38.916 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 8.5444ms
+2026-06-25 07:13:38.917 [INF] --> GET /js/site.js
+2026-06-25 07:13:38.918 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.920 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 07:13:38.920 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.920 [INF] <-- GET /js/site.js => 200 (2ms)
+2026-06-25 07:13:38.920 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 9.5139ms
+2026-06-25 07:13:38.957 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 07:13:38.958 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.962 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 07:13:38.962 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.962 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (48ms)
+2026-06-25 07:13:38.962 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 57.5385ms
+2026-06-25 07:13:38.963 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 07:13:38.963 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:38.963 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (6ms)
+2026-06-25 07:13:38.964 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 55.7821ms
+2026-06-25 07:13:38.969 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 57.3163ms
+2026-06-25 07:13:39.035 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 07:13:39.036 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:39.040 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 07:13:39.040 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:39.040 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (4ms)
+2026-06-25 07:13:39.040 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 131.2525ms
+2026-06-25 07:13:52.929 [INF] Request starting HTTP/2 POST https://localhost:7185/Account/Login - application/x-www-form-urlencoded 259
+2026-06-25 07:13:52.934 [INF] --> POST /Account/Login
+2026-06-25 07:13:52.935 [INF] Executing endpoint '/Account/Login'
+2026-06-25 07:13:52.935 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-25 07:13:52.976 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnPostAsync - ModelState is "Valid"
+2026-06-25 07:13:53.051 [INF] Executed DbCommand (11ms) [Parameters=[@__TenDangNhap_0='?' (Size = 4000), @__MatKhau_1='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [t].[MaTaiKhoan], [t].[MatKhau], [t].[TenDangNhap], [t].[TrangThai], [t].[VaiTro]
+FROM [TaiKhoan] AS [t]
+WHERE [t].[TenDangNhap] = @__TenDangNhap_0 AND [t].[MatKhau] = @__MatKhau_1
+2026-06-25 07:13:53.127 [INF] Executed DbCommand (7ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-25 07:13:53.135 [INF] Executed handler method OnPostAsync, returned result Microsoft.AspNetCore.Mvc.RedirectToPageResult.
+2026-06-25 07:13:53.137 [INF] Executing RedirectToPageResult, redirecting to /Admin/Index.
+2026-06-25 07:13:53.138 [INF] Executed page /Account/Login in 202.6968ms
+2026-06-25 07:13:53.138 [INF] Executed endpoint '/Account/Login'
+2026-06-25 07:13:53.139 [INF] Session started; Key:d86e0d86-ff3d-e8da-2821-01491a8728ad, Id:16c97a92-5f87-a23a-b312-2f4844ba51c0
+2026-06-25 07:13:53.142 [INF] <-- POST /Account/Login => 302 (207ms)
+2026-06-25 07:13:53.149 [INF] Request finished HTTP/2 POST https://localhost:7185/Account/Login - 302 null null 220.0133ms
+2026-06-25 07:13:53.156 [INF] Request starting HTTP/2 GET https://localhost:7185/Admin - null null
+2026-06-25 07:13:53.159 [INF] --> GET /Admin
+2026-06-25 07:13:53.160 [INF] Executing endpoint '/Admin/Index'
+2026-06-25 07:13:53.172 [INF] Route matched with {page = "/Admin/Index", action = "", controller = ""}. Executing page /Admin/Index
+2026-06-25 07:13:53.172 [INF] Executing handler method CarProject.Pages.Admin.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-25 07:13:53.183 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [HangXe] AS [h]
+2026-06-25 07:13:53.191 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [DongXe] AS [d]
+2026-06-25 07:13:53.196 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-25 07:13:53.205 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [QuangCaoBanner] AS [q]
+2026-06-25 07:13:53.216 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NhatKyHeThong] AS [n]
+2026-06-25 07:13:53.227 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [TaiKhoan] AS [t]
+2026-06-25 07:13:53.240 [INF] Executed DbCommand (11ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-25 07:13:53.240 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-25 07:13:53.241 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-25 07:13:53.241 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 07:13:53.290 [INF] Executed page /Admin/Index in 117.8554ms
+2026-06-25 07:13:53.290 [INF] Executed endpoint '/Admin/Index'
+2026-06-25 07:13:53.290 [INF] <-- GET /Admin => 200 (131ms)
+2026-06-25 07:13:53.291 [INF] Request finished HTTP/2 GET https://localhost:7185/Admin - 200 null text/html; charset=utf-8 134.2209ms
+2026-06-25 07:13:53.367 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 07:13:53.367 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 07:13:53.367 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 07:13:53.367 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 07:13:53.367 [INF] --> GET /css/site.css
+2026-06-25 07:13:53.367 [INF] --> GET /CarProject.styles.css
+2026-06-25 07:13:53.368 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.368 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.368 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.368 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 07:13:53.368 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 07:13:53.368 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 07:13:53.368 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 07:13:53.369 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.689ms
+2026-06-25 07:13:53.369 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 07:13:53.369 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.369 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 07:13:53.369 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.369 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.369 [INF] <-- GET /CarProject.styles.css => 200 (2ms)
+2026-06-25 07:13:53.369 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 2.8597ms
+2026-06-25 07:13:53.370 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 07:13:53.370 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.370 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 07:13:53.370 [INF] <-- GET /css/site.css => 200 (3ms)
+2026-06-25 07:13:53.370 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 07:13:53.371 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 4.1064ms
+2026-06-25 07:13:53.371 [INF] --> GET /js/site.js
+2026-06-25 07:13:53.373 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.375 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 07:13:53.375 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.375 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 07:13:53.375 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (6ms)
+2026-06-25 07:13:53.375 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.376 [INF] <-- GET /js/site.js => 200 (4ms)
+2026-06-25 07:13:53.376 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 7.2663ms
+2026-06-25 07:13:53.376 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 5.9494ms
+2026-06-25 07:13:53.376 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 07:13:53.377 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.378 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 07:13:53.381 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (13ms)
+2026-06-25 07:13:53.381 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 07:13:53.381 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 14.6161ms
+2026-06-25 07:13:53.381 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (13ms)
+2026-06-25 07:13:53.382 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 13.9213ms
+2026-06-25 07:13:53.390 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 20.4799ms
+2026-06-25 08:21:26.997 [INF] Request starting HTTP/2 GET https://localhost:7185/ - null null
+2026-06-25 08:21:27.014 [INF] --> GET /
+2026-06-25 08:21:27.021 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.021 [INF] Executing endpoint '/Index'
+2026-06-25 08:21:27.022 [INF] Route matched with {page = "/Index", action = "", controller = ""}. Executing page /Index
+2026-06-25 08:21:27.025 [INF] Executing handler method CarProject.Pages.IndexModel.OnGetAsync - ModelState is "Valid"
+2026-06-25 08:21:27.108 [INF] Executed DbCommand (27ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [HangXe] AS [h]
+2026-06-25 08:21:27.129 [INF] Executed DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[MaDong], [d].[KieuDang], [d].[MaHang], [d].[TenDong], [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [DongXe] AS [d]
+INNER JOIN [HangXe] AS [h] ON [d].[MaHang] = [h].[MaHang]
+2026-06-25 08:21:27.141 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [PhienBanXe_SanPham] AS [p]
+2026-06-25 08:21:27.172 [INF] Executed DbCommand (26ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-25 08:21:27.173 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-25 08:21:27.173 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-25 08:21:27.173 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 08:21:27.187 [INF] Executed page /Index in 165.0234ms
+2026-06-25 08:21:27.188 [INF] Executed endpoint '/Index'
+2026-06-25 08:21:27.188 [INF] <-- GET / => 200 (173ms)
+2026-06-25 08:21:27.188 [INF] Request finished HTTP/2 GET https://localhost:7185/ - 200 null text/html; charset=utf-8 193.4616ms
+2026-06-25 08:21:27.234 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 08:21:27.234 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 08:21:27.235 [INF] --> GET /CarProject.styles.css
+2026-06-25 08:21:27.235 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 08:21:27.236 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.236 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.236 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.236 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.236 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 08:21:27.269 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 08:21:27.270 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 08:21:27.269 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 08:21:27.270 [INF] --> GET /css/site.css
+2026-06-25 08:21:27.270 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 08:21:27.271 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 08:21:27.270 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 08:21:27.271 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.271 [INF] <-- GET /CarProject.styles.css => 200 (36ms)
+2026-06-25 08:21:27.271 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 08:21:27.271 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.272 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.272 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 37.4656ms
+2026-06-25 08:21:27.272 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.272 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.272 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.272 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.272 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 08:21:27.272 [INF] --> GET /js/site.js
+2026-06-25 08:21:27.273 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:27.273 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.274 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 37.2732ms
+2026-06-25 08:21:27.302 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 08:21:27.302 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.303 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 08:21:27.303 [INF] <-- GET /js/site.js => 200 (30ms)
+2026-06-25 08:21:27.303 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.303 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 31.2862ms
+2026-06-25 08:21:27.303 [INF] <-- GET /css/site.css => 200 (33ms)
+2026-06-25 08:21:27.304 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 66.8305ms
+2026-06-25 08:21:27.308 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 08:21:27.308 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.309 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (38ms)
+2026-06-25 08:21:27.309 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 08:21:27.309 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 39.4082ms
+2026-06-25 08:21:27.309 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.309 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (38ms)
+2026-06-25 08:21:27.309 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 72.1967ms
+2026-06-25 08:21:27.312 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 08:21:27.312 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:27.313 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (77ms)
+2026-06-25 08:21:27.313 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 79.1091ms
+2026-06-25 08:21:27.327 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 55.6866ms
+2026-06-25 08:21:36.719 [INF] Request starting HTTP/2 GET https://localhost:7185/Cars - null null
+2026-06-25 08:21:36.725 [INF] --> GET /Cars
+2026-06-25 08:21:36.726 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.726 [INF] Executing endpoint '/Cars'
+2026-06-25 08:21:36.758 [INF] Route matched with {page = "/Cars", action = "", controller = ""}. Executing page /Cars
+2026-06-25 08:21:36.763 [INF] Executing handler method CarProject.Pages.CarsModel.OnGetAsync - ModelState is "Valid"
+2026-06-25 08:21:36.777 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [HangXe] AS [h]
+2026-06-25 08:21:36.857 [INF] Executed DbCommand (52ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[MaDong], [d].[KieuDang], [d].[MaHang], [d].[TenDong], [h].[MaHang], [h].[DuongDanLogo], [h].[QuocGia], [h].[TenHang]
+FROM [DongXe] AS [d]
+INNER JOIN [HangXe] AS [h] ON [d].[MaHang] = [h].[MaHang]
+ORDER BY [d].[TenDong]
+2026-06-25 08:21:36.867 [INF] Executed DbCommand (7ms) [Parameters=[@p0='?' (Size = 4000), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 4000), @p4='?' (DbType = Int32), @p5='?' (Size = 4000), @p6='?' (DbType = DateTime2), @p7='?' (Size = 4000), @p8='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NhatKyHeThong] ([ChiTiet], [DiaChiIP], [DuongDan], [HanhDong], [MaTaiKhoan], [TenDangNhap], [ThoiGian], [TrinhDuyet], [VaiTro])
+OUTPUT INSERTED.[MaNhatKy]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+2026-06-25 08:21:36.868 [INF] Executed handler method OnGetAsync, returned result .
+2026-06-25 08:21:36.868 [INF] Executing an implicit handler method - ModelState is "Valid"
+2026-06-25 08:21:36.868 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 08:21:36.902 [INF] Executed page /Cars in 143.8996ms
+2026-06-25 08:21:36.902 [INF] Executed endpoint '/Cars'
+2026-06-25 08:21:36.902 [INF] <-- GET /Cars => 200 (177ms)
+2026-06-25 08:21:36.903 [INF] Request finished HTTP/2 GET https://localhost:7185/Cars - 200 null text/html; charset=utf-8 184.5572ms
+2026-06-25 08:21:36.967 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 08:21:36.967 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 08:21:36.967 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 08:21:36.967 [INF] --> GET /css/site.css
+2026-06-25 08:21:36.968 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.968 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.968 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.968 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.968 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 08:21:36.968 [INF] --> GET /CarProject.styles.css
+2026-06-25 08:21:36.968 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 08:21:36.969 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.969 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.969 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 0.4121ms
+2026-06-25 08:21:36.969 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 08:21:36.969 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 08:21:36.969 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 08:21:36.969 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 08:21:36.969 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 08:21:36.970 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 08:21:36.970 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.970 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.970 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.970 [INF] <-- GET /CarProject.styles.css => 200 (1ms)
+2026-06-25 08:21:36.970 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:36.970 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 1.8761ms
+2026-06-25 08:21:36.970 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 08:21:36.970 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.970 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:36.970 [INF] <-- GET /css/site.css => 200 (3ms)
+2026-06-25 08:21:36.971 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 3.4096ms
+2026-06-25 08:21:36.973 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 08:21:37.005 [INF] --> GET /js/site.js
+2026-06-25 08:21:37.006 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 08:21:37.006 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:37.006 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:37.006 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:37.006 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (36ms)
+2026-06-25 08:21:37.006 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 37.1062ms
+2026-06-25 08:21:37.007 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 08:21:37.007 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:37.007 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (37ms)
+2026-06-25 08:21:37.007 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 38.087ms
+2026-06-25 08:21:37.007 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 08:21:37.008 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:37.008 [INF] <-- GET /js/site.js => 200 (2ms)
+2026-06-25 08:21:37.008 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 35.0236ms
+2026-06-25 08:21:37.008 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 08:21:37.009 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:37.009 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (41ms)
+2026-06-25 08:21:37.009 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 41.7668ms
+2026-06-25 08:21:37.010 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 41.2801ms
+2026-06-25 08:21:40.775 [INF] Request starting HTTP/2 GET https://localhost:7185/Account/Login - null null
+2026-06-25 08:21:40.778 [INF] --> GET /Account/Login
+2026-06-25 08:21:40.778 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.778 [INF] Executing endpoint '/Account/Login'
+2026-06-25 08:21:40.779 [INF] Route matched with {page = "/Account/Login", action = "", controller = ""}. Executing page /Account/Login
+2026-06-25 08:21:40.780 [INF] Executing handler method CarProject.Pages.Account.LoginModel.OnGet - ModelState is "Valid"
+2026-06-25 08:21:40.780 [INF] Executed handler method OnGet, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2026-06-25 08:21:40.794 [INF] Executed page /Account/Login in 15.7465ms
+2026-06-25 08:21:40.795 [INF] Executed endpoint '/Account/Login'
+2026-06-25 08:21:40.795 [INF] <-- GET /Account/Login => 200 (17ms)
+2026-06-25 08:21:40.795 [INF] Request finished HTTP/2 GET https://localhost:7185/Account/Login - 200 null text/html; charset=utf-8 20.5976ms
+2026-06-25 08:21:40.866 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2026-06-25 08:21:40.867 [INF] --> GET /lib/bootstrap/dist/css/bootstrap.min.css
+2026-06-25 08:21:40.867 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.867 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.868 [INF] Request starting HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - null null
+2026-06-25 08:21:40.868 [INF] --> GET /css/site.css
+2026-06-25 08:21:40.868 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.868 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.869 [INF] Request starting HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - null null
+2026-06-25 08:21:40.869 [INF] Request starting HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-25 08:21:40.869 [INF] --> GET /CarProject.styles.css
+2026-06-25 08:21:40.870 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.870 [INF] Sending file. Request path: 'css/site.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\s1z6sbh82y-{0}-ih0zcem9j2-ih0zcem9j2.gz'
+2026-06-25 08:21:40.870 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.870 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.870 [INF] <-- GET /css/site.css => 200 (2ms)
+2026-06-25 08:21:40.870 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - null null
+2026-06-25 08:21:40.870 [INF] Request finished HTTP/2 GET https://localhost:7185/css/site.css?v=NhEYUTwUzqBKI-H_K_Ps8rKDksS45f36fZ7bqpKzszY - 200 26787 text/css 2.4424ms
+2026-06-25 08:21:40.870 [INF] --> GET /lib/jquery/dist/jquery.min.js
+2026-06-25 08:21:40.870 [INF] Request starting HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2026-06-25 08:21:40.871 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.871 [INF] --> GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js
+2026-06-25 08:21:40.871 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.871 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.871 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.871 [INF] Sending file. Request path: 'CarProject.styles.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\0ewcybj4ni-{0}-pw10gy8m8n-pw10gy8m8n.gz'
+2026-06-25 08:21:40.871 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.874 [INF] Sending file. Request path: 'lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\wyet2r5gor-{0}-46ein0sx1k-46ein0sx1k.gz'
+2026-06-25 08:21:40.874 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.874 [INF] <-- GET /lib/bootstrap/dist/css/bootstrap.min.css => 200 (6ms)
+2026-06-25 08:21:40.874 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/css/bootstrap.min.css - 200 232871 text/css 7.5579ms
+2026-06-25 08:21:40.874 [INF] <-- GET /CarProject.styles.css => 200 (4ms)
+2026-06-25 08:21:40.874 [INF] Request finished HTTP/2 GET https://localhost:7185/CarProject.styles.css?v=Vx6GxlMceEH7eTgyQJvBKyYYUgPD3o36mXOgVUdmZlI - 200 1142 text/css 5.4121ms
+2026-06-25 08:21:40.874 [INF] Request starting HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - null null
+2026-06-25 08:21:40.874 [INF] Request starting HTTP/2 GET https://localhost:7185/_vs/browserLink - null null
+2026-06-25 08:21:40.875 [INF] --> GET /js/site.js
+2026-06-25 08:21:40.875 [INF] Sending file. Request path: 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\57t98i6r8p-{0}-493y06b0oq-493y06b0oq.gz'
+2026-06-25 08:21:40.875 [INF] Accessing expired session, Key:d86e0d86-ff3d-e8da-2821-01491a8728ad
+2026-06-25 08:21:40.875 [INF] Executing endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.875 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.875 [INF] <-- GET /lib/bootstrap/dist/js/bootstrap.bundle.min.js => 200 (4ms)
+2026-06-25 08:21:40.875 [INF] Sending file. Request path: 'lib/jquery/dist/jquery.min.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\2zpfagx2l9-{0}-o1o13a6vjx-o1o13a6vjx.gz'
+2026-06-25 08:21:40.875 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 80764 text/javascript 4.962ms
+2026-06-25 08:21:40.876 [INF] Request finished HTTP/2 GET https://localhost:7185/_framework/aspnetcore-browser-refresh.js - 200 14925 application/javascript; charset=utf-8 7.113ms
+2026-06-25 08:21:40.877 [INF] Sending file. Request path: 'js/site.js'. Physical path: 'D:\Code\Code\WebMVC\CarProject\CarProject\obj\Debug\net10.0\compressed\ca0gin0910-{0}-xtxxf3hu2r-xtxxf3hu2r.gz'
+2026-06-25 08:21:40.877 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.877 [INF] <-- GET /js/site.js => 200 (2ms)
+2026-06-25 08:21:40.875 [INF] Executed endpoint 'Microsoft.AspNetCore.Routing.RouteEndpoint'
+2026-06-25 08:21:40.877 [INF] Request finished HTTP/2 GET https://localhost:7185/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo - 200 264 text/javascript 2.6389ms
+2026-06-25 08:21:40.878 [INF] <-- GET /lib/jquery/dist/jquery.min.js => 200 (8ms)
+2026-06-25 08:21:40.886 [INF] Request finished HTTP/2 GET https://localhost:7185/_vs/browserLink - 200 null text/javascript; charset=UTF-8 12.0843ms
+2026-06-25 08:21:40.897 [INF] Request finished HTTP/2 GET https://localhost:7185/lib/jquery/dist/jquery.min.js - 200 87576 text/javascript 27.2847ms
