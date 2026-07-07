@@ -22,7 +22,7 @@ Trong thư mục `CarProject/CarProject/`, tạo file `appsettings.Development.j
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=CarShopDb;User Id=sa;Password=Iumaioanhh@2024;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=100.108.48.1,1433;Database=CarShopDb;User Id=Your_Id;Password=YourPassworD;TrustServerCertificate=True;"
   }
 }
 ```
