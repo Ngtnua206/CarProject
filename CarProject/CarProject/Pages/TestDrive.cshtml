@@ -1,0 +1,88 @@
+@page
+@model TestDriveModel
+
+@{
+    ViewData["Title"] = "Đăng ký lái thử";
+}
+
+<div class="deposit-page">
+    <div class="container py-4">
+        <nav class="breadcrumb-premium mb-4">
+            <a asp-page="/Index"><i class="fas fa-home"></i> Trang chủ</a>
+            <span>/</span>
+            <span>Đăng ký lái thử</span>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="deposit-card p-4">
+                    <h4>Đặt lịch lái thử</h4>
+                    <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-bottom: 1.5rem;">Trải nghiệm lái thử xe hoàn toàn miễn phí</p>
+
+                    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                    {
+                        <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 0.75rem 1rem; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-check-circle me-1"></i> @Model.SuccessMessage
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ và tên</label>
+                                <input asp-for="HoTen" class="form-control" required placeholder="Nhập họ tên" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input asp-for="SoDienThoai" class="form-control" required placeholder="Nhập số điện thoại" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Nhập email" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Chọn dòng xe</label>
+                                <select asp-for="MaDong" class="form-control" required>
+                                    <option value="">-- Chọn dòng xe --</option>
+                                    @foreach (var d in Model.DanhSachXe)
+                                    {
+                                        <option value="@d.MaDong">@d.TenDong</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày hẹn</label>
+                                <input asp-for="NgayHen" type="date" class="form-control" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Giờ hẹn</label>
+                                <select asp-for="GioHen" class="form-control" required>
+                                    <option value="">-- Chọn giờ --</option>
+                                    <option value="08:00">08:00</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="13:00">13:00</option>
+                                    <option value="14:00">14:00</option>
+                                    <option value="15:00">15:00</option>
+                                    <option value="16:00">16:00</option>
+                                    <option value="17:00">17:00</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Yêu cầu đặc biệt (nếu có)..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn-premium btn-premium-solid" style="padding: 0.8rem 3rem;">
+                                <i class="fas fa-calendar-check me-2"></i> Đặt lịch hẹn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

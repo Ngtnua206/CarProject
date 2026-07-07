@@ -1,0 +1,98 @@
+@page "{id:int}"
+@model CarProject.Pages.Admin.PhienBan.EditModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Sửa Phiên Bản Xe</h2>
+            @if (Model.PhienBan == null)
+            {
+                <div class="alert alert-danger">Không tìm thấy phiên bản xe.</div>
+            }
+            else
+            {
+                <form method="post">
+                    <input type="hidden" asp-for="PhienBan.MaPhienBan" />
+                    <div class="mb-3">
+                        <label class="form-label">Mã Phiên Bản</label>
+                        <input class="form-control" value="@Model.PhienBan.MaPhienBan" disabled />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.MaDong" class="form-label">Dòng Xe</label>
+                                <select asp-for="PhienBan.MaDong" asp-items="Model.DongList" class="form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.TenPhienBan" class="form-label">Tên Phiên Bản</label>
+                                <input asp-for="PhienBan.TenPhienBan" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.GiaNiemYet" class="form-label">Giá Niêm Yết</label>
+                                <input asp-for="PhienBan.GiaNiemYet" type="number" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.MauSac" class="form-label">Màu Sắc</label>
+                                <input asp-for="PhienBan.MauSac" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.DongCo" class="form-label">Động Cơ</label>
+                                <input asp-for="PhienBan.DongCo" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.HopSo" class="form-label">Hộp Số</label>
+                                <input asp-for="PhienBan.HopSo" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.LoaiNhietLieu" class="form-label">Loại Nhiên Liệu</label>
+                                <input asp-for="PhienBan.LoaiNhietLieu" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhienBan.SoLuongTrongKho" class="form-label">Số Lượng Kho</label>
+                                <input asp-for="PhienBan.SoLuongTrongKho" type="number" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhienBan.DuongDanAnh" class="form-label">Đường Dẫn Ảnh</label>
+                        <input asp-for="PhienBan.DuongDanAnh" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhienBan.TrangThai" class="form-label">Trạng Thái</label>
+                        <input asp-for="PhienBan.TrangThai" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                        <a asp-page="Index" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

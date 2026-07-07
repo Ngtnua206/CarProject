@@ -1,0 +1,55 @@
+@page
+@model CarProject.Pages.Admin.HoaDon.IndexModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Quản lý Hóa Đơn</h2>
+                <a asp-page="Create" class="btn btn-primary">+ Thêm Hóa Đơn</a>
+            </div>
+
+            @if (Model.HoaDonList.Count == 0)
+            {
+                <div class="alert alert-info">Không có hóa đơn nào.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mã HĐ</th>
+                            <th>Đơn cọc</th>
+                            <th>Khách hàng</th>
+                            <th>Phiên bản</th>
+                            <th>Giá xe</th>
+                            <th>Tổng tiền</th>
+                            <th>Ngày xuất</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var hd in Model.HoaDonList)
+                        {
+                            <tr>
+                                <td>@hd.MaHoaDon</td>
+                                <td>@hd.MaDonCoc</td>
+                                <td>@(hd.DonDatCoc?.MaKhachHang)</td>
+                                <td>@hd.MaPhienBan</td>
+                                <td>@hd.GiaXeThucTe.ToString("N0")</td>
+                                <td>@hd.TongTienPhaiTra.ToString("N0")</td>
+                                <td>@hd.NgayXuatHoaDon.ToString("dd/MM/yyyy")</td>
+                                <td>@hd.TrangThaiHoaDon</td>
+                                <td>
+                                    <a asp-page="Edit" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a asp-page="Delete" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

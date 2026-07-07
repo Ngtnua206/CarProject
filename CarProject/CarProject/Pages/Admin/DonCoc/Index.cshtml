@@ -1,0 +1,53 @@
+@page
+@model CarProject.Pages.Admin.DonCoc.IndexModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Quản lý Đơn Cọc</h2>
+                <a asp-page="Create" class="btn btn-primary">+ Thêm Đơn Cọc</a>
+            </div>
+
+            @if (Model.DonCocList.Count == 0)
+            {
+                <div class="alert alert-info">Không có đơn cọc nào.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng</th>
+                            <th>Phiên Bản</th>
+                            <th>Số Tiền Cọc</th>
+                            <th>Phương Thức</th>
+                            <th>Trạng Thái ĐH</th>
+                            <th>Ngày Tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.DonCocList)
+                        {
+                            <tr>
+                                <td>@d.MaDonCoc</td>
+                                <td>@d.KhachHang?.TenDangNhap</td>
+                                <td>@d.PhienBan?.TenPhienBan</td>
+                                <td>@d.SoTienCoc.ToString("N0")</td>
+                                <td>@d.PhuongThucThanhToan</td>
+                                <td>@d.TrangThaiDonHang</td>
+                                <td>@d.NgayTaoDon.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

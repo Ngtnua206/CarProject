@@ -1,0 +1,112 @@
+@page
+@model CompareModel
+
+@{
+    ViewData["Title"] = "So sánh xe";
+}
+
+<div class="listing-page">
+    <div class="container py-4">
+        <nav class="breadcrumb-premium mb-4">
+            <a asp-page="/Index"><i class="fas fa-home"></i> Trang chủ</a>
+            <span>/</span>
+            <span>So sánh xe</span>
+        </nav>
+
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Đối chiếu</p>
+            <h2 class="section-heading text-center">So sánh dòng xe</h2>
+            <p class="section-desc mx-auto text-center">Chọn tối đa 3 dòng xe để so sánh thông số</p>
+        </div>
+
+        @if (!Model.DongXeList.Any())
+        {
+            <div class="text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-balance-scale"></i></div>
+                <h4 style="color: var(--brand-white);">Chưa có xe nào</h4>
+                <p style="color: rgba(255,255,255,0.4);">Vui lòng thêm xe từ danh sách showroom.</p>
+                <a asp-page="/Cars" class="btn-premium btn-premium-solid mt-3 d-inline-flex">
+                    <i class="fas fa-car me-2"></i> Xem showroom
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mb-4">
+                <form method="get" class="row justify-content-center g-2">
+                    <div class="col-auto">
+                        <select name="id1" class="form-control">
+                            <option value="">-- Chọn xe 1 --</option>
+                            @foreach (var d in Model.AllCars)
+                            {
+                                <option value="@d.MaDong" selected="@(Model.Id1 == d.MaDong)">@d.TenDong</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <select name="id2" class="form-control">
+                            <option value="">-- Chọn xe 2 --</option>
+                            @foreach (var d in Model.AllCars)
+                            {
+                                <option value="@d.MaDong" selected="@(Model.Id2 == d.MaDong)">@d.TenDong</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <select name="id3" class="form-control">
+                            <option value="">-- Chọn xe 3 --</option>
+                            @foreach (var d in Model.AllCars)
+                            {
+                                <option value="@d.MaDong" selected="@(Model.Id3 == d.MaDong)">@d.TenDong</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn-premium btn-premium-solid" style="padding: 0.5rem 1.5rem;">
+                            <i class="fas fa-balance-scale me-1"></i> So sánh
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            if (Model.DongXeList.Count >= 2)
+            {
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <th style="padding: 1rem; text-align: left; color: rgba(255,255,255,0.5); font-family: var(--font-title); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; width: 150px;">Thông số</th>
+                                @foreach (var d in Model.DongXeList)
+                                {
+                                    <th style="padding: 1rem; text-align: center;">
+                                        <div style="font-family: var(--font-title); font-size: 1rem; font-weight: 700; color: var(--brand-white);">@d.TenDong</div>
+                                        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">@d.HangXe?.TenHang</div>
+                                        <a asp-page="/Details" asp-route-id="@d.MaDong" class="btn-premium btn-premium-outline" style="padding: 0.3rem 1rem; font-size: 0.55rem; margin-top: 0.5rem; display: inline-flex;">
+                                            Chi tiết
+                                        </a>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 0.8rem 1rem; color: rgba(255,255,255,0.4); font-size: 0.82rem;">Kiểu dáng</td>
+                                @foreach (var d in Model.DongXeList)
+                                {
+                                    <td style="padding: 0.8rem 1rem; text-align: center; color: var(--brand-white); font-weight: 500; font-size: 0.88rem;">@d.KieuDang</td>
+                                }
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (Model.DongXeList.Count == 1)
+            {
+                <div class="text-center py-4">
+                    <p style="color: rgba(255,255,255,0.5);">Chọn thêm ít nhất 1 xe nữa để so sánh.</p>
+                </div>
+            }
+        }
+    </div>
+</div>

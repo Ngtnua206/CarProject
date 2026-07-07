@@ -1,0 +1,53 @@
+@page
+@model CarProject.Pages.Admin.LichHen.IndexModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Quản lý Lịch Hẹn Lái Thử</h2>
+                <a asp-page="Create" class="btn btn-primary">+ Thêm Lịch Hẹn</a>
+            </div>
+
+            @if (Model.LichHenList.Count == 0)
+            {
+                <div class="alert alert-info">Không có lịch hẹn nào.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Khách Hàng</th>
+                            <th>Dòng Xe</th>
+                            <th>Chi Nhánh</th>
+                            <th>Ngày Hẹn</th>
+                            <th>Giờ Hẹn</th>
+                            <th>Trạng Thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var l in Model.LichHenList)
+                        {
+                            <tr>
+                                <td>@l.MaLichHen</td>
+                                <td>@l.KhachHang?.TenDangNhap</td>
+                                <td>@l.DongXe?.TenDong</td>
+                                <td>@l.ChiNhanh?.TenChiNhanh</td>
+                                <td>@l.NgayHen.ToString("dd/MM/yyyy")</td>
+                                <td>@l.GioHen</td>
+                                <td>@l.TrangThai</td>
+                                <td>
+                                    <a asp-page="Edit" asp-route-id="@l.MaLichHen" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a asp-page="Delete" asp-route-id="@l.MaLichHen" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

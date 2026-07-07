@@ -1,0 +1,149 @@
+@page
+@model CarProject.Pages.CarsModel
+
+@{
+    ViewData["Title"] = "Showroom - Mercedes-Benz";
+    var carIconMap = new Dictionary<string, string>
+    {
+        {"Toyota Camry", "\U0001f697"}, {"Toyota Hilux", "\U0001f699"}, {"Honda Civic", "\U0001f697"},
+        {"Honda Pilot", "\U0001f699"}, {"Ford Explorer", "\U0001f699"}, {"BMW 3 Series", "\U0001f697"},
+        {"VinFast Lux SA", "\U0001f699"}, {"VinFast Fadil", "\U0001f695"}
+    };
+    var carBgList = new List<string>
+    {
+        "#050505", "#0a0a0a", "#0f0f0f", "#080808", "#070707", "#0c0c0c"
+    };
+    var bodyTypes = Model.DongXeList.Select(d => d.KieuDang).Distinct().ToList();
+}
+
+<div class="listing-page">
+    <div class="container py-4">
+        <nav class="breadcrumb-premium">
+            <a asp-page="/Index"><i class="fas fa-home"></i> Trang chủ</a>
+            <span>/</span>
+            <span>Showroom</span>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3">
+                <div class="filter-sidebar">
+                    <h6><i class="fas fa-sliders-h me-2"></i> Bộ lọc</h6>
+
+                    <form method="get" id="filterForm">
+                        <div class="search-box">
+                            <i class="fas fa-search" style="color: rgba(255,255,255,0.3);"></i>
+                            <input type="text" name="Search" value="@Model.Search" placeholder="Tìm kiếm xe..." />
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-label">Hãng xe</span>
+                            @foreach (var brand in Model.HangXeList)
+                            {
+                                <label>
+                                    <input type="radio" name="Brand" value="@brand.MaHang"
+                                           onchange="document.getElementById('filterForm').submit()"
+                                           checked="@(Model.Brand == brand.MaHang.ToString())" />
+                                    @brand.TenHang
+                                </label>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Brand))
+                            {
+                                <a asp-page="/Cars" class="clear-filter">Xóa lọc</a>
+                            }
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-label">Kiểu dáng</span>
+                            @foreach (var type in bodyTypes)
+                            {
+                                <label>
+                                    <input type="radio" name="BodyType" value="@type"
+                                           onchange="document.getElementById('filterForm').submit()"
+                                           checked="@(Model.BodyType == type)" />
+                                    @type
+                                </label>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Brand) || !string.IsNullOrEmpty(Model.BodyType))
+                        {
+                            <a asp-page="/Cars" class="btn-premium btn-premium-outline" style="width: 100%; justify-content: center; padding: 0.5rem; font-size: 0.65rem;">
+                                <i class="fas fa-times-circle"></i> Xóa bộ lọc
+                            </a>
+                        }
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="listing-header">
+                    <span class="result-count"><strong>@Model.TotalCount</strong> xe được tìm thấy</span>
+                    <div class="sort-group">
+                        <label>Sắp xếp:</label>
+                        <select onchange="window.location.href='?sort='+this.value">
+                            <option value="">Mặc định</option>
+                            <option value="name_asc" selected="@(Model.Sort == "name_asc")">Tên A-Z</option>
+                            <option value="name_desc" selected="@(Model.Sort == "name_desc")">Tên Z-A</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (!Model.DongXeList.Any())
+                {
+                    <div class="text-center py-5">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-search"></i></div>
+                        <h4 style="color: var(--brand-white);">Không tìm thấy xe</h4>
+                        <p style="color: rgba(255,255,255,0.4);">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                    </div>
+                }
+
+                <div class="car-grid">
+                    @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
+                    {
+                        var delay = (d.idx % 4) * 0.08;
+                        var bg = carBgList[d.item.MaDong % carBgList.Count];
+                        var brandInfo = d.item.HangXe;
+                        var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
+                        <div class="car-card-premium anim-fade-up" style="animation-delay: @(delay)s">
+                            <div class="card-image" style="background: @bg;">
+                                @if (brandInfo != null)
+                                {
+                                    <span class="brand-tag">@brandInfo.TenHang</span>
+                                }
+                                <span class="card-badge">@d.item.KieuDang</span>
+                                <div class="card-actions">
+                                    <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="action-btn" title="Chi tiết">
+                                        <i class="fas fa-info"></i>
+                                    </a>
+                                    <a asp-page="/Viewer360" asp-route-id="@d.item.MaDong" class="action-btn" title="Xem 360\u00b0">
+                                        <i class="fas fa-sync"></i>
+                                    </a>
+                                </div>
+                                <span class="car-icon">@carIcon</span>
+                            </div>
+                            <div class="card-body">
+                                <span class="model-series">@(brandInfo?.TenHang ?? "")</span>
+                                <h5>@d.item.TenDong</h5>
+                                <div class="quick-specs">
+                                    <span>Kiểu dáng <strong>@d.item.KieuDang</strong></span>
+                                    <span>@(brandInfo?.QuocGia ?? "")</span>
+                                </div>
+                                <div class="price-row">
+                                    <div>
+                                        <div class="price-label">Giá bán lẻ đề xuất</div>
+                                        <div class="price-value">Liên hệ</div>
+                                    </div>
+                                    <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
+                                        Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

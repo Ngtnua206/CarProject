@@ -1,0 +1,55 @@
+@page
+@model CarProject.Pages.Admin.ThongKe.IndexModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Quản lý Thống Kê Tổng Hợp</h2>
+                <a asp-page="Create" class="btn btn-primary">+ Thêm Thống Kê</a>
+            </div>
+
+            @if (Model.ThongKeList.Count == 0)
+            {
+                <div class="alert alert-info">Không có thống kê nào.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mã TK</th>
+                            <th>Kỳ báo cáo</th>
+                            <th>Chi nhánh</th>
+                            <th>Doanh thu</th>
+                            <th>Xe đã bán</th>
+                            <th>Lượt xem</th>
+                            <th>Lượt lái thử</th>
+                            <th>Xe bán chạy</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tk in Model.ThongKeList)
+                        {
+                            <tr>
+                                <td>@tk.MaThongKe</td>
+                                <td>@tk.KyBaoCao</td>
+                                <td>@tk.ChiNhanh?.TenChiNhanh</td>
+                                <td>@tk.TongDoanhThu.ToString("N0")</td>
+                                <td>@tk.TongSoXeDaBan</td>
+                                <td>@tk.TongLuotXemWeb</td>
+                                <td>@tk.TongLuotLaiThu</td>
+                                <td>@tk.DongXeBanChay?.TenDong</td>
+                                <td>
+                                    <a asp-page="Edit" asp-route-id="@tk.MaThongKe" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a asp-page="Delete" asp-route-id="@tk.MaThongKe" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,267 @@
+@page
+@model CarProject.Pages.IndexModel
+
+@{
+    ViewData["Title"] = "Mercedes-Benz Showroom - Luxury Cars";
+    var brandGradients = new Dictionary<string, string>
+    {
+        {"Toyota", "linear-gradient(135deg, #e2361c, #b82a12)"},
+        {"Honda", "linear-gradient(135deg, #0072b7, #004e80)"},
+        {"Ford", "linear-gradient(135deg, #1a3a5c, #0f2740)"},
+        {"BMW", "linear-gradient(135deg, #1a6fb5, #0e4d80)"},
+        {"Vinfast", "linear-gradient(135deg, #003d7a, #00264d)"}
+    };
+    var carBgList = new List<string>
+    {
+        "#050505", "#0a0a0a", "#0f0f0f", "#080808", "#070707", "#0c0c0c"
+    };
+    var carIconMap = new Dictionary<string, string>
+    {
+        {"Toyota Camry", "\U0001f697"}, {"Toyota Hilux", "\U0001f699"}, {"Honda Civic", "\U0001f697"},
+        {"Honda Pilot", "\U0001f699"}, {"Ford Explorer", "\U0001f699"}, {"BMW 3 Series", "\U0001f697"},
+        {"VinFast Lux SA", "\U0001f699"}, {"VinFast Fadil", "\U0001f695"}
+    };
+    var testimonials = new[]
+    {
+        new { Name = "Nguyễn Văn Hải", Role = "Chủ doanh nghiệp", Text = "Chất lượng phục vụ tại showroom cực kỳ chuyên nghiệp. Quy trình bàn giao chiếc S-Class sang trọng vượt ngoài kỳ vọng. Chắc chắn tôi sẽ tiếp tục đồng hành." },
+        new { Name = "Phạm Thu Trang", Role = "Nhà thiết kế thời trang", Text = "Chiếc EQS mang lại một trải nghiệm di chuyển hoàn toàn khác biệt. Êm ái, hiện đại và tràn ngập công nghệ tương lai. Đội ngũ kỹ thuật hỗ trợ rất tận tình." },
+        new { Name = "Lê Hoàng Nam", Role = "CEO Công nghệ", Text = "Tôi có thể chọn phối màu và tùy chọn phù hợp trước khi đến đại lý lái thử thực tế. Dịch vụ tư vấn chuyên nghiệp và tận tâm." },
+    };
+    var featuredCars = Model.DongXeList.Take(3).ToList();
+}
+
+<!-- Hero -->
+<section class="hero-premium">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="hero-subtitle-top anim-fade-up">Mercedes-Benz Luxury Experience</p>
+                <h1 class="hero-title anim-fade-up delay-1">
+                    The Best<br>
+                    <span class="highlight">Or Nothing.</span>
+                </h1>
+                <p class="hero-desc anim-fade-up delay-2">
+                    Trải nghiệm chuẩn mực di chuyển thượng lưu. Khám phá các dòng xe đẳng cấp dẫn đầu công nghệ từ Mercedes-Benz.
+                </p>
+                <div class="hero-actions anim-fade-up delay-3">
+                    <a asp-page="/Cars" class="btn-premium btn-premium-solid">
+                        <i class="fas fa-search"></i> Khám phá ngay
+                    </a>
+                    <a asp-page="/TestDrive" class="btn-premium btn-premium-outline">
+                        <i class="fas fa-calendar-check"></i> Đặt lịch lái thử
+                    </a>
+                </div>
+                <div class="hero-stats anim-fade-up delay-4">
+                    <div class="stat">
+                        <h3>@Model.TotalBrands</h3>
+                        <p>Thương hiệu</p>
+                    </div>
+                    <div class="stat">
+                        <h3>@Model.TotalModels</h3>
+                        <p>Dòng xe</p>
+                    </div>
+                    <div class="stat">
+                        <h3>@Model.TotalVersions</h3>
+                        <p>Phiên bản</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block anim-fade-up delay-2 text-center">
+                <div style="font-size: 14rem; line-height: 1; user-select: none; filter: drop-shadow(0 40px 120px rgba(192,192,192,0.08));">
+                    <svg viewBox="0 0 200 100" style="width: 100%; max-width: 500px; opacity: 0.15;">
+                        <circle cx="100" cy="50" r="46" stroke="currentColor" stroke-width="1.5" fill="none" />
+                        <polygon points="100,50 100,15 95,48" fill="currentColor" opacity="0.4" />
+                        <polygon points="100,50 100,15 105,48" fill="currentColor" opacity="0.8" />
+                        <polygon points="100,50 130,68 122,59" fill="currentColor" opacity="0.8" />
+                        <polygon points="100,50 130,68 126,73" fill="currentColor" opacity="0.4" />
+                        <polygon points="100,50 70,68 74,73" fill="currentColor" opacity="0.8" />
+                        <polygon points="100,50 70,68 78,59" fill="currentColor" opacity="0.4" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brands -->
+<section class="section-premium section-premium-alt reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Đối tác toàn cầu</p>
+            <h2 class="section-heading text-center">Thương hiệu danh tiếng</h2>
+            <p class="section-desc mx-auto text-center">Hợp tác với những nhà sản xuất ô tô hàng đầu thế giới</p>
+        </div>
+        <div class="brand-grid">
+            @foreach (var brand in Model.HangXeList)
+            {
+                var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
+                <div class="brand-item reveal">
+                    <div class="brand-letter" style="background: @grad;">@brand.TenHang[0]</div>
+                    <h6>@brand.TenHang</h6>
+                    <p>@brand.QuocGia</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Cars -->
+<section class="section-premium reveal">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <p class="section-label">Kiệt tác cơ khí</p>
+                <h2 class="section-heading">Dòng xe nổi bật</h2>
+            </div>
+            <a asp-page="/Cars" style="font-family: var(--font-title); font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--brand-silver); text-decoration: none; border-bottom: 1px solid var(--brand-silver); padding-bottom: 2px; transition: all 0.3s;">
+                Xem tất cả xe <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
+            </a>
+        </div>
+
+        @if (!Model.DongXeList.Any())
+        {
+            <div class="text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-car"></i></div>
+                <h4 style="color: var(--brand-white);">Chưa có xe nào</h4>
+                <p style="color: rgba(255,255,255,0.4);">Danh sách xe đang được cập nhật.</p>
+            </div>
+        }
+
+        <div class="car-grid">
+            @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
+            {
+                var delay = (d.idx % 4) * 0.1;
+                var bg = carBgList[d.item.MaDong % carBgList.Count];
+                var brandInfo = d.item.HangXe;
+                var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
+                <div class="car-card-premium reveal" style="transition-delay: @(delay)s">
+                    <div class="card-image" style="background: @bg;">
+                        @if (brandInfo != null)
+                        {
+                            <span class="brand-tag">@brandInfo.TenHang</span>
+                        }
+                        <span class="card-badge">@d.item.KieuDang</span>
+                        <span class="car-icon">@carIcon</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="model-series">@(brandInfo?.TenHang ?? "")</span>
+                        <h5>@d.item.TenDong</h5>
+                        <div class="quick-specs">
+                            <span>Kiểu dáng <strong>@d.item.KieuDang</strong></span>
+                            <span>@(brandInfo?.QuocGia ?? "")</span>
+                        </div>
+                        <div class="price-row">
+                            <div>
+                                <div class="price-label">Giá bán lẻ đề xuất</div>
+                                <div class="price-value">Liên hệ</div>
+                            </div>
+                            <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
+                                Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Brand Story -->
+<section class="section-premium section-premium-alt reveal" style="position: relative; overflow: hidden;">
+    <div style="position: absolute; inset: 0; opacity: 0.08; background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(192,192,192,0.08) 0%, transparent 60%);"></div>
+    <div class="container position-relative">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="reveal" style="background: var(--brand-gray); border: 1px solid rgba(255,255,255,0.05); padding: 3rem;">
+                    <p class="section-label">Di sản</p>
+                    <h2 class="section-heading" style="font-size: 2rem;">Đẳng cấp xe hơi Đức</h2>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.8; margin-bottom: 1.5rem;">
+                        Với hơn 130 năm lịch sử, Mercedes-Benz là biểu tượng của sự sang trọng, đổi mới công nghệ và đẳng cấp vượt thời gian. Mỗi chiếc xe ra đời là một kiệt tác của kỹ thuật và nghệ thuật chế tác.
+                    </p>
+                    <a asp-page="/About" class="btn-premium btn-premium-outline" style="padding: 0.7rem 2rem;">
+                        Tìm hiểu thêm <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="reveal" style="transition-delay: 0s; background: var(--brand-gray); border: 1px solid rgba(255,255,255,0.05); padding: 2rem; text-align: center;">
+                        <div style="font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; color: var(--brand-white);">130+</div>
+                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Năm lịch sử</div>
+                    </div>
+                    <div class="reveal" style="transition-delay: 0.1s; background: var(--brand-gray); border: 1px solid rgba(255,255,255,0.05); padding: 2rem; text-align: center;">
+                        <div style="font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; color: var(--brand-white);">50+</div>
+                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Quốc gia</div>
+                    </div>
+                    <div class="reveal" style="transition-delay: 0.2s; background: var(--brand-gray); border: 1px solid rgba(255,255,255,0.05); padding: 2rem; text-align: center;">
+                        <div style="font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; color: var(--brand-white);">5,000+</div>
+                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Khách hàng</div>
+                    </div>
+                    <div class="reveal" style="transition-delay: 0.3s; background: var(--brand-gray); border: 1px solid rgba(255,255,255,0.05); padding: 2rem; text-align: center;">
+                        <div style="font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; color: var(--brand-white);">100%</div>
+                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Hài lòng</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Us -->
+<section class="section-premium reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Cam kết</p>
+            <h2 class="section-heading text-center">Tại sao chọn chúng tôi?</h2>
+        </div>
+        <div class="why-grid">
+            <div class="why-item reveal" style="transition-delay: 0s;">
+                <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                <h5>Chất lượng đảm bảo</h5>
+                <p>Xe chính hãng 100% từ nhà sản xuất, bảo hành toàn diện, dịch vụ hậu mãi chu đáo.</p>
+            </div>
+            <div class="why-item reveal" style="transition-delay: 0.1s;">
+                <div class="icon"><i class="fas fa-tag"></i></div>
+                <h5>Giá tốt nhất</h5>
+                <p>Cam kết giá cạnh tranh, nhiều ưu đãi đặc biệt và hỗ trợ trả góp lãi suất thấp.</p>
+            </div>
+            <div class="why-item reveal" style="transition-delay: 0.2s;">
+                <div class="icon"><i class="fas fa-headset"></i></div>
+                <h5>Hỗ trợ 24/7</h5>
+                <p>Đội ngũ tư vấn chuyên nghiệp, hỗ trợ khách hàng mọi lúc mọi nơi.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section-premium section-premium-alt reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-label justify-content-center">Khách hàng nói gì</p>
+            <h2 class="section-heading text-center">Cảm nhận từ khách hàng</h2>
+        </div>
+        <div class="row g-4">
+            @foreach (var t in testimonials.Select((item, idx) => new { item, idx }))
+            {
+                <div class="col-md-4 reveal" style="transition-delay: @(t.idx * 0.1)s">
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            @for (int i = 0; i < 5; i++) { <i class="fas fa-star"></i> }
+                        </div>
+                        <p>"@t.item.Text"</p>
+                        <div class="author">
+                            <div class="avatar"><i class="fas fa-user"></i></div>
+                            <div class="info">
+                                <strong>@t.item.Name</strong>
+                                <span>@t.item.Role</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

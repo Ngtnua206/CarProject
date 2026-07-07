@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mercedes-Benz Showroom</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CarProject.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-premium">
+            <div class="container">
+                <a class="navbar-brand" asp-page="/Index">
+                    <span class="brand-icon">
+                        <svg viewBox="0 0 100 100" fill="currentColor">
+                            <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="2" fill="none" />
+                            <polygon points="50,50 50,15 45,48" fill="currentColor" opacity="0.4" />
+                            <polygon points="50,50 50,15 55,48" fill="currentColor" />
+                            <polygon points="50,50 80,68 72,59" fill="currentColor" />
+                            <polygon points="50,50 80,68 76,73" fill="currentColor" opacity="0.4" />
+                            <polygon points="50,50 20,68 24,73" fill="currentColor" />
+                            <polygon points="50,50 20,68 28,59" fill="currentColor" opacity="0.4" />
+                        </svg>
+                    </span>
+                    Mercedes-Benz
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav mx-auto gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Cars">Showroom</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Compare">So sánh</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/TestDrive">Lái thử</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/About">Giới thiệu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Contact">Liên hệ</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center gap-2">
+                        @{
+                            var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("UserName"));
+                            var userRole = Context.Session.GetString("UserRole");
+                            var userName = Context.Session.GetString("TenHienThi") ?? Context.Session.GetString("UserName") ?? "";
+                            var avatarUrl = Context.Session.GetString("AvatarUrl");
+                        }
+                        @if (isLoggedIn)
+                        {
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.35rem 0.75rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 50px;">
+                                    <div style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--brand-light-gray); flex-shrink: 0;">
+                                        @if (!string.IsNullOrEmpty(avatarUrl))
+                                        {
+                                            <img class="navbar-avatar-img" src="@avatarUrl?v=@DateTime.Now.Ticks" alt="" style="width: 100%; height: 100%; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-user" style="font-size: 0.8rem; color: var(--brand-silver);"></i>
+                                        }
+                                    </div>
+                                    <span class="user-name">@userName</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 220px;">
+                                    <li><a class="dropdown-item" asp-page="/Profile"><i class="fas fa-user-cog me-2"></i> Tài khoản</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Orders/DepositForm"><i class="fas fa-credit-card me-2"></i> Đặt cọc</a></li>
+                                    <li><a class="dropdown-item" asp-page="/TestDrive"><i class="fas fa-calendar-check me-2"></i> Lái thử</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Compare"><i class="fas fa-balance-scale me-2"></i> So sánh</a></li>
+                                    @if (userRole == "Admin")
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/Index"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/HangXe/Index"><i class="fas fa-car me-2"></i> Hãng xe</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/DongXe/Index"><i class="fas fa-car-side me-2"></i> Dòng xe</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/PhienBan/Index"><i class="fas fa-tag me-2"></i> Phiên bản</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/Users/Index"><i class="fas fa-users me-2"></i> Người dùng</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/DonCoc/Index"><i class="fas fa-file-invoice me-2"></i> Đơn cọc</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/LichHen/Index"><i class="fas fa-calendar-alt me-2"></i> Lịch hẹn</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/HoaDon/Index"><i class="fas fa-file-invoice-dollar me-2"></i> Hóa đơn</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/ChiNhanh/Index"><i class="fas fa-building me-2"></i> Chi nhánh</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/KhuyenMai/Index"><i class="fas fa-gift me-2"></i> Khuyến mãi</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/Banner/Index"><i class="fas fa-image me-2"></i> Banner</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/KenhTuVan/Index"><i class="fas fa-headset me-2"></i> Kênh tư vấn</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/ThongKe/Index"><i class="fas fa-chart-bar me-2"></i> Thống kê</a></li>
+                                        <li><a class="dropdown-item admin-link" asp-page="/Admin/Logs/Index"><i class="fas fa-history me-2"></i> Nhật ký</a></li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item logout-link" asp-page="/Account/Logout"><i class="fas fa-sign-out-alt me-2"></i> Đăng xuất</a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="nav-link btn-nav-account" asp-page="/Account/Login">
+                                <i class="far fa-user me-1"></i> Tài khoản
+                            </a>
+                            <a class="nav-link btn-nav-admin" asp-page="/Account/Register">
+                                <i class="fas fa-user-plus me-1"></i> Đăng ký
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-transition">
+        @RenderBody()
+    </main>
+
+    <!-- Floating Contact Buttons -->
+    <div class="contact-floating">
+        <a href="#" class="btn-contact btn-messenger" title="Messenger">
+            <i class="fab fa-facebook-messenger"></i>
+            <span class="tooltip-text">Chat Messenger</span>
+        </a>
+        <a href="#" class="btn-contact btn-zalo" title="Zalo">
+            <i class="fas fa-comment-dots"></i>
+            <span class="tooltip-text">Chat Zalo</span>
+        </a>
+        <a href="tel:19006886" class="btn-contact btn-phone" title="Gọi ngay">
+            <i class="fas fa-phone-alt"></i>
+            <span class="tooltip-text">1800 6886</span>
+        </a>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-premium" id="toastContainer"></div>
+
+    <footer class="footer-premium">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <a class="footer-brand" asp-page="/Index">
+                        <span class="icon">
+                            <svg viewBox="0 0 100 100" fill="currentColor">
+                                <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="2" fill="none" />
+                                <polygon points="50,50 50,15 45,48" fill="currentColor" opacity="0.4" />
+                                <polygon points="50,50 50,15 55,48" fill="currentColor" />
+                                <polygon points="50,50 80,68 72,59" fill="currentColor" />
+                                <polygon points="50,50 80,68 76,73" fill="currentColor" opacity="0.4" />
+                                <polygon points="50,50 20,68 24,73" fill="currentColor" />
+                                <polygon points="50,50 20,68 28,59" fill="currentColor" opacity="0.4" />
+                            </svg>
+                        </span>
+                        Mercedes-Benz
+                    </a>
+                    <p class="footer-desc">Showroom phân phối Mercedes-Benz chính hãng hàng đầu tại Việt Nam. Mang các dòng xe hạng sang đột phá công nghệ và thiết kế kiêu hãnh tới khách hàng Việt.</p>
+                    <div class="social-links">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <h6>Dòng xe</h6>
+                    <p><a asp-page="/Cars">Showroom</a></p>
+                    <p><a asp-page="/Compare">So sánh xe</a></p>
+                    <p><a asp-page="/Viewer360">Xem 360°</a></p>
+                </div>
+                <div class="col-lg-3">
+                    <h6>Dịch vụ & Tiện ích</h6>
+                    <p><a asp-page="/TestDrive">Đăng ký lái thử</a></p>
+                    <p><a asp-page="/Profile">Lịch sử mua xe</a></p>
+                    <p><a asp-page="/Cars">Chương trình ưu đãi</a></p>
+                </div>
+                <div class="col-lg-3">
+                    <h6>Hệ thống Showroom</h6>
+                    <p><i class="fas fa-map-marker-alt me-2" style="color: var(--brand-silver);"></i> 208 Nguyễn Hữu Cảnh, P.22, Q. Bình Thạnh, TP.HCM</p>
+                    <p><i class="fas fa-map-marker-alt me-2" style="color: var(--brand-silver);"></i> Lô X7, Đường Lê Đức Thọ, Nam Từ Liêm, Hà Nội</p>
+                    <p><i class="fas fa-phone-alt me-2" style="color: var(--brand-silver);"></i> Hotline: 1800 6886 (Miễn phí)</p>
+                    <p><i class="far fa-envelope me-2" style="color: var(--brand-silver);"></i> contact@mercedes-showroom.vn</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; @DateTime.Now.Year Mercedes-Benz Showroom Auto. Tất cả quyền được bảo lưu.
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

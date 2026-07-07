@@ -1,0 +1,129 @@
+@page "{id:int}"
+@model CarProject.Pages.Orders.DepositFormModel
+
+@{
+    ViewData["Title"] = "Đặt cọc xe";
+}
+
+<div class="deposit-page">
+    <div class="container py-4">
+        <nav class="breadcrumb-premium mb-4">
+            <a asp-page="/Index"><i class="fas fa-home"></i> Trang chủ</a>
+            <span>/</span>
+            <a asp-page="/Cars">Showroom</a>
+            <span>/</span>
+            <a asp-page="/Details" asp-route-id="@Model.PhienBan?.MaDong">Chi tiết</a>
+            <span>/</span>
+            <span>Đặt cọc</span>
+        </nav>
+
+        @if (Model.PhienBan == null)
+        {
+            <div class="text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-exclamation-triangle"></i></div>
+                <h4 style="color: var(--brand-white);">Không tìm thấy phiên bản xe</h4>
+                <a asp-page="/Index" class="btn-premium btn-premium-solid mt-3 d-inline-flex"><i class="fas fa-arrow-left"></i> Quay lại</a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="deposit-card">
+                        <div style="background: var(--brand-black); padding: 2rem; text-align: center;">
+                            <i class="fas fa-car" style="font-size: 3rem; opacity: 0.15; color: var(--brand-white);"></i>
+                        </div>
+                        <div style="padding: 1.5rem 0 0;">
+                            <h4>@Model.PhienBan.TenPhienBan</h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
+                                    <span style="color: rgba(255,255,255,0.4);">Dòng xe</span>
+                                    <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.DongXe?.TenDong</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
+                                    <span style="color: rgba(255,255,255,0.4);">Màu sắc</span>
+                                    <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.MauSac</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
+                                    <span style="color: rgba(255,255,255,0.4);">Động cơ</span>
+                                    <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.DongCo</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.82rem;">
+                                    <span style="color: rgba(255,255,255,0.4);">Hộp số</span>
+                                    <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.HopSo</span>
+                                </div>
+                            </div>
+                            <div style="font-family: var(--font-title); font-size: 1.5rem; font-weight: 700; color: var(--brand-white);">
+                                @{
+                                    var price = Model.PhienBan.GiaNiemYet >= 1_000_000_000
+                                        ? $"{Model.PhienBan.GiaNiemYet / 1_000_000_000:N1} tỷ"
+                                        : $"{Model.PhienBan.GiaNiemYet / 1_000_000:N0} triệu";
+                                }
+                                @price <small style="font-size: 0.78rem; font-weight: 400; color: rgba(255,255,255,0.4);">VNĐ</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="deposit-card">
+                        <h4>Thông tin đặt cọc</h4>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-bottom: 1.5rem;">Vui lòng điền đầy đủ thông tin bên dưới</p>
+
+                        <form method="post">
+                            <input type="hidden" asp-for="DepositData.MaPhienBan" value="@Model.PhienBan.MaPhienBan" />
+
+                            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                            {
+                                <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 0.75rem 1rem; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                                    <i class="fas fa-check-circle me-1"></i> @Model.SuccessMessage
+                                </div>
+                            }
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="DepositData.HoTen" class="form-label">Họ tên</label>
+                                    <input asp-for="DepositData.HoTen" class="form-control" required placeholder="Nhập họ tên" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DepositData.SoDienThoai" class="form-label">Số điện thoại</label>
+                                    <input asp-for="DepositData.SoDienThoai" class="form-control" required placeholder="Nhập số điện thoại" />
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="DepositData.DiaChi" class="form-label">Địa chỉ</label>
+                                    <input asp-for="DepositData.DiaChi" class="form-control" required placeholder="Nhập địa chỉ" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DepositData.SoTienCoc" class="form-label">Số tiền cọc (VNĐ)</label>
+                                    <input asp-for="DepositData.SoTienCoc" type="number" class="form-control" required placeholder="VD: 50,000,000" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DepositData.PhuongThucThanhToan" class="form-label">Phương thức thanh toán</label>
+                                    <select asp-for="DepositData.PhuongThucThanhToan" class="form-control" required>
+                                        <option value="">-- Chọn --</option>
+                                        <option value="Tiền mặt">Tiền mặt</option>
+                                        <option value="Chuyển khoản">Chuyển khoản</option>
+                                        <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="DepositData.GhiChu" class="form-label">Ghi chú</label>
+                                    <textarea asp-for="DepositData.GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-3 mt-4">
+                                <button type="submit" class="btn-premium btn-premium-solid" style="flex: 1; justify-content: center; padding: 0.7rem;">
+                                    <i class="fas fa-check"></i> Xác nhận đặt cọc
+                                </button>
+                                <a asp-page="/Details" asp-route-id="@Model.PhienBan.MaDong" class="btn-premium btn-premium-outline" style="flex: 0 0 auto; padding: 0.7rem 1.5rem;">
+                                    Hủy
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

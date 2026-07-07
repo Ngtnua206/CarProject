@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Aspire AppHost",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-apphost",
+            "postDebugTask": "kill-dcp",
+            "program": "${workspaceFolder}/CarProject/CarProject.AppHost/bin/Debug/net10.0/CarProject.AppHost.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/CarProject/CarProject.AppHost",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOTNET_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:15119",
+                "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19080",
+                "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "http://localhost:18202",
+                "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20160",
+                "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
+            },
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "CarProject (http)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-carproject",
+            "program": "${workspaceFolder}/CarProject/CarProject/bin/Debug/net10.0/CarProject.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/CarProject/CarProject",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://0.0.0.0:5001"
+            },
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Aspire + CarProject",
+            "configurations": ["Aspire AppHost", "CarProject (http)"],
+            "preLaunchTask": "kill-dcp"
+        }
+    ]
+}
