@@ -1,187 +1,100 @@
-# Hướng Dẫn Setup & Chạy Webshop Bán Hàng Ô Tô
+# Hướng Dẫn Setup & Chạy
 
-## 1. CHUẨN BỊ DATABASE (Docker SQL Server)
+## 1. Yêu Cầu
 
-### 1.1. Cài đặt Docker
-- Tải Docker Desktop từ: https://www.docker.com/get-started
-- Cài đặt trên Windows (chọn WSL2 backend)
+- Docker Desktop (WSL2 backend)
+- .NET SDK 10.0+
+- SQL Server Management Studio (tùy chọn)
 
-### 1.2. Khởi động SQL Server Container
-Mở PowerShell tại folder root (D:\Code\Code\WebMVC\CarProject\):
+## 2. Cấu Hình Database
+
+### 2.1. Khởi động SQL Server
+
 ```powershell
+cd CarProject
 docker compose up -d
 ```
 
-Kiểm tra container đã chạy:
-```powershell
-docker ps
+### 2.2. Tạo file appsettings.Development.json
+
+Trong thư mục `CarProject/CarProject/`, tạo file `appsettings.Development.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=CarShopDb;User Id=sa;Password=Iumaioanhh@2024;TrustServerCertificate=True;"
+  }
+}
 ```
 
-### 1.3. Kết nối từ SSMS (SQL Server Management Studio)
-- Server: `localhost,1433`
-- User: `sa`
-- Password: `Your_strong@Passw0rd` (hoặc mật khẩu bạn đặt trong docker-compose.yml)
-- Authentication: SQL Server Authentication
+> File này đã được `.gitignore`, không lo lộ mật khẩu lên GitHub.
+> Nếu SQL Server chạy trên máy khác qua Tailscale, đổi `localhost` thành IP Tailscale.
 
----
+### 2.3. (Tùy chọn) Cấu hình SMTP gửi mail xác nhận
 
-## 2. SETUP PROJECT & DATABASE MIGRATIONS
+Thêm vào `appsettings.Development.json`:
 
-### 2.1. Cài đặt dotnet-ef tool (nếu chưa có)
-```powershell
-dotnet tool install --global dotnet-ef
+```json
+{
+  "Smtp": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "UserName": "your-email@gmail.com",
+    "Password": "app-password",
+    "From": "your-email@gmail.com",
+    "EnableSsl": true
+  }
+}
 ```
 
-### 2.2. Tạo Migration
-Từ folder D:\Code\Code\WebMVC\CarProject\ chạy:
+Bỏ qua bước này nếu không cần gửi mail — đăng ký vẫn tạo tài khoản được.
+
+## 3. Database Migration
+
 ```powershell
-dotnet ef migrations add InitialCreate --project CarProject
+dotnet ef database update --project CarProject\CarProject
 ```
 
-Lệnh này sẽ tạo folder Migrations/ với các file migration.
+## 4. Chạy Ứng Dụng
 
-### 2.3. Cập nhật Database
 ```powershell
-dotnet ef database update --project CarProject
+dotnet run --project CarProject\CarProject
 ```
 
-Lệnh này sẽ:
-- Tạo database `CarShopDb` trên SQL Server
-- Chạy migration để tạo các bảng (HangXe, DongXe, PhienBanXe_SanPham, v.v.)
-- Seed dữ liệu mẫu từ DbInitializer.cs
+App chạy tại: `http://localhost:5001`
 
----
+Hoặc dùng `run.bat` (click đúp).
 
-## 3. CHẠY WEB APPLICATION
+## 5. Tài Khoản Mẫu
 
-### 3.1. Chạy từ Visual Studio
-- Mở CarProject.slnx
-- Nhấn **Ctrl+F5** (Run without Debugging) hoặc **F5** (Debug)
-- Visual Studio sẽ khởi động app tại https://localhost:5001
+| Vai trò | Tên đăng nhập | Mật khẩu |
+|---------|---------------|----------|
+| Admin   | `admin`       | `admin123` |
+| User    | `user`        | `user123` |
 
-### 3.2. Hoặc chạy từ Terminal
-```powershell
-dotnet run --project CarProject
-```
+## 6. Luồng Đăng Ký Mới
 
-Truy cập: https://localhost:5001 (hoặc http://localhost:5000)
+1. Vào `/Account/Register`
+2. Nhập email → bấm "Đăng ký với Google"
+3. Nếu email chưa tồn tại → đặt mật khẩu (tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số, ký tự đặc biệt)
+4. Submit → nhận mail xác nhận (nếu cấu hình SMTP)
+5. Click link xác nhận → đăng ký hoàn tất
+6. Nếu email đã tồn tại → redirect sang đăng nhập kèm thông báo
 
----
-
-## 4. SỬ DỤNG WEB APPLICATION
-
-### Trang Chính
-- URL: https://localhost:5001/
-- Hiển thị danh sách Dòng Xe
-
-### Trang Chi Tiết
-- URL: https://localhost:5001/Details/{MaDong}
-- Hiển thị danh sách Phiên Bản Xe của một dòng
-- Nút "Đặt Cọc" để đi tới form đặt cọc
-
-### Đặt Cọc Xe
-- URL: https://localhost:5001/Orders/DepositForm/{MaPhienBan}
-- Form điền thông tin khách hàng và tiền cọc
-- Gọi API để lưu đơn cọc
-
-### Đăng Nhập
-- URL: https://localhost:5001/Account/Login
-- **Demo accounts:**
-  - Username: `admin` / Password: `admin123`
-  - Username: `quanly1` / Password: `pass123`
-
----
-
-## 5. ADMIN PAGES (QUẢN LÝ)
-
-Sau khi đăng nhập, truy cập các trang quản lý:
-
-### Quản lý Hãng Xe (CRUD)
-- https://localhost:5001/Admin/HangXe/ - Danh sách
-- https://localhost:5001/Admin/HangXe/Create - Thêm mới
-- https://localhost:5001/Admin/HangXe/Edit/{id} - Sửa
-- https://localhost:5001/Admin/HangXe/Delete/{id} - Xóa
-
-### Quản lý Dòng Xe (CRUD)
-- https://localhost:5001/Admin/DongXe/Index - Danh sách
-- https://localhost:5001/Admin/DongXe/Create - Thêm mới
-- https://localhost:5001/Admin/DongXe/Edit/{id} - Sửa
-- https://localhost:5001/Admin/DongXe/Delete/{id} - Xóa
-
-### Quản lý Phiên Bản Xe (CRUD)
-- https://localhost:5001/Admin/PhienBan/Index - Danh sách
-- https://localhost:5001/Admin/PhienBan/Create - Thêm mới
-
-### Quản lý Quảng Cáo Banner (CRUD)
-- https://localhost:5001/Admin/Banner/Index - Danh sách
-- https://localhost:5001/Admin/Banner/Create - Thêm mới
-
----
-
-## 6. CẤU TRÚC PROJECT
+## 7. Cấu Trúc Thư Mục
 
 ```
 CarProject/
-├── Pages/
-│   ├── Index.cshtml - Trang chính (danh sách dòng xe)
-│   ├── Details.cshtml - Chi tiết dòng xe
-│   ├── Admin/
-│   │   ├── HangXe/ - Quản lý hãng xe (Index, Create, Edit, Delete)
-│   │   ├── DongXe/ - Quản lý dòng xe
-│   │   ├── PhienBan/ - Quản lý phiên bản
-│   │   └── Banner/ - Quản lý banner quảng cáo
-│   ├── Account/
-│   │   └── Login.cshtml - Trang đăng nhập
-│   └── Orders/
-│       └── DepositForm.cshtml - Form đặt cọc xe
-├── Models/
-│   ├── Entities.cs - Models cơ bản (HangXe, DongXe, PhienBanXe, TaiKhoan...)
-│   └── MoreEntities.cs - Models bổ sung (DonDatCoc, HoaDonMuaXe, ...)
-├── Data/
-│   ├── AppDbContext.cs - EF Core DbContext
-│   └── DbInitializer.cs - Seed data mẫu
-├── Program.cs - Cấu hình ứng dụng
-├── docker-compose.yml - SQL Server container config
-└── appsettings.json - Connection string
-
+├── CarProject/
+│   ├── Pages/            # Razor Pages
+│   │   ├── Account/      # Login, Register, Logout
+│   │   ├── Admin/        # CRUD các bảng
+│   │   └── Orders/       # Đặt cọc
+│   ├── Models/           # EF Core models
+│   ├── Data/             # DbContext + DbInitializer
+│   ├── Services/         # JwtService, EmailService, ActivityLogService
+│   ├── wwwroot/          # CSS, JS, lib
+│   └── appsettings.json  # Config (mật khẩu giữ)
+├── docker-compose.yml    # SQL Server container
+└── run.bat               # Click chạy
 ```
-
----
-
-## 7. TROUBLESHOOTING
-
-### Lỗi: Could not connect to SQL Server
-**Giải pháp:**
-- Kiểm tra Docker đã chạy: `docker ps`
-- Kiểm tra container name: `sqlserver-carproject`
-- Xem logs: `docker logs sqlserver-carproject`
-
-### Lỗi: Migration add failed
-**Giải pháp:**
-- Đảm bảo kết nối database OK
-- Xóa folder Migrations (nếu có) và thử lại
-
-### Lỗi: Port 1433 đã bị trùng
-**Giải pháp:**
-- Giết process cũ hoặc thay port khác trong docker-compose.yml
-- VD: "1434:1433" (client port 1434 -> container port 1433)
-
----
-
-## 8. GHI CHÚ QUAN TRỌNG
-
-⚠️ **Security Notes:**
-- Mật khẩu SA trong docker-compose là mẫu; không dùng cho production
-- Session login không mã hóa password; chỉ dùng để demo
-- Cần implement ASP.NET Identity hoặc OAuth2 cho production
-
-📝 **To-Do (Mở rộng sau):**
-- Thêm xác thực email
-- Thêm thanh toán PayPal/Stripe integration
-- Thêm admin dashboard với biểu đồ bán hàng
-- Thêm role-based authorization
-- Thêm API REST endpoints
-
----
-
-**Hỗ trợ:** Nếu gặp vấn đề, kiểm tra logs hoặc liên hệ team phát triển.
