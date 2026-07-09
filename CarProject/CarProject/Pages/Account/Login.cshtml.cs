@@ -67,11 +67,20 @@ public class LoginModel : PageModel
             return Page();
         }
 
+        if (!user.DaXacNhanEmail && !string.IsNullOrEmpty(user.MaXacNhan))
+        {
+            ErrorMessage = "Tài khoản chưa xác nhận email. Vui lòng kiểm tra hộp thư.";
+            return Page();
+        }
+
         SetSession(user);
         await _log.LogAsync("Đăng nhập thành công", $"Tài khoản \"{user.TenDangNhap}\" vai trò {user.VaiTro}");
 
         if (user.VaiTro == "Admin")
             return RedirectToPage("/Admin/Index");
+
+        if (user.VaiTro == "Quản Lý")
+            return RedirectToPage("/QuanLy/Dashboard");
 
         return RedirectToPage("/Index");
     }
@@ -87,6 +96,9 @@ public class LoginModel : PageModel
             if (Request.Query.TryGetValue("email", out var e))
                 TenDangNhap = e;
         }
+
+        if (Request.Query.ContainsKey("dangKyThanhCong"))
+            LoaiThongBao = "dangKyThanhCong";
 
         return Page();
     }
@@ -151,6 +163,12 @@ public class LoginModel : PageModel
             return Page();
         }
 
+        if (!user.DaXacNhanEmail && !string.IsNullOrEmpty(user.MaXacNhan))
+        {
+            ErrorMessage = "Tài khoản chưa xác nhận email. Vui lòng kiểm tra hộp thư.";
+            return Page();
+        }
+
         SetSession(user);
         await _log.LogAsync("Đăng nhập Google", $"Tài khoản \"{email}\"");
 
@@ -158,6 +176,9 @@ public class LoginModel : PageModel
 
         if (user.VaiTro == "Admin")
             return RedirectToPage("/Admin/Index");
+
+        if (user.VaiTro == "Quản Lý")
+            return RedirectToPage("/QuanLy/Dashboard");
 
         if (isNewUser)
             return RedirectToPage("/Profile", new { firstTime = true });

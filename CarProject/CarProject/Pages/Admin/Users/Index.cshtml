@@ -7,11 +7,6 @@
 <div class="container mt-4">
     <h2 class="mb-4"><i class="bi bi-people-fill"></i> Quản lý người dùng</h2>
 
-    @if (!string.IsNullOrEmpty(TempData["Error"]?.ToString()))
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
-
     <div class="table-responsive">
         <table class="table table-sm table-striped table-hover">
             <thead class="table-dark">
@@ -21,6 +16,7 @@
                     <th>Tên hiển thị</th>
                     <th>Email</th>
                     <th>Vai trò</th>
+                    <th>Chi nhánh</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>
@@ -28,6 +24,7 @@
             <tbody>
                 @foreach (var user in Model.Users)
                 {
+                    var showroomName = Model.UserShowroomMap.GetValueOrDefault(user.TenDangNhap);
                     <tr class="@(user.TrangThai == "Banned" ? "table-danger" : "")">
                         <td>@user.MaTaiKhoan</td>
                         <td>@user.TenDangNhap</td>
@@ -37,6 +34,31 @@
                             <span class="badge bg-@(user.VaiTro == "Admin" ? "danger" : user.VaiTro == "Quản Lý" ? "warning" : "secondary")">
                                 @user.VaiTro
                             </span>
+                        </td>
+                        <td>
+                            @if (user.VaiTro == "Quản Lý")
+                            {
+                                <form method="post" asp-page-handler="AssignShowroom" style="display:inline">
+                                    <input type="hidden" name="tenDangNhap" value="@user.TenDangNhap" />
+                                    <select name="maChiNhanh" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()" style="font-size:0.75rem;">
+                                        <option value="">— Chưa phân —</option>
+                                        @foreach (var cn in Model.DanhSachChiNhanh)
+                                        {
+                                            <option value="@cn.MaChiNhanh" selected="@(showroomName == cn.TenChiNhanh)">
+                                                @cn.TenChiNhanh
+                                            </option>
+                                        }
+                                    </select>
+                                </form>
+                            }
+                            else if (showroomName != null)
+                            {
+                                <span class="text-muted small">@showroomName</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
                         </td>
                         <td>
                             @if (user.TrangThai == "Banned")
@@ -57,7 +79,6 @@
                                         <select name="vaiTroMoi" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()" style="font-size:0.75rem;">
                                             <option value="User" selected="@(user.VaiTro == "User")">User</option>
                                             <option value="Quản Lý" selected="@(user.VaiTro == "Quản Lý")">Quản Lý</option>
-                                            <option value="Admin" selected="@(user.VaiTro == "Admin")">Admin</option>
                                         </select>
                                     </form>
                                 }
@@ -82,6 +103,10 @@
                                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Khóa tài khoản @user.TenDangNhap?')">Khóa</button>
                                         </form>
                                     }
+                                    <form method="post" asp-page-handler="Delete" style="display:inline">
+                                        <input type="hidden" name="tenDangNhap" value="@user.TenDangNhap" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Xóa HOÀN TOÀN tài khoản @user.TenDangNhap?\nTất cả dữ liệu liên quan (nhật ký, đơn cọc, lịch hẹn, banner) cũng sẽ bị xóa.\nHành động này KHÔNG THỂ hoàn tác!')">Xóa</button>
+                                    </form>
                                 }
                             </div>
                         </td>

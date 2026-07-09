@@ -43,11 +43,13 @@ public class DeleteModel : PageModel
             _db.PhienBanXe.Remove(PhienBan);
             await _db.SaveChangesAsync();
             await _log.LogAsync("Admin Xóa phiên bản", $"{ten} (ID={ma})");
+            TempData["Success"] = $"Đã xóa phiên bản \"{ten}\" thành công.";
             return RedirectToPage("Index");
         }
         catch (DbUpdateException)
         {
             ErrorMessage = $"Không thể xóa \"{ten}\" vì có đơn cọc hoặc hóa đơn liên quan. Vui lòng xóa các dữ liệu liên quan trước.";
+            TempData["Error"] = ErrorMessage;
             return Page();
         }
     }

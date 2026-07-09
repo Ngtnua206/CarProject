@@ -1,12 +1,12 @@
 # Agents Summary
 
 ## Goal
-- Build luxury car showroom website with full UI/UX + admin CRUD using ASP.NET Core / Razor Pages / SQL Server Docker, integrating friend's Mercedes-Benz React design; currently fixing avatar upload crash under Aspire and adding client-side crop feature
+- Build luxury car showroom website with full UI/UX + admin CRUD using ASP.NET Core / Razor Pages / SQL Server Docker, integrating friend's Mercedes-Benz React design; added Quản Lý role with showroom revenue dashboard + admin revenue chart (line + bar via Chart.js)
 
 ## Constraints & Preferences
 - Primary theme: Mercedes-Benz dark luxury (black/silver, glassmorphism, premium buttons)
 - Bootstrap 5 grid + custom CSS; no Tailwind
-- Session-based auth (no ASP.NET Identity); roles: Admin / User
+- Session-based auth (no ASP.NET Identity); roles: Admin / Quản Lý / User
 - SQL Server via Docker (localhost:1433, SA password `Iumaioanhh@2024`)
 - App runs on `http://0.0.0.0:5001` HTTP; accessed via LAN IP `192.168.1.5:5001`
 - Run from: `dotnet run --project CarProject\CarProject\CarProject.csproj` in `D:\Code\Code\WebMVC`
@@ -21,23 +21,27 @@
 - Created migration `AddNhatKyHeThong` for new log table
 - Created `Services/ActivityLogService.cs` (IActivityLogService + ActivityLogService) with IHttpContextAccessor
 - Registered ActivityLogService + HttpContextAccessor in Program.cs
-- Added `await _log.LogAsync(...)` to all 20 page handlers:
-  - Public: Index, Cars (with filter detail), Details (with car name), Login (success/fail), Logout, Deposit (view + submit)
-  - Admin: Dashboard, all HangXe/DongXe/PhienBan/Banner CRUD (Create/Edit/Delete + list views)
-- Created `Pages/Admin/Logs/Index.cshtml + .cs` with search/filter by action & user, paginated table view, time/user/role/action/detail/IP/path columns
+- Added `await _log.LogAsync(...)` to all page handlers
+- Created `Pages/Admin/Logs/Index.cshtml + .cs` with search/filter, paginated table
 - Updated `Pages/Admin/Index.cshtml + .cs` with TotalLogs count card + link to Logs viewer
-- Added request logging middleware in Program.cs (console output with timing)
-- Rewrote `wwwroot/css/site.css` with luxury automotive theme (CSS variables, Inter + Playfair Display fonts, animations, premium section components, glassmorphism navbar, floating contact buttons, car cards with hover effects, filter sidebar, specs table, testimonials, responsive breakpoints)
-- Rewrote `Views/Shared/_Layout.cshtml` with premium navbar (brand icon, brand-sub "Premium Showroom", uppercase nav links, outline login button), page-transition wrapper, floating contact buttons (Messenger/Zalo/Phone), dark footer with social links
-- Rewrote `Pages/Index.cshtml` luxury homepage: hero-fullscreen with overlay/stats/badge, brand grid with gradient circles, car grid with premium cards (dark image bg, badge, car emoji), testimonials section (3 cards with stars), "Tại sao chọn chúng tôi" section
-- Created `Pages/Cars.cshtml.cs` with filter query logic (search, brand filter, body type filter, sort)
-- Created `Pages/Cars.cshtml` with left filter sidebar (radio buttons for brand/body type), search box, sort dropdown, car card grid with breadcrumb
-- Updated `Pages/Details.cshtml.cs` to include HangXe navigation property
-- Rewrote `Pages/Details.cshtml` with gallery section (breadcrumb overlay, car-display icon), info panel (brand badge, version tabs, price hero with stock status, quick specs grid, CTA group), quick specs sidebar, technical specs table
-- Rewrote `Pages/Account/Login.cshtml` with premium card layout, accent button, demo credentials
-- Rewrote `Pages/Orders/DepositForm.cshtml` with 2-column layout (car info card + form card), breadcrumb
+- Added request logging middleware in Program.cs
+- Rewrote `wwwroot/css/site.css` with luxury automotive theme, premium components, animations
+- Rewrote `Views/Shared/_Layout.cshtml` with premium navbar, floating contact buttons, footer
+- Rewrote `Pages/Index.cshtml` luxury homepage: hero-fullscreen, brand grid, car grid, testimonials
+- Created `Pages/Cars.cshtml + .cs`: car listing with filter sidebar, search, sort
+- Created `Pages/Details.cshtml + .cs`: detail page with gallery, specs, CTAs
+- Rewrote `Pages/Account/Login.cshtml` with premium card layout, demo credentials
+- Rewrote `Pages/Orders/DepositForm.cshtml` with 2-column layout
 - Updated `Pages/Index.cshtml.cs` to remove BannerList (simplification)
 - Removed stale `Controllers/AccountController.cs` (moved to Razor Pages)
+- Admin avatar upload fixed via `/api/upload-avatar-admin` endpoint (session-independent)
+- User account delete with transaction-based clean up (parents: Nhật ký, Đơn cọc, Lịch hẹn, Banner)
+- TempData["Success"] + TempData["Error"] displayed on all admin CRUD pages
+- **Quản Lý role + Showroom doanh thu**:
+  - New `Pages/QuanLy/Dashboard.cshtml + .cs`: manager dashboard with assigned showroom info, daily revenue stats, 30-day line chart (Chart.js)
+  - New `Pages/Admin/ThongKe/DoanhThu.cshtml + .cs`: admin revenue page with date picker + showroom filter, daily line chart + showroom bar chart
+  - Auth middleware updated: `/QuanLy/*` requires login; `Quản Lý` role redirects to `/QuanLy/Dashboard` after login
+  - Admin sidebar + main layout dropdown updated for Quản Lý navigation
 
 ### In Progress
 - (none)

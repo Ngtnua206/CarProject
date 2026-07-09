@@ -2,7 +2,7 @@
 @model CarProject.Pages.CarsModel
 
 @{
-    ViewData["Title"] = "Showroom - Mercedes-Benz";
+    ViewData["Title"] = "Showroom - MyCar";
     var carIconMap = new Dictionary<string, string>
     {
         {"Toyota Camry", "\U0001f697"}, {"Toyota Hilux", "\U0001f699"}, {"Honda Civic", "\U0001f697"},
@@ -26,7 +26,7 @@
 
         <div class="row g-4">
             <!-- Filter Sidebar -->
-            <div class="col-lg-3">
+            <div class="col-lg-3 reveal">
                 <div class="filter-sidebar">
                     <h6><i class="fas fa-sliders-h me-2"></i> Bộ lọc</h6>
 
@@ -78,7 +78,7 @@
 
             <!-- Main Content -->
             <div class="col-lg-9">
-                <div class="listing-header">
+                <div class="listing-header reveal">
                     <span class="result-count"><strong>@Model.TotalCount</strong> xe được tìm thấy</span>
                     <div class="sort-group">
                         <label>Sắp xếp:</label>
@@ -106,7 +106,7 @@
                         var bg = carBgList[d.item.MaDong % carBgList.Count];
                         var brandInfo = d.item.HangXe;
                         var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
-                        <div class="car-card-premium anim-fade-up" style="animation-delay: @(delay)s">
+                        <div class="car-card-premium reveal" style="transition-delay: @(delay)s">
                             <div class="card-image" style="background: @bg;">
                                 @if (brandInfo != null)
                                 {

@@ -32,6 +32,7 @@ public class CreateModel : PageModel
         _db.HangXe.Add(HangXe);
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Thêm hãng xe", $"{HangXe.TenHang} ({HangXe.QuocGia})");
+        TempData["Success"] = $"Đã thêm hãng xe \"{HangXe.TenHang}\" thành công.";
         return RedirectToPage("Index");
     }
 }

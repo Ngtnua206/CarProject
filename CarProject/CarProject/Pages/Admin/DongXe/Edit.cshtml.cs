@@ -47,6 +47,7 @@ public class EditModel : PageModel
         _db.DongXe.Update(DongXe);
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Sửa dòng xe", $"{DongXe.TenDong} (ID={DongXe.MaDong})");
+        TempData["Success"] = $"Đã sửa dòng xe \"{DongXe.TenDong}\" thành công.";
         return RedirectToPage("Index");
     }
 }

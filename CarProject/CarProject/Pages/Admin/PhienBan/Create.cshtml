@@ -71,6 +71,27 @@
                     <input asp-for="PhienBan.DuongDanAnh" class="form-control" />
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="PhienBan.TrangThai" class="form-label">Trạng Thái</label>
+                            <select asp-for="PhienBan.TrangThai" class="form-control">
+                                <option value="Còn hàng">Còn hàng</option>
+                                <option value="Hết hàng">Hết hàng</option>
+                                <option value="Ngừng KD">Ngừng KD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="PhienBan.MaKhuyenMai" class="form-label">Khuyến Mãi</label>
+                            <select asp-for="PhienBan.MaKhuyenMai" asp-items="Model.KhuyenMaiList" class="form-control">
+                                <option value="KM00">Không có</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <button type="submit" class="btn btn-primary">Thêm</button>
                     <a asp-page="Index" class="btn btn-secondary">Hủy</a>

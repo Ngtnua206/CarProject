@@ -114,19 +114,27 @@ public class RegisterModel : PageModel
             DaXacNhanEmail = false
         };
         _db.TaiKhoan.Add(user);
-        await _db.SaveChangesAsync();
-        await _log.LogAsync("Đăng ký tài khoản", $"Email \"{email}\" — chờ xác nhận");
-
         var smtpHost = _config["Smtp:Host"];
         if (!string.IsNullOrEmpty(smtpHost))
         {
+            user.MaXacNhan = token;
+            user.DaXacNhanEmail = false;
+            await _db.SaveChangesAsync();
+            await _log.LogAsync("Đăng ký tài khoản", $"Email \"{email}\" — chờ xác nhận");
+
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
             var callbackUrl = $"{baseUrl}/Account/Register?handler=XacNhan";
             await _email.GuiEmailXacNhan(email, token, callbackUrl);
+
+            return RedirectToPage(new { daGuiMail = true });
         }
 
-        return RedirectToPage(new { daGuiMail = true });
+        user.MaXacNhan = null;
+        user.DaXacNhanEmail = true;
+        await _db.SaveChangesAsync();
+        await _log.LogAsync("Đăng ký tài khoản", $"Email \"{email}\" — tự động xác nhận (không SMTP)");
+        return RedirectToPage("/Account/Login", new { dangKyThanhCong = true });
     }
 
     public async Task<IActionResult> OnGetXacNhanAsync(string token, string email)

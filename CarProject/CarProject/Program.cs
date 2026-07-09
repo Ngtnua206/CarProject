@@ -215,11 +215,12 @@ try
             }
         }
 
-        // /Orders/*, /Profile, /TestDrive -> cần đăng nhập
+        // /Orders/*, /Profile, /TestDrive, /QuanLy/* -> cần đăng nhập
         if ((path.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) ||
              path.Equals("/Profile", StringComparison.OrdinalIgnoreCase) ||
              path.Equals("/TestDrive", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("/TestDrive", StringComparison.OrdinalIgnoreCase))
+             path.StartsWith("/TestDrive", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("/QuanLy", StringComparison.OrdinalIgnoreCase))
             && !isLoggedIn)
         {
             context.Response.Redirect("/Account/Login");
@@ -291,13 +292,70 @@ try
             var log = ctx.RequestServices.GetRequiredService<CarProject.Services.IActivityLogService>();
             await log.LogAsync("Cập nhật ảnh đại diện");
 
-            return Results.Ok(new { success = true });
+            return Results.Ok(new { success = true, url = $"/uploads/avatars/{fileName}" });
         }
         catch (Exception ex)
         {
             var logPath = Path.Combine(Path.GetTempPath(), "avatar_error.log");
             System.IO.File.AppendAllText(logPath,
                 $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
+    // Minimal API for admin avatar upload (session-independent, username from body)
+    app.MapPost("/api/upload-avatar-admin", async (HttpContext ctx, IWebHostEnvironment env) =>
+    {
+        try
+        {
+            string body;
+            using (var reader = new StreamReader(ctx.Request.Body))
+                body = await reader.ReadToEndAsync();
+
+            var payload = JsonSerializer.Deserialize<JsonElement>(body);
+            var dataUrl = payload.GetProperty("avatarBase64").GetString();
+            var userName = payload.GetProperty("userName").GetString();
+
+            if (string.IsNullOrEmpty(dataUrl) || string.IsNullOrEmpty(userName))
+                return Results.BadRequest(new { success = false, error = "Missing data" });
+
+            // Verify user exists
+            var db = ctx.RequestServices.GetRequiredService<CarProject.Data.AppDbContext>();
+            var user = await db.TaiKhoan.FindAsync(userName);
+            if (user == null)
+                return Results.Ok(new { success = false, error = "User not found" });
+
+            var commaIdx = dataUrl.IndexOf(',');
+            if (commaIdx < 0)
+                return Results.BadRequest(new { success = false, error = "Invalid data URL" });
+
+            var base64 = dataUrl.Substring(commaIdx + 1);
+            var bytes = Convert.FromBase64String(base64);
+
+            var webRoot = env.WebRootPath ?? Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "wwwroot");
+            webRoot = Path.GetFullPath(webRoot);
+            var uploadsDir = Path.Combine(webRoot, "uploads", "avatars");
+            if (!Directory.Exists(uploadsDir))
+                Directory.CreateDirectory(uploadsDir);
+
+            var fileName = $"{userName}.jpg";
+            var filePath = Path.Combine(uploadsDir, fileName);
+            await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+            user.AvatarUrl = $"/uploads/avatars/{fileName}";
+            await db.SaveChangesAsync();
+
+            // Update session if active
+            if (!string.IsNullOrEmpty(ctx.Session.GetString("UserName")))
+                ctx.Session.SetString("AvatarUrl", user.AvatarUrl);
+
+            var log = ctx.RequestServices.GetRequiredService<CarProject.Services.IActivityLogService>();
+            await log.LogAsync("Cập nhật ảnh đại diện (admin)");
+
+            return Results.Ok(new { success = true, url = user.AvatarUrl });
+        }
+        catch (Exception ex)
+        {
             return Results.Ok(new { success = false, error = ex.Message });
         }
     });

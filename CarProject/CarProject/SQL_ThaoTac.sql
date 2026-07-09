@@ -24,9 +24,10 @@ ORDER BY p.MaPhienBan;
 
 -- Tài khoản (TenDangNhap là khóa chính)
 SELECT TenDangNhap, VaiTro, TrangThai FROM TaiKhoan ORDER BY TenDangNhap;
+select * from TaiKhoan
 
 -- Chi nhánh
-SELECT * FROM ChiNhanhShowroom ORDER BY MaChiNhanh;
+SELECT * FROM ChiNhanhShowroom;
 
 -- Khuyến mãi
 SELECT * FROM ChuongTrinhKhuyenMai ORDER BY MaKhuyenMai;
@@ -52,13 +53,22 @@ SELECT * FROM ThongKeTongHop_Boss ORDER BY KyBaoCao;
 -- Nhật ký hoạt động
 SELECT * FROM NhatKyHeThong ORDER BY ThoiGian DESC;
 
-select * from TaiKhoan;
 
 -- ==================== THÊM DỮ LIỆU ====================
 
+-- Thêm tài khoản
+INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
+VALUES ('admin', 'admin123', 'Admin', 'Active');
+
+INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
+VALUES ('user1', 'user123', 'User', 'Active');
+
+INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
+VALUES ('quanly1', 'quanly123', N'Quản Lý', N'Hoạt động');
+
 -- Thêm hãng xe (MaHang tự tăng)
 INSERT INTO HangXe (TenHang, QuocGia, DuongDanLogo)
-VALUES ('Mercedes-Benz', 'Đức', '/images/brands/mercedes.png');
+VALUES ('Mercedes-Benz', N'Đức', '/images/brands/mercedes.png');
 
 -- Thêm dòng xe (MaHang lấy từ bảng HangXe)
 INSERT INTO DongXe (MaHang, TenDong, KieuDang)
@@ -66,19 +76,15 @@ VALUES (1, 'Mercedes C-Class', 'Sedan');
 
 -- Thêm phiên bản xe (MaDong lấy từ bảng DongXe)
 INSERT INTO PhienBanXe_SanPham (MaDong, TenPhienBan, GiaNiemYet, MauSac, DongCo, HopSo, LoaiNhietLieu, SoLuongTrongKho, DuongDanAnh, TrangThai)
-VALUES (1, 'C200 AMG', 1500000000, 'Đen', '2.0L Turbo', '9G-Tronic', 'Xăng', 5, '/images/cars/c200.jpg', 'Còn hàng');
-
--- Thêm tài khoản
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
-VALUES ('admin', 'admin123', 'Admin', 'Active');
+VALUES (1, 'C200 AMG', 1500000000, N'Đen', '2.0L Turbo', '9G-Tronic', N'Xăng', 5, '/images/cars/c200.jpg', N'Còn hàng');
 
 -- Thêm chi nhánh (MaQuanLy = TenDangNhap của tài khoản quản lý)
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN01', 'Showroom Sài Gòn', '123 Nguyễn Văn Linh Quận 7', 'TP.HCM', '0909123456', 'admin', 'Hoạt động');
+VALUES ('CN01', N'Showroom Sài Gòn', N'123 Nguyễn Văn Linh Quận 7', N'TP.HCM', '0909123456', 'quanly1', N'Hoạt động');
 
 -- Thêm khuyến mãi
 INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM01', 'Giảm 50% lệ phí trước bạ', 'Áp dụng cho tất cả dòng xe', 'Phần trăm', 50, 50000000, '2024-01-01', '2024-03-31', 'Hoạt động');
+VALUES ('KM01', N'Giảm 50% lệ phí trước bạ', N'Áp dụng cho tất cả dòng xe', N'Phần trăm', 50, 50000000, '2024-01-01', '2024-03-31', N'Hoạt động');
 
 -- Thêm banner (MaQuanLyCapNhat = TenDangNhap của admin)
 INSERT INTO QuangCaoBanner (DuongDanAnh, DuongDanLienKet, ThuTuHienThi, MaQuanLyCapNhat, TrangThaiKichHoat)
@@ -101,10 +107,10 @@ UPDATE PhienBanXe_SanPham SET GiaNiemYet = 1600000000 WHERE MaPhienBan = 1;
 UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = 10 WHERE MaPhienBan = 1;
 
 -- Sửa trạng thái phiên bản
-UPDATE PhienBanXe_SanPham SET TrangThai = 'Hết hàng' WHERE MaPhienBan = 1;
+UPDATE PhienBanXe_SanPham SET TrangThai = N'Hết hàng' WHERE MaPhienBan = 1;
 
 -- Đổi quyền tài khoản
-UPDATE TaiKhoan SET VaiTro = 'Quản Lý' WHERE TenDangNhap = 'user';
+UPDATE TaiKhoan SET VaiTro = N'Quản Lý' WHERE TenDangNhap = 'user1';
 
 -- Kích hoạt/vô hiệu banner
 UPDATE QuangCaoBanner SET TrangThaiKichHoat = 0 WHERE MaBanner = 1;
@@ -126,7 +132,7 @@ DELETE FROM DongXe WHERE MaHang = 1;
 DELETE FROM HangXe WHERE MaHang = 1;
 
 -- Xóa tài khoản
-DELETE FROM TaiKhoan WHERE TenDangNhap = 'user';
+DELETE FROM TaiKhoan WHERE TenDangNhap = 'quanly1';
 
 
 -- ==================== TIỆN ÍCH ====================

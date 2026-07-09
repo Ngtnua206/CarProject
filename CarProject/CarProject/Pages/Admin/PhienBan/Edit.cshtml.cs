@@ -17,6 +17,7 @@ public class EditModel : PageModel
     public PhienBanXe PhienBan { get; set; }
 
     public SelectList DongList { get; set; }
+    public SelectList KhuyenMaiList { get; set; }
 
     public EditModel(AppDbContext db, IActivityLogService log)
     {
@@ -32,15 +33,23 @@ public class EditModel : PageModel
 
         var dongList = await _db.DongXe.ToListAsync();
         DongList = new SelectList(dongList, "MaDong", "TenDong", PhienBan.MaDong);
+        var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
+        KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe", PhienBan.MaKhuyenMai);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
+        PhienBan.TrangThai = string.IsNullOrEmpty(PhienBan.TrangThai) ? "Còn hàng" : PhienBan.TrangThai;
+        PhienBan.MaKhuyenMai = string.IsNullOrEmpty(PhienBan.MaKhuyenMai) ? "KM00" : PhienBan.MaKhuyenMai;
+        PhienBan.DuongDanAnh = string.IsNullOrEmpty(PhienBan.DuongDanAnh) ? "/images/cars/default.jpg" : PhienBan.DuongDanAnh;
+
         if (!ModelState.IsValid)
         {
             var dongList = await _db.DongXe.ToListAsync();
             DongList = new SelectList(dongList, "MaDong", "TenDong", PhienBan.MaDong);
+            var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
+            KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe", PhienBan.MaKhuyenMai);
             return Page();
         }
 
@@ -57,10 +66,12 @@ public class EditModel : PageModel
         existing.LoaiNhietLieu = PhienBan.LoaiNhietLieu;
         existing.SoLuongTrongKho = PhienBan.SoLuongTrongKho;
         existing.DuongDanAnh = PhienBan.DuongDanAnh;
+        existing.MaKhuyenMai = PhienBan.MaKhuyenMai;
         existing.TrangThai = PhienBan.TrangThai;
 
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Sửa phiên bản", $"{existing.TenPhienBan} (ID={existing.MaPhienBan})");
+        TempData["Success"] = $"Đã sửa phiên bản \"{existing.TenPhienBan}\" thành công.";
         return RedirectToPage("Index");
     }
 }

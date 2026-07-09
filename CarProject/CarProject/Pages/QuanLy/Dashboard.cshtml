@@ -1,0 +1,194 @@
+@page
+@model CarProject.Pages.QuanLy.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard quản lý";
+    Layout = "_Layout";
+}
+
+<style>
+    .ql-header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 2rem 0; margin-bottom: 2rem; }
+    .ql-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 1.5rem; height: 100%; }
+    .ql-card .stat-value { font-size: 1.8rem; font-weight: 700; color: #1a1a2e; }
+    .ql-card .stat-label { font-size: 0.85rem; color: #666; }
+    .ql-card .stat-icon { font-size: 2rem; color: var(--brand-gold, #c8a45c); }
+    .ql-showroom-badge { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+</style>
+
+<div class="ql-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 style="font-size: 1.5rem; font-weight: 600; margin: 0;">
+                    <i class="fas fa-chart-line me-2"></i> Dashboard quản lý
+                </h1>
+                <p class="mb-0 mt-1" style="opacity: 0.7;">Xin chào, <strong>@Model.TenHienThi</strong></p>
+            </div>
+            <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                @if (Model.Showroom != null)
+                {
+                    <div class="ql-showroom-badge">
+                        <i class="fas fa-building"></i>
+                        <span>@Model.Showroom.TenChiNhanh</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="padding-bottom: 3rem;">
+    @if (Model.Showroom == null)
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Bạn chưa được phân công quản lý showroom nào. Vui lòng liên hệ Admin.
+        </div>
+        return;
+    }
+
+    @* Thông tin showroom *@
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="ql-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Doanh thu hôm nay</div>
+                        <div class="stat-value">@Model.DoanhThuHomNay.ToString("N0")₫</div>
+                        <small class="text-muted">@Model.SoDonHomNay đơn cọc</small>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="ql-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Doanh thu tháng này</div>
+                        <div class="stat-value">@Model.DoanhThuThangNay.ToString("N0")₫</div>
+                        <small class="text-muted">@Model.SoDonThangNay đơn cọc</small>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="ql-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Tổng đơn đã xử lý</div>
+                        <div class="stat-value">@Model.TongDon</div>
+                        <small class="text-muted">từ trước đến nay</small>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Thông tin showroom chi tiết *@
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="ql-card">
+                <h5 style="font-weight: 600; margin-bottom: 1rem;"><i class="fas fa-info-circle me-2"></i>Thông tin showroom</h5>
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td style="width: 120px; color: #666;">Tên</td><td><strong>@Model.Showroom.TenChiNhanh</strong></td></tr>
+                    <tr><td style="color: #666;">Địa chỉ</td><td>@Model.Showroom.DiaChi</td></tr>
+                    <tr><td style="color: #666;">Thành phố</td><td>@Model.Showroom.ThanhPho</td></tr>
+                    <tr><td style="color: #666;">Hotline</td><td><a href="tel:@Model.Showroom.DuongDayNong">@Model.Showroom.DuongDayNong</a></td></tr>
+                    <tr><td style="color: #666;">Trạng thái</td>
+                        <td>
+                            @if (Model.Showroom.TrangThai == "Hoạt động")
+                            {
+                                <span class="badge bg-success">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@Model.Showroom.TrangThai</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="ql-card">
+                <h5 style="font-weight: 600; margin-bottom: 1rem;"><i class="fas fa-chart-bar me-2"></i>Doanh thu 30 ngày</h5>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Bảng doanh thu 7 ngày gần nhất *@
+    @if (Model.DoanhThuTheoNgay.Any())
+    {
+        <div class="ql-card">
+            <h5 style="font-weight: 600; margin-bottom: 1rem;"><i class="fas fa-table me-2"></i>Chi tiết doanh thu 7 ngày gần nhất</h5>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th class="text-end">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.DoanhThuTheoNgay.OrderByDescending(d => d.Ngay).Take(7))
+                        {
+                            <tr>
+                                <td>@item.Ngay.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end">@item.TongTien.ToString("N0")₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        const labels = @Html.Raw(Model.JsonLabels);
+        const data = @Html.Raw(Model.JsonData);
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: data,
+                    borderColor: '#c8a45c',
+                    backgroundColor: 'rgba(200, 164, 92, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#c8a45c'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: v => v.toLocaleString('vi-VN') + '₫'
+                        }
+                    },
+                    x: {
+                        ticks: { maxTicksLimit: 10 }
+                    }
+                }
+            }
+        });
+    </script>
+}

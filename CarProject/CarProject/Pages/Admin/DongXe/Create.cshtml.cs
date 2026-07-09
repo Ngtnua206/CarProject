@@ -41,6 +41,7 @@ public class CreateModel : PageModel
         _db.DongXe.Add(DongXe);
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Thêm dòng xe", $"{DongXe.TenDong} - {DongXe.KieuDang}");
+        TempData["Success"] = $"Đã thêm dòng xe \"{DongXe.TenDong}\" thành công.";
         return RedirectToPage("Index");
     }
 }

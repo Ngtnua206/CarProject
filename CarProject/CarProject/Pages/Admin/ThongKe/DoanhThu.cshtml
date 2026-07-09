@@ -1,0 +1,186 @@
+@page
+@model CarProject.Pages.Admin.ThongKe.DoanhThuModel
+@{
+    ViewData["Title"] = "Doanh thu theo ngày";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .chart-container { position: relative; height: 350px; width: 100%; }
+    .dt-stat { text-align: center; padding: 1.5rem; }
+    .dt-stat .value { font-size: 2rem; font-weight: 700; color: #1a1a2e; }
+    .dt-stat .label { font-size: 0.85rem; color: #666; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2"></i>Doanh thu theo ngày</h2>
+    <a asp-page="/Admin/ThongKe/Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Về thống kê</a>
+</div>
+
+@* Filter form *@
+<form method="get" class="row g-3 mb-4 p-3 bg-light rounded">
+    <div class="col-md-3">
+        <label class="form-label">Từ ngày</label>
+        <input type="date" name="TuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Đến ngày</label>
+        <input type="date" name="DenNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Chi nhánh</label>
+        <select name="MaChiNhanh" class="form-select">
+            <option value="">-- Tất cả --</option>
+            @foreach (var cn in Model.DanhSachChiNhanh)
+            {
+                <option value="@cn.MaChiNhanh" selected="@(Model.MaChiNhanh == cn.MaChiNhanh)">
+                    @cn.TenChiNhanh
+                </option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Xem</button>
+    </div>
+</form>
+
+@* Summary stats *@
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card dt-stat">
+            <div class="label">Tổng doanh thu</div>
+            <div class="value">@Model.TongDoanhThu.ToString("N0")₫</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dt-stat">
+            <div class="label">Tổng đơn cọc</div>
+            <div class="value">@Model.TongDon</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dt-stat">
+            <div class="label">Từ ngày</div>
+            <div class="value" style="font-size:1.1rem;">@Model.TuNgay?.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dt-stat">
+            <div class="label">Đến ngày</div>
+            <div class="value" style="font-size:1.1rem;">@Model.DenNgay?.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+</div>
+
+@* Line chart *@
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-chart-area me-2"></i>Biểu đồ doanh thu theo ngày</h5>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+</div>
+
+@* Showroom comparison bar chart *@
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i>Doanh thu theo chi nhánh</h5>
+        <div class="chart-container">
+            <canvas id="chiNhanhChart"></canvas>
+        </div>
+    </div>
+</div>
+
+@* Table *@
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-table me-2"></i>Doanh thu theo chi nhánh</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Chi nhánh</th>
+                        <th class="text-end">Doanh thu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.DoanhThuChiNhanh.OrderByDescending(d => d.TongDoanhThu))
+                    {
+                        <tr>
+                            <td>@item.TenChiNhanh</td>
+                            <td class="text-end">@item.TongDoanhThu.ToString("N0")₫</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Line chart
+        const labels = @Html.Raw(Model.JsonLabels);
+        const data = @Html.Raw(Model.JsonData);
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: data,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: v => v.toLocaleString('vi-VN') + '₫' }
+                    },
+                    x: { ticks: { maxTicksLimit: 15 } }
+                }
+            }
+        });
+
+        // Bar chart by showroom
+        const cnData = @Html.Raw(Model.JsonDataChiNhanh);
+        if (cnData && cnData.length > 0) {
+            new Chart(document.getElementById('chiNhanhChart'), {
+                type: 'bar',
+                data: {
+                    labels: cnData.map(d => d.label),
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: cnData.map(d => d.value),
+                        backgroundColor: [
+                            '#0d6efd', '#6610f2', '#6f42c1', '#d63384',
+                            '#dc3545', '#fd7e14', '#ffc107', '#198754',
+                            '#20c997', '#0dcaf0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => v.toLocaleString('vi-VN') + '₫' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}

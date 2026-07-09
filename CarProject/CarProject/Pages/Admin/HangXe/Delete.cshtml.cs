@@ -42,11 +42,13 @@ public class DeleteModel : PageModel
             _db.HangXe.Remove(HangXe);
             await _db.SaveChangesAsync();
             await _log.LogAsync("Admin Xóa hãng xe", $"{name} (ID={HangXe.MaHang})");
+            TempData["Success"] = $"Đã xóa hãng xe \"{name}\" thành công.";
             return RedirectToPage("Index");
         }
         catch (DbUpdateException)
         {
             ErrorMessage = $"Không thể xóa \"{name}\" vì có dòng xe thuộc hãng này. Vui lòng xóa các dòng xe liên quan trước.";
+            TempData["Error"] = ErrorMessage;
             return Page();
         }
     }

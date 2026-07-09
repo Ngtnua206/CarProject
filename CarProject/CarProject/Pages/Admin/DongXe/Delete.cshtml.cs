@@ -42,11 +42,13 @@ public class DeleteModel : PageModel
             _db.DongXe.Remove(DongXe);
             await _db.SaveChangesAsync();
             await _log.LogAsync("Admin Xóa dòng xe", $"{name} (ID={DongXe.MaDong})");
+            TempData["Success"] = $"Đã xóa dòng xe \"{name}\" thành công.";
             return RedirectToPage("Index");
         }
         catch (DbUpdateException)
         {
             ErrorMessage = $"Không thể xóa \"{name}\" vì có phiên bản xe, lịch hẹn lái thử hoặc thống kê liên quan. Vui lòng xóa các dữ liệu liên quan trước.";
+            TempData["Error"] = ErrorMessage;
             return Page();
         }
     }

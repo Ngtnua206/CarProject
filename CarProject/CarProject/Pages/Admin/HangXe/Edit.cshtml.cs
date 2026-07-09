@@ -36,6 +36,7 @@ public class EditModel : PageModel
         _db.HangXe.Update(HangXe);
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Sửa hãng xe", $"{HangXe.TenHang} (ID={HangXe.MaHang})");
+        TempData["Success"] = $"Đã sửa hãng xe \"{HangXe.TenHang}\" thành công.";
         return RedirectToPage("Index");
     }
 }
