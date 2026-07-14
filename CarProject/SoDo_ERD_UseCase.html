@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sơ Đồ ERD & Use Case — MyCar Showroom</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f0f2f5;
+        padding: 30px;
+        color: #333;
+    }
+    h1 {
+        text-align: center;
+        font-size: 28px;
+        color: #1a3a5c;
+        margin-bottom: 5px;
+    }
+    .subtitle {
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+    .section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .section h2 {
+        font-size: 20px;
+        color: #1a3a5c;
+        border-left: 4px solid #1a3a5c;
+        padding-left: 14px;
+        margin-bottom: 20px;
+    }
+    .mermaid-box {
+        display: flex;
+        justify-content: center;
+        overflow-x: auto;
+        overflow-y: visible;
+        padding: 10px 0;
+    }
+    .mermaid-box svg {
+        max-width: none;
+        height: auto;
+        transform: scale(1.1);
+        transform-origin: top center;
+    }
+    /* Fix for large ERD */
+    .mermaid {
+        font-size: 14px;
+    }
+    .er.entityBox rect {
+        rx: 6px;
+        ry: 6px;
+    }
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+        .section { padding: 15px; }
+    }
+</style>
+</head>
+<body>
+
+<h1>MyCar Showroom</h1>
+<p class="subtitle">Sơ đồ ERD &amp; Use Case — Hệ thống quản lý showroom xe hơi cao cấp</p>
+
+<!-- ===== ERD ===== -->
+<div class="section">
+    <h2>Sơ Đồ ERD (Entity Relationship Diagram)</h2>
+    <div class="mermaid-box">
+        <pre class="mermaid">
+erDiagram
+    HangXe ||--o{ DongXe : "co"
+    DongXe ||--o{ PhienBanXe_SanPham : "co"
+    DongXe ||--o{ LichHenLaiThu : "duoc dat"
+    DongXe ||--o{ ThongKeTongHop_Boss : "thong ke"
+
+    TaiKhoan ||--o{ DonDatCoc : "dat coc"
+    TaiKhoan ||--o{ LichHenLaiThu : "dat hen"
+    TaiKhoan ||--o{ NhatKyHeThong : "ghi log"
+    TaiKhoan ||--o{ QuangCaoBanner : "cap nhat"
+    TaiKhoan ||--o{ ChiTietKhachHang : "co"
+
+    TaiKhoan ||--o{ ChiNhanhShowroom : "quan ly"
+    DonDatCoc ||--o{ HoaDonMuaXe : "co"
+    PhienBanXe_SanPham ||--o{ DonDatCoc : "duoc chon"
+
+    ChiNhanhShowroom ||--o{ LichHenLaiThu : "nhan"
+    ChiNhanhShowroom ||--o{ ThongKeTongHop_Boss : "bao cao"
+
+    TaiKhoan ||--o{ ThongKeTongHop_Boss : "ghi nhan"
+
+    HangXe {
+        int MaHang PK
+        string TenHang
+        string TrangThai
+    }
+    DongXe {
+        int MaDong PK
+        int MaHang FK
+        string TenDong
+        string KieuThanXe
+        string TrangThai
+    }
+    PhienBanXe_SanPham {
+        int MaPhienBan PK
+        int MaDong FK
+        string TenPhienBan
+        decimal GiaBan
+        string TrangThai
+    }
+    TaiKhoan {
+        string TenDangNhap PK
+        int MaTaiKhoan
+        string MatKhau
+        string VaiTro
+        string TrangThai
+        string Email
+    }
+    ChiTietKhachHang {
+        int MaKhachHang PK
+        int MaTaiKhoan FK
+        string HoTen
+        string SoDienThoai
+        string DiaChi
+    }
+    DonDatCoc {
+        int MaDonCoc PK
+        int MaTaiKhoan FK
+        int MaPhienBan FK
+        int? MaQuanLyDuyet FK
+        decimal SoTienCoc
+        datetime NgayTaoDon
+        string TrangThai
+    }
+    HoaDonMuaXe {
+        int MaHoaDon PK
+        int MaDonCoc FK
+        decimal TongTien
+        datetime NgayLap
+        string TrangThai
+    }
+    LichHenLaiThu {
+        int MaLichHen PK
+        int MaTaiKhoan FK
+        int MaDong FK
+        int MaChiNhanh FK
+        datetime ThoiGianHen
+        string TrangThai
+    }
+    ChiNhanhShowroom {
+        int MaChiNhanh PK
+        int MaQuanLy FK
+        string TenChiNhanh
+        string DiaChi
+        string TrangThai
+    }
+    ChuongTrinhKhuyenMai {
+        int MaKhuyenMai PK
+        string TenKhuyenMai
+        decimal PhanTramGiam
+        datetime NgayBatDau
+        datetime NgayKetThuc
+        string TrangThai
+    }
+    QuangCaoBanner {
+        int MaBanner PK
+        int MaTaiKhoan FK
+        string TieuDe
+        string HinhAnh
+        string TrangThai
+    }
+    KenhTuVan {
+        int MaKenh PK
+        string TenKenh
+        string Loai
+        string URL
+        string TrangThai
+    }
+    NhatKyHeThong {
+        int MaNhatKy PK
+        int MaTaiKhoan FK
+        string HanhDong
+        string ChiTiet
+        string DiaChiIP
+        datetime ThoiGian
+    }
+    ThongKeTongHop_Boss {
+        int MaThongKe PK
+        int MaChiNhanh FK
+        int MaDong FK
+        decimal DoanhThu
+        int SoLuongXeBan
+        datetime ThoiGian
+    }
+        </pre>
+    </div>
+</div>
+
+<!-- ===== USE CASE ===== -->
+<div class="section">
+    <h2>Sơ Đồ Use Case</h2>
+    <div class="mermaid-box">
+        <pre class="mermaid">
+---
+title: Use Case - He thong MyCar Showroom
+---
+%% Use case diagram dung dinh dang chinh thuc cua Mermaid
+graph TB
+    subgraph "He thong MyCar Showroom"
+        direction TB
+
+        subgraph "Xac thuc"
+            UC1["Dang nhap form"]
+            UC2["Dang nhap Google"]
+            UC3["Dang ky"]
+            UC4["Dang xuat"]
+        end
+
+        subgraph "Chuc nang Nguoi dung"
+            UC5["Xem danh sach xe"]
+            UC6["Xem chi tiet xe"]
+            UC7["So sanh xe (toi da 3)"]
+            UC8["Dat lai thu"]
+            UC9["Dat coc xe"]
+            UC10["Xem ho so ca nhan"]
+            UC11["Doi mat khau"]
+            UC12["Upload avatar"]
+            UC13["Lien he / Goi y"]
+            UC14["Xem he thong showroom"]
+            UC15["Xem Viewer 360"]
+        end
+
+        subgraph "Chuc nang Quan Ly"
+            UC20["Dashboard doanh thu"]
+            UC21["Doanh thu hom nay"]
+            UC22["Bieu do 30 ngay"]
+        end
+
+        subgraph "Chuc nang Admin"
+            UC30["CRUD Hang xe"]
+            UC31["CRUD Dong xe"]
+            UC32["CRUD Phien ban"]
+            UC33["Quan ly Nguoi dung"]
+            UC34["CRUD Chi nhanh"]
+            UC35["Quan ly Don coc"]
+            UC36["Quan ly Hoa don"]
+            UC37["Quan ly Lich hen"]
+            UC38["CRUD Khuyen mai"]
+            UC39["CRUD Banner"]
+            UC40["CRUD Kenh tu van"]
+            UC41["Thong ke doanh thu"]
+            UC42["Xem Nhat ky he thong"]
+            UC43["Dashboard Admin"]
+            UC44["Phan quyen User/QL"]
+            UC45["Gan showroom cho QL"]
+        end
+    end
+
+    %% Actors
+    User("Nguoi dung")]
+    QL("Quan Ly")]
+    Admin2("Admin")]
+    Google("Google OAuth")
+
+    %% Relationships
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+    User --> UC9
+    User --> UC10
+    User --> UC11
+    User --> UC12
+    User --> UC13
+    User --> UC14
+    User --> UC15
+    UC2 -.->|xac thuc qua| Google
+
+    QL --> UC1
+    QL --> UC4
+    QL --> UC20
+    QL --> UC21
+    QL --> UC22
+
+    Admin2 --> UC1
+    Admin2 --> UC4
+    Admin2 --> UC30
+    Admin2 --> UC31
+    Admin2 --> UC32
+    Admin2 --> UC33
+    Admin2 --> UC34
+    Admin2 --> UC35
+    Admin2 --> UC36
+    Admin2 --> UC37
+    Admin2 --> UC38
+    Admin2 --> UC39
+    Admin2 --> UC40
+    Admin2 --> UC41
+    Admin2 --> UC42
+    Admin2 --> UC43
+    Admin2 --> UC44
+    Admin2 --> UC45
+        </pre>
+    </div>
+</div>
+
+<!-- ===== NOTES ===== -->
+<div class="section" style="text-align:center; color:#666; font-size:13px; line-height:1.8;">
+    <p>Sơ đồ được tạo bằng <strong>Mermaid.js</strong> — hiển thị trực tiếp trên trình duyệt.</p>
+    <p><strong>Chú thích ERD:</strong> Mermaid dùng ký pháp <em>crow's foot</em> (chân quạ) thay vì hình thoi Chen truyền thống.</p>
+    <p>
+        <code>||--o{</code> = 1 - N (một - nhiều) &nbsp;|&nbsp;
+        <code>||--||</code> = 1 - 1 (một - một) &nbsp;|&nbsp;
+        <code>}o--o{</code> = N - N (nhiều - nhiều)
+    </p>
+    <p>Có thể copy code Mermaid để paste vào <a href="https://mermaid.live" target="_blank" style="color:#1a3a5c;">mermaid.live</a> để xuất ảnh PNG/SVG.</p>
+</div>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        maxTextSize: 99999,
+        er: {
+            minEntityHeight: 80,
+            entityPadding: 20,
+            fontSize: 14,
+            strokeWidth: 2,
+        },
+        themeVariables: {
+            'primaryColor': '#1a3a5c',
+            'primaryTextColor': '#fff',
+            'primaryBorderColor': '#1a3a5c',
+            'lineColor': '#5a7a9c',
+            'secondaryColor': '#e8f0f8',
+            'tertiaryColor': '#f5f7fa',
+            'fontSize': '16px',
+        }
+    });
+</script>
+
+</body>
+</html>

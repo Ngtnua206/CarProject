@@ -13,3 +13,4 @@ fix_perms.sql
 *.log
 server_*.log
 CarProject/CarProject/wwwroot/uploads/avatars/*
+CarProject/Module/*.zip

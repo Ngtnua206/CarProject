@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Báo Cáo Hệ Thống MyCar Showroom</title>
+<style>
+    @page { size: A4; margin: 2.5cm 3.5cm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 11pt;
+        line-height: 1.6;
+        color: #2d3436;
+        background: #fff;
+    }
+
+    /* ===== COVER PAGE ===== */
+    .cover {
+        page-break-after: always;
+        text-align: center;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0c1e32 0%, #1a3a5c 50%, #2a5a8c 100%);
+        color: #fff;
+        padding: 3cm 4cm;
+        position: relative;
+        overflow: hidden;
+        margin: -1.5cm -2cm 0 -2cm;
+        width: calc(100% + 4cm);
+    }
+    .cover::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .cover::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #c0a060, #e8d5a0, #c0a060);
+    }
+    .cover h1 {
+        font-size: 48pt;
+        font-weight: 700;
+        letter-spacing: 4px;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        position: relative;
+        color: #fff;
+    }
+    .cover .divider-line {
+        width: 80px;
+        height: 3px;
+        background: #c0a060;
+        margin: 20px auto;
+        border-radius: 2px;
+    }
+    .cover .subtitle {
+        font-size: 13pt;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.7);
+        font-weight: 300;
+        margin-bottom: 50px;
+    }
+    .cover .report-title {
+        font-size: 22pt;
+        font-weight: 600;
+        color: #e8d5a0;
+        margin-bottom: 40px;
+        letter-spacing: 2px;
+    }
+    .cover .meta {
+        font-size: 10.5pt;
+        color: rgba(255,255,255,0.6);
+        line-height: 2;
+    }
+    .cover .meta span {
+        display: inline-block;
+        padding: 3px 14px;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 20px;
+        margin: 3px 4px;
+        font-size: 9pt;
+    }
+    .cover .desc {
+        margin-top: 60px;
+        font-size: 10pt;
+        color: rgba(255,255,255,0.4);
+        font-style: italic;
+        max-width: 500px;
+        line-height: 1.7;
+    }
+
+    /* ===== CONTENT ===== */
+    .content {
+        background: #fff;
+        padding: 0 0 40px 0;
+        box-shadow: 0 0 40px rgba(0,0,0,0.05);
+        min-height: 100vh;
+    }
+
+    /* Section opener accent */
+    h1 {
+        font-size: 16pt;
+        color: #1a3a5c;
+        margin: 35px 0 18px 0;
+        padding: 10px 0 8px 20px;
+        border-left: 5px solid #1a3a5c;
+        border-bottom: 1px solid #e0e4e8;
+        counter-increment: section;
+        position: relative;
+    }
+    h1::before {
+        content: "PHẦN " counter(section) "  |  ";
+        font-size: 9pt;
+        color: #999;
+        font-weight: 400;
+        letter-spacing: 2px;
+    }
+
+    h2 {
+        font-size: 13pt;
+        color: #2a5a8c;
+        margin: 22px 0 12px 0;
+        padding-left: 14px;
+        font-weight: 600;
+    }
+
+    p {
+        margin: 10px 0;
+        text-align: justify;
+        padding: 0 4px;
+    }
+
+    ul {
+        margin: 8px 0 8px 24px;
+    }
+    li {
+        margin: 4px 0;
+        padding-left: 4px;
+        position: relative;
+    }
+
+    /* ===== TABLE ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0;
+        font-size: 10pt;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    th {
+        background: linear-gradient(135deg, #1a3a5c, #2a5a8c);
+        color: #fff;
+        padding: 9px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 9.5pt;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    td {
+        padding: 7px 12px;
+        border: 1px solid #e0e4e8;
+        vertical-align: top;
+    }
+    tr:nth-child(even) td {
+        background: #f7f9fc;
+    }
+    tr:hover td {
+        background: #eef3f8;
+    }
+
+    /* ===== NOTE BOX ===== */
+    .note {
+        background: linear-gradient(135deg, #fff8f0, #fffbee);
+        border-left: 5px solid #e67e22;
+        border-radius: 6px;
+        padding: 14px 20px;
+        margin: 16px 0;
+        box-shadow: 0 2px 10px rgba(230,126,34,0.08);
+    }
+    .note strong {
+        color: #c0392b;
+        font-size: 10.5pt;
+    }
+    .note ul {
+        margin-top: 6px;
+    }
+
+    /* ===== SCHEMATIC (ASCII DIAGRAM) ===== */
+    .schematic {
+        background: #1a1d23;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 14px 0;
+        overflow-x: auto;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .schematic pre {
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 9.5pt;
+        line-height: 1.4;
+        color: #d4d4d4;
+        white-space: pre;
+        margin: 0;
+    }
+    code {
+        font-family: 'Courier New', Consolas, monospace;
+        background: #eef3f8;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-size: 9.5pt;
+        color: #c0392b;
+    }
+    .schematic code {
+        background: rgba(255,255,255,0.08);
+        color: #e8d5a0;
+        padding: 1px 5px;
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+        body { background: #fff; }
+        .content { box-shadow: none; }
+        .cover { height: 100vh; }
+        h1 { page-break-before: auto; }
+        h2 { page-break-after: avoid; }
+        table { page-break-inside: avoid; }
+        .note { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+    <h1>MyCar Showroom</h1>
+    <div class="divider-line"></div>
+    <div class="subtitle">Hệ Thống Quản Lý Showroom Xe Hơi Cao Cấp</div>
+    <div class="report-title">BÁO CÁO TỔNG QUAN KIẾN TRÚC HỆ THỐNG</div>
+    <div class="meta">
+        <span>ASP.NET Core 10.0</span>
+        <span>Razor Pages</span>
+        <span>SQL Server</span>
+        <span>Docker</span><br>
+        Phiên bản: 1.0 &nbsp;|&nbsp; Ngày: <script>document.write(new Date().toLocaleDateString('vi-VN'))</script>
+    </div>
+    <div class="desc">
+        Tài liệu này mô tả kiến trúc tổng thể, luồng xác thực, phân quyền,<br>
+        các chức năng chính và cơ chế bảo mật của hệ thống MyCar Showroom.
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<h1>Tổng Quan Hệ Thống</h1>
+<p>MyCar Showroom là hệ thống quản lý showroom xe hơi cao cấp, được xây dựng trên nền tảng ASP.NET Core 10.0 sử dụng Razor Pages. Hệ thống cung cấp giao diện người dùng sang trọng phong cách Mercedes-Benz kết hợp với quản trị nội dung CRUD đầy đủ cho Admin, dashboard doanh thu cho Quản Lý showroom, và trải nghiệm mua sắm xe hơi trực tuyến cho người dùng cuối.</p>
+
+<p><strong>Thông số kỹ thuật:</strong></p>
+<table>
+    <tr><th style="width:30%">Thành phần</th><th style="width:70%">Mô tả</th></tr>
+    <tr><td>Ngôn ngữ &amp; Framework</td><td>C# 13, ASP.NET Core 10.0, .NET 10.0</td></tr>
+    <tr><td>Kiến trúc</td><td>Razor Pages (chính) + Minimal APIs + MVC (phụ)</td></tr>
+    <tr><td>Cơ sở dữ liệu</td><td>SQL Server 2022 (Docker) — 14 bảng</td></tr>
+    <tr><td>ORM</td><td>Entity Framework Core 8.0</td></tr>
+    <tr><td>Xác thực</td><td>Session Cookie + JWT Bearer (song song)</td></tr>
+    <tr><td>Phân quyền</td><td>Middleware tùy chỉnh — 3 vai trò: Admin / Quản Lý / User</td></tr>
+    <tr><td>Port</td><td>HTTP 5001 (chạy trên localhost + LAN)</td></tr>
+    <tr><td>Container</td><td>Docker: sqlserver-carproject (SQL Server)</td></tr>
+    <tr><td>Hosting</td><td>.NET Aspire AppHost + OpenTelemetry</td></tr>
+    <tr><td>Giao diện</td><td>Bootstrap 5 + CSS Luxury (glassmorphism, dark/light theme)</td></tr>
+    <tr><td>Logging</td><td>Serilog (file + console) + Database (NhatKyHeThong)</td></tr>
+</table>
+
+<h1>Kiến Trúc Hệ Thống</h1>
+<p>Hệ thống được tổ chức theo mô hình middleware pipeline của ASP.NET Core. Luồng xử lý yêu cầu đi qua chuỗi middleware được đăng ký theo thứ tự trong Program.cs. Các Minimal API endpoint được ánh xạ riêng cho chức năng upload avatar và đăng nhập JWT.</p>
+
+<p><strong>Luồng Middleware:</strong></p>
+<table>
+    <tr><th style="width:8%">Bước</th><th style="width:30%">Middleware</th><th style="width:62%">Chức năng</th></tr>
+    <tr><td>1</td><td>Serilog Request Logging</td><td>Ghi log tất cả HTTP request</td></tr>
+    <tr><td>2</td><td>UTF-8 Enforcer</td><td>Đảm bảo charset UTF-8 cho response</td></tr>
+    <tr><td>3</td><td>Aspire Health Checks</td><td>Endpoint /health, /alive</td></tr>
+    <tr><td>4</td><td>Exception Handler</td><td>Xử lý lỗi (Detail → Dev, generic → Prod)</td></tr>
+    <tr><td>5</td><td>Routing</td><td>Xác định route cho request</td></tr>
+    <tr><td>6</td><td>Request Logging (Stopwatch)</td><td>Ghi thời gian xử lý request</td></tr>
+    <tr><td>7</td><td>Session</td><td>Server-side session (30 phút timeout)</td></tr>
+    <tr><td>8</td><td>Authentication</td><td>Cookie + JWT</td></tr>
+    <tr><td>9</td><td>Authorization</td><td>Authorize filter</td></tr>
+    <tr><td>10</td><td>Custom Path Auth</td><td>Kiểm tra quyền theo path (/Admin/*, /QuanLy/*)</td></tr>
+    <tr><td>11</td><td>Static Files</td><td>wwwroot assets</td></tr>
+    <tr><td>12</td><td>Minimal APIs + Razor Pages + MVC</td><td>Xử lý request đến endpoint</td></tr>
+</table>
+
+<h1>Xác Thực và Phân Quyền</h1>
+
+<h2>3.1. Cơ chế đăng nhập</h2>
+<p>Hệ thống hỗ trợ hai cơ chế xác thực song song:</p>
+
+<p><strong>1. Session Cookie (Razor Pages)</strong><br>
+Sau khi đăng nhập thành công, thông tin người dùng (UserName, UserRole, AvatarUrl, Email, MaTaiKhoan) được lưu vào session server-side. Session cookie HttpOnly có thời gian sống 30 phút. Khi logout, session được xóa và cookie bị hủy.</p>
+
+<p><strong>2. JWT Bearer (API Clients)</strong><br>
+Endpoint POST /api/login nhận { tenDangNhap, matKhau } và trả về JWT token (HMAC-SHA256, 30 phút). Token chứa claims: NameIdentifier, Name, Role, AvatarUrl, Email, MaTaiKhoan. Dùng cho React frontend hoặc client API.</p>
+
+<p><strong>3. Google OAuth 2.0</strong><br>
+Đăng nhập qua Google (callback /Account/GoogleCallback). Nếu email chưa tồn tại trong DB, tự động tạo tài khoản mới với vai trò User. Sau đăng nhập, chuyển hướng theo vai trò (Admin → /Admin/Index, Quản Lý → /QuanLy/Dashboard, User → /Index).</p>
+
+<h2>3.2. Phân quyền</h2>
+<table>
+    <tr><th style="width:20%">Vai trò</th><th style="width:80%">Quyền hạn</th></tr>
+    <tr><td>Admin</td><td>Truy cập toàn bộ /Admin/* và tất cả CRUD (13 chức năng)</td></tr>
+    <tr><td>Quản Lý</td><td>Truy cập /QuanLy/Dashboard — xem doanh thu showroom được phân công</td></tr>
+    <tr><td>User</td><td>Trang public: đặt cọc, đặt lái thử, so sánh xe, xem hồ sơ</td></tr>
+</table>
+
+<p><strong>Cơ chế bảo vệ path-based authorization:</strong></p>
+<ul>
+    <li>/Admin/* — chỉ Admin mới truy cập được (kiểm tra Session Role == "Admin")</li>
+    <li>/Orders/*, /Profile, /TestDrive/*, /QuanLy/* — yêu cầu đăng nhập</li>
+    <li>Nếu không có quyền: trả về 403 (Admin) hoặc redirect đến /Account/Login</li>
+</ul>
+
+<h1>Cơ Sở Dữ Liệu</h1>
+<p>Hệ thống sử dụng SQL Server 2022 chạy trên Docker container (mcr.microsoft.com/mssql/server:2022-latest). Database CarShopDb gồm 14 bảng dữ liệu với quan hệ khóa ngoại đầy đủ.</p>
+
+<table>
+    <tr><th style="width:30%">Bảng</th><th style="width:70%">Mô tả</th></tr>
+    <tr><td>HangXe</td><td>Hãng xe (vd: Mercedes-Benz)</td></tr>
+    <tr><td>DongXe</td><td>Dòng xe (FK → HangXe)</td></tr>
+    <tr><td>PhienBanXe_SanPham</td><td>Phiên bản xe (FK → DongXe)</td></tr>
+    <tr><td>TaiKhoan</td><td>Tài khoản người dùng</td></tr>
+    <tr><td>ChiTietKhachHang</td><td>Chi tiết khách hàng</td></tr>
+    <tr><td>DonDatCoc</td><td>Đơn đặt cọc (FK → TaiKhoan, PhienBanXe)</td></tr>
+    <tr><td>HoaDonMuaXe</td><td>Hóa đơn mua xe (FK → DonDatCoc)</td></tr>
+    <tr><td>LichHenLaiThu</td><td>Lịch hẹn lái thử (FK → TaiKhoan, DongXe, ChiNhanh)</td></tr>
+    <tr><td>ChiNhanhShowroom</td><td>Chi nhánh showroom (FK → TaiKhoan Quản Lý)</td></tr>
+    <tr><td>ChuongTrinhKhuyenMai</td><td>Chương trình khuyến mãi</td></tr>
+    <tr><td>QuangCaoBanner</td><td>Banner quảng cáo (FK → TaiKhoan)</td></tr>
+    <tr><td>KenhTuVan</td><td>Kênh tư vấn (Messenger, Zalo, SMS)</td></tr>
+    <tr><td>NhatKyHeThong</td><td>Nhật ký hoạt động (FK → TaiKhoan)</td></tr>
+    <tr><td>ThongKeTongHop_Boss</td><td>Thống kê tổng hợp (FK → ChiNhanh, DongXe)</td></tr>
+</table>
+
+<h1>Chức Năng Chính</h1>
+
+<h2>5.1. Trang công khai (User)</h2>
+<table>
+    <tr><th style="width:30%">Trang</th><th style="width:70%">Chức năng</th></tr>
+    <tr><td>Trang chủ (/Index)</td><td>Hero fullscreen, thương hiệu, xe tiêu biểu, đánh giá khách hàng, chỉ số thống kê</td></tr>
+    <tr><td>Danh sách xe (/Cars)</td><td>Bộ lọc (hãng, kiểu thân xe), tìm kiếm, sắp xếp</td></tr>
+    <tr><td>Chi tiết xe (/Details)</td><td>Gallery, thông số kỹ thuật, phiên bản liên quan, CTA</td></tr>
+    <tr><td>So sánh (/Compare)</td><td>So sánh tối đa 3 xe side-by-side</td></tr>
+    <tr><td>Showroom (/Showroom)</td><td>Danh sách showroom, tồn kho theo thương hiệu</td></tr>
+    <tr><td>Lái thử (/TestDrive)</td><td>Đặt lịch lái thử (ghi DB LichHenLaiThu)</td></tr>
+    <tr><td>Đặt cọc (/Orders/DepositForm)</td><td>Đặt cọc xe (yêu cầu đăng nhập)</td></tr>
+    <tr><td>Hồ sơ (/Profile)</td><td>Xem/sửa thông tin, đổi mật khẩu, upload avatar, xem lịch sử</td></tr>
+    <tr><td>Liên hệ (/Contact)</td><td>Form liên hệ (ghi log)</td></tr>
+</table>
+
+<h2>5.2. Quản trị (Admin)</h2>
+<table>
+    <tr><th style="width:25%">Chức năng</th><th style="width:75%">Mô tả</th></tr>
+    <tr><td>Dashboard</td><td>13 thẻ thống kê: tổng xe, đơn hàng, doanh thu, người dùng...</td></tr>
+    <tr><td>Hãng xe / Dòng xe / Phiên bản</td><td>CRUD quản lý danh mục xe</td></tr>
+    <tr><td>Người dùng</td><td>Danh sách + phân quyền (User ↔ Quản Lý), gán showroom</td></tr>
+    <tr><td>Chi nhánh Showroom</td><td>CRUD chi nhánh + phân công Quản Lý</td></tr>
+    <tr><td>Đơn cọc / Hóa đơn / Lịch hẹn</td><td>Quản lý giao dịch</td></tr>
+    <tr><td>Khuyến mãi / Banner</td><td>CRUD nội dung quảng cáo</td></tr>
+    <tr><td>Kênh tư vấn</td><td>Cấu hình Messenger, Zalo, SMS</td></tr>
+    <tr><td>Thống kê doanh thu</td><td>Biểu đồ đường (theo ngày) + cột (theo showroom) — Chart.js</td></tr>
+    <tr><td>Nhật ký hệ thống</td><td>Tra cứu log hoạt động (phân trang, tìm kiếm, lọc theo thời gian)</td></tr>
+</table>
+
+<h2>5.3. Dashboard Quản Lý Showroom</h2>
+<p>Quản Lý là vai trò trung gian giữa Admin và User. Mỗi Quản Lý được gán một chi nhánh showroom cụ thể. Dashboard của họ hiển thị:</p>
+<ul>
+    <li>Doanh thu hôm nay (tổng tiền đơn cọc đã duyệt)</li>
+    <li>Doanh thu tháng này</li>
+    <li>Tổng số đơn đã xử lý</li>
+    <li>Biểu đồ đường 30 ngày gần nhất (Chart.js)</li>
+    <li>Danh sách doanh thu chi tiết theo ngày</li>
+</ul>
+
+<h1>Bảo Mật Hệ Thống</h1>
+<table>
+    <tr><th style="width:35%">Biện pháp</th><th style="width:65%">Mô tả</th></tr>
+    <tr><td>Session Cookie HttpOnly</td><td>Chống truy cập từ JavaScript (XSS)</td></tr>
+    <tr><td>Anti-Forgery Token</td><td>Mặc định trên tất cả POST handler Razor Pages</td></tr>
+    <tr><td>Phân quyền middleware</td><td>Chặn path-based: /Admin/*, /Orders/*, /QuanLy/*</td></tr>
+    <tr><td>EF Core Parameterized</td><td>Chống SQL injection</td></tr>
+    <tr><td>403 Forbidden</td><td>Trả về lỗi 403 cho truy cập Admin trái phép</td></tr>
+    <tr><td>Exception Handler</td><td>Ẩn chi tiết lỗi ở production (UseExceptionHandler)</td></tr>
+    <tr><td>Logging đầy đủ</td><td>Tất cả hành động đều ghi log + Serilog</td></tr>
+    <tr><td>User trạng thái</td><td>Kiểm tra Active/Inactive/Banned khi đăng nhập</td></tr>
+    <tr><td>JWT HMAC-SHA256</td><td>Token ký số với secret key 32 ký tự</td></tr>
+    <tr><td>Read-only SQL user</td><td>Tài khoản AppReader chỉ đọc, bị deny SELECT trên bảng nhạy cảm</td></tr>
+</table>
+
+<div class="note">
+<strong>Lưu ý bảo mật cần cải thiện:</strong>
+<ul>
+    <li>Mật khẩu đang lưu dạng plain text (so sánh trực tiếp), chưa có hashing (bcrypt/PBKDF2)</li>
+    <li>Chưa sử dụng ASP.NET Identity — tự quản lý session thủ công</li>
+</ul>
+</div>
+
+<h1>Triển Khai</h1>
+<table>
+    <tr><th style="width:30%">Thành phần</th><th style="width:70%">Mô tả</th></tr>
+    <tr><td>Web Server</td><td>Kestrel (self-host)</td></tr>
+    <tr><td>Port</td><td>HTTP 5001 (0.0.0.0 → truy cập LAN)</td></tr>
+    <tr><td>Database</td><td>Docker container sqlserver-carproject (localhost:1433)</td></tr>
+    <tr><td>.NET Version</td><td>10.0 (net10.0)</td></tr>
+    <tr><td>Container Runtime</td><td>mcr.microsoft.com/dotnet/aspnet:10.0</td></tr>
+    <tr><td>Orchestration</td><td>.NET Aspire AppHost + ServiceDefaults</td></tr>
+    <tr><td>Monitoring</td><td>OpenTelemetry (metrics, tracing), health checks (/health, /alive)</td></tr>
+    <tr><td>Ký số DLL</td><td>Post-build PowerShell script sign-after-build.ps1 (bypass WDAC)</td></tr>
+</table>
+
+<h1>Kiến Trúc Docker &amp; Luồng Bảo Mật</h1>
+
+<h2>9.1. Docker — SQL Server hoạt động thế nào?</h2>
+
+<p><strong>Trước khi có Docker:</strong> Phải cài SQL Server trực tiếp trên Windows — nặng ~2GB, ngốn RAM, xung đột với các SQL Server khác, gỡ cài đặt phức tạp.</p>
+
+<p><strong>Docker giải quyết bằng container:</strong> Docker chạy SQL Server trong một container — giống máy ảo siêu nhẹ, chỉ chạy đúng một ứng dụng (SQL Server), cô lập hoàn toàn với hệ thống.</p>
+
+<div class="schematic">
+    <pre>┌──────────────────────────────────────────────────┐
+│                Máy Windows                         │
+│                                                    │
+│  ┌─────────────────────┐   ┌──────────────────┐   │
+│  │ Container:           │   │ CarProject.exe   │   │
+│  │ sqlserver-carproject │   │ (Web App)        │   │
+│  │                      │   │                  │   │
+│  │ SQL Server 2022      │   │ ASP.NET Core     │   │
+│  │ Port 1433 (nội bộ)   │   │ Port 5001        │   │
+│  └─────────┬────────────┘   └──────────────────┘   │
+│            │                                       │
+│            ▼                                       │
+│     localhost:1433                                  │
+└────────────────────────────────────────────────────┘</pre>
+</div>
+
+<p><strong>Các bước chi tiết:</strong></p>
+
+<table>
+    <tr><th style="width:12%">Bước</th><th style="width:30%">Hành động</th><th style="width:58%">Giải thích</th></tr>
+    <tr><td>1</td><td>Pull image SQL Server</td><td><code>docker pull mcr.microsoft.com/mssql/server:2022-latest</code> — tải image SQL Server 2022 từ Microsoft (1.5GB)</td></tr>
+    <tr><td>2</td><td>Tạo container</td><td><code>docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=..." -p 1433:1433 --name sqlserver-carproject -d mcr.microsoft.com/mssql/server:2022-latest</code></td></tr>
+    <tr><td>3</td><td>Port mapping</td><td>Cổng 1433 của máy chủ → cổng 1433 trong container. Kết nối qua <code>localhost,1433</code> hoặc <code>127.0.0.1,1433</code></td></tr>
+    <tr><td>4</td><td>Web app kết nối</td><td>EF Core mở kết nối TCP tới <code>100.108.48.1,1433</code> (IP Tailscale cho phép truy cập từ xa), gửi câu SQL parameterized</td></tr>
+</table>
+
+<div class="note">
+<strong>Tại sao dùng 100.108.48.1 thay vì localhost?</strong> Đó là IP Tailscale — cho phép kết nối từ laptop khác trong cùng mạng Tailscale. Khi chạy local hoàn toàn, có thể dùng <code>localhost,1433</code>.
+</div>
+
+<p><strong>So sánh Docker vs Cài đặt thường:</strong></p>
+<table>
+    <tr><th style="width:25%">Khía cạnh</th><th style="width:37%">Cài SQL Server trực tiếp</th><th style="width:38%">Docker container</th></tr>
+    <tr><td>Dung lượng</td><td>2-3 GB</td><td>1.5 GB (image)</td></tr>
+    <tr><td>RAM</td><td>Ngốn RAM mặc định</td><td>Giới hạn được (--memory)</td></tr>
+    <tr><td>Xung đột</td><td>Dễ xung đột port</td><td>Cô lập hoàn toàn</td></tr>
+    <tr><td>Gỡ cài đặt</td><td>Phức tạp, để lại registry</td><td><code>docker rm</code> là sạch</td></tr>
+    <tr><td>Nhiều phiên bản</td><td>Khó, cần nhiều port</td><td>Dễ — mỗi version 1 container</td></tr>
+</table>
+
+<h2>9.2. Luồng xác thực (Authentication)</h2>
+<div class="schematic">
+    <pre>Nguoi dung gui: tenDangNhap + matKhau
+         │
+         ▼
+  Login.cshtml.OnPostAsync()
+         │
+         ├─ EF Core: Tim TaiKhoan WHERE TenDangNhap = ? AND MatKhau = ?
+         │            (parameterized query → chong SQL injection)
+         │
+         ├─ Kiem tra TrangThai == "Active"?
+         │   Neu khong → bao loi "Tai khoan bi khoa"
+         │
+         ├─ Kiem tra DaXacNhanEmail?
+         │   Neu SMTP co cau hinh → yeu cau xac nhan email
+         │
+         ├─ Thanh cong → Ghi Session:
+         │   - Session.SetString("UserName", ...)
+         │   - Session.SetString("UserRole", ...)    // Admin | Quan Ly | User
+         │   - Session.SetString("TenHienThi", ...)
+         │
+         └─ Redirect theo role:
+            Admin    → /Admin/Index
+            Quan Ly  → /QuanLy/Dashboard
+            User     → /Index</pre>
+</div>
+
+<h2>9.3. Cơ chế Session</h2>
+<div class="schematic">
+    <pre>Khi dang nhap thanh cong:
+         │
+         ├─ ASP.NET Core tao Session ID (GUID ngau nhien)
+         ├─ Gui cookie HttpOnly ve trinh duyet:
+         │   Set-Cookie: .CarProject.Session=abc123...; path=/; httponly
+         │
+         ├─ Du lieu session luu tren SERVER (bo nho RAM)
+         │   Khong gui du lieu nhay cam xuong client
+         │
+         ├─ Moi request sau do:
+         │   Browser gui cookie → Server tra Session ID
+         │   → Doc du lieu tu bo nho server
+         │
+         └─ Timeout: 30 phut khong hoat dong → tu dong xoa session</pre>
+</div>
+
+<p><strong>HttpOnly là gì?</strong> Cookie có flag <code>HttpOnly = true</code> — JavaScript không thể đọc cookie này. Chống tấn công XSS (khi hacker chèn script vào trang, script không lấy được session cookie).</p>
+
+<h2>9.4. Phân quyền (Authorization)</h2>
+<p>Middleware tùy chỉnh kiểm tra từng request theo path:</p>
+<div class="schematic">
+    <pre>Moi request den
+         │
+         ▼
+  Custom middleware kiem tra path:
+         │
+         ├─ Neu path bat dau bang /Admin/:
+         │   ├─ Session co UserName? → Neu khong → redirect /Account/Login
+         │   └─ UserRole == "Admin"? → Neu khong → tra ve 403 Forbidden
+         │
+         ├─ Neu path bat dau bang /QuanLy/, /Orders/, /Profile/, /TestDrive/:
+         │   └─ Session co UserName? → Neu khong → redirect /Account/Login
+         │
+         └─ Cac path khac: cho phep truy cap (public)</pre>
+</div>
+
+<h2>9.5. JWT cho API</h2>
+<div class="schematic">
+    <pre>POST /api/login { tenDangNhap, matKhau }
+         │
+         ├─ Xac thuc giong login form
+         ├─ Tao JWT token:
+         │   Header:  { alg: "HS256" }
+         │   Payload: { sub: "MaTaiKhoan", name: "TenDangNhap",
+         │              role: "UserRole", email: "Email" }
+         │   Sign:    HMAC-SHA256(Header.Payload, SecretKey)
+         │            SecretKey = "CarProjectSuperSecretKey2024@..."
+         │
+         └─ Tra ve: { token: "eyJ...", expiresIn: 1800 }</pre>
+</div>
+<p>Token có hạn 30 phút. Client gửi token trong header <code>Authorization: Bearer eyJ...</code>. Server verify chữ ký HMAC để đảm bảo token không bị giả mạo.</p>
+
+<h2>9.6. Google OAuth 2.0</h2>
+<div class="schematic">
+    <pre>Nguoi dung → Click "Dang nhap Google"
+         │
+         ├─ Redirect den: accounts.google.com/o/oauth2/auth
+         │   Kem: ClientId, RedirectUri, Scope(email, profile)
+         │
+         ├─ Google hien thi man hinh dang nhap + xac nhan
+         │
+         ├─ Nguoi dung xac nhan → Google redirect ve:
+         │   /Account/GoogleCallback?code=...
+         │
+         ├─ Server trao doi code lay access_token
+         ├─ Server dung token goi Google API lay email + ten
+         │
+         ├─ Neu email chua co trong DB:
+         │   Tao tai khoan moi (VaiTro = "User", TrangThai = "Active")
+         │
+         └─ Ghi session + redirect nhu login thuong</pre>
+</div>
+
+<h2>9.7. Tổng kết luồng toàn hệ thống</h2>
+<div class="schematic">
+    <pre>┌──────────────────────────────────────────────────────────┐
+│                   INTERNET / LAN                          │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│              Web Browser (Chrome/Edge)                    │
+│  - Gui request toi http://192.168.1.5:5001              │
+│  - Luu session cookie (HttpOnly)                        │
+│  - Render HTML + CSS luxury theme                       │
+│  - Chart.js ve bieu do doanh thu                        │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│              ASP.NET Core Kestrel (:5001)                 │
+│  1. Middleware: Serilog → Session → Auth → Authorize     │
+│  2. Razor Pages xu ly request                            │
+│  3. Goi EF Core query DB                                 │
+│  4. Log hoat dong → Serilog + NhatKyHeThong              │
+│  5. Tra HTML response                                    │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│              SQL Server Container (localhost:1433)        │
+│  - Docker container sqlserver-carproject                 │
+│  - Database: CarShopDb (14 tables)                       │
+│  - Nhan cau lenh SQL parameterized tu EF Core            │
+│  - Tra ket qua                                           │
+└──────────────────────────────────────────────────────────┘</pre>
+</div>
+
+<h1>Giao Diện Người Dùng</h1>
+<ul>
+    <li>Chủ đề: Dark/Light Theme (Mercedes-Benz luxury, glassmorphism)</li>
+    <li>Hiệu ứng chuyển theme: rèm hai bên (curtain animation)</li>
+    <li>CSS: Bootstrap 5 grid + custom CSS (3000+ dòng)</li>
+    <li>Font: Inter (body), Montserrat (nav), Playfair Display / Cormorant Garamond (brand)</li>
+    <li>Responsive: Desktop, Tablet, Mobile</li>
+    <li>Icon: Bootstrap Icons + Font Awesome 6</li>
+    <li>Biểu đồ: Chart.js 4.4.1 (CDN)</li>
+</ul>
+
+<h1>Kết Luận</h1>
+<p>MyCar Showroom là hệ thống quản lý showroom xe hơi cao cấp hoàn chỉnh với kiến trúc ASP.NET Core hiện đại, giao diện luxury, phân quyền 3 cấp, tích hợp Google OAuth, JWT API, Docker container, và .NET Aspire orchestration. Hệ thống đáp ứng đầy đủ nhu cầu quản lý showroom từ User đến Admin với trải nghiệm người dùng cao cấp.</p>
+
+</div>
+
+</body>
+</html>

@@ -79,6 +79,66 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 })();
 
+// Theme toggle (dark/light) with curtain animation
+(function() {
+    var html = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    var icon = document.getElementById('themeIcon');
+    var curtain = document.getElementById('themeCurtain');
+    if (!toggle || !icon || !curtain) return;
+
+    function setTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('site-theme', theme);
+        icon.className = theme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    // Load saved theme
+    var saved = localStorage.getItem('site-theme');
+    if (saved) setTheme(saved);
+
+    toggle.addEventListener('click', function() {
+        var current = html.getAttribute('data-theme');
+        var next = current === 'light' ? 'dark' : 'light';
+
+        // Curtain close
+        curtain.classList.remove('active', 'closing');
+        void curtain.offsetHeight;
+        curtain.classList.add('closing');
+
+        setTimeout(function() {
+            setTheme(next);
+            // Curtain open
+            curtain.classList.remove('closing');
+            curtain.classList.add('active');
+        }, 350);
+
+        setTimeout(function() {
+            curtain.classList.remove('active');
+        }, 950);
+    });
+})();
+
+// Mobile nav dropdown toggle (Giới thiệu → Về chúng tôi / Liên hệ)
+function toggleMobileDropdown(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+}
+
+// Close mobile dropdown when clicking a link inside
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.mobile-nav-panel .nav-dropdown-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            var panel = document.getElementById('mobileNavPanel');
+            if (panel) panel.classList.remove('open');
+            document.querySelectorAll('#mobileMenuToggle .toggler-bar').forEach(function(bar) {
+                bar.style.transform = '';
+                bar.style.opacity = '';
+            });
+        });
+    });
+});
+
 // Scroll reveal animation (plays on every scroll-down, no reverse when scrolling up)
 (function() {
     var observer = new IntersectionObserver(function(entries) {

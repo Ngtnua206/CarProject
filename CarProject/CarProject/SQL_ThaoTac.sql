@@ -57,8 +57,11 @@ SELECT * FROM NhatKyHeThong ORDER BY ThoiGian DESC;
 -- ==================== THÊM DỮ LIỆU ====================
 
 -- Thêm tài khoản
+select * from Taikhoan;
+
+
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
-VALUES ('admin', 'admin123', 'Admin', 'Active');
+VALUES ('minhquanmkp123@gmail.com', 'hahahihi123', 'Admin', 'Active');
 
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai)
 VALUES ('user1', 'user123', 'User', 'Active');
@@ -112,6 +115,9 @@ UPDATE PhienBanXe_SanPham SET TrangThai = N'Hết hàng' WHERE MaPhienBan = 1;
 -- Đổi quyền tài khoản
 UPDATE TaiKhoan SET VaiTro = N'Quản Lý' WHERE TenDangNhap = 'user1';
 
+
+UPDATE TaiKhoan SET AvatarUrl = null WHERE TenDangNhap = 'fntzzs682@gmail.com';
+
 -- Kích hoạt/vô hiệu banner
 UPDATE QuangCaoBanner SET TrangThaiKichHoat = 0 WHERE MaBanner = 1;
 
@@ -154,3 +160,9 @@ SELECT * FROM PhienBanXe_SanPham WHERE TenPhienBan LIKE '%C200%';
 
 -- Tìm hóa đơn theo mã
 SELECT * FROM HoaDonMuaXe WHERE MaHoaDon LIKE '%HD001%';
+
+
+USE CarShopDb;
+CREATE USER Vanh FOR LOGIN Vanh;
+ALTER ROLE db_datareader ADD MEMBER Vanh;
+ALTER ROLE db_datawriter ADD MEMBER Vanh;
