@@ -13,12 +13,14 @@ public class ProfileModel : PageModel
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
     private readonly IWebHostEnvironment _env;
+    private readonly IPasswordService _password;
 
-    public ProfileModel(AppDbContext db, IActivityLogService log, IWebHostEnvironment env)
+    public ProfileModel(AppDbContext db, IActivityLogService log, IWebHostEnvironment env, IPasswordService password)
     {
         _db = db;
         _log = log;
         _env = env;
+        _password = password;
     }
 
     public TaiKhoan TaiKhoan { get; set; }
@@ -124,14 +126,14 @@ public class ProfileModel : PageModel
         var user = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == userId);
         if (user == null) return NotFound();
 
-        if (user.MatKhau != MatKhauCu)
+        if (!_password.Verify(MatKhauCu, user.MatKhau ?? ""))
         {
             Message = "Mật khẩu cũ không đúng.";
             MessageType = "error";
             return Page();
         }
 
-        user.MatKhau = MatKhauMoi;
+        user.MatKhau = _password.Hash(MatKhauMoi);
         await _db.SaveChangesAsync();
 
         Message = "Đổi mật khẩu thành công.";

@@ -11,6 +11,7 @@ public class EditModel : PageModel
 {
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
+    private readonly IPasswordService _password;
 
     [BindProperty]
     public TaiKhoan User { get; set; }
@@ -25,10 +26,11 @@ public class EditModel : PageModel
     public string MessageType { get; set; }
     public List<ChiNhanhShowroom> DanhSachChiNhanh { get; set; } = new();
 
-    public EditModel(AppDbContext db, IActivityLogService log)
+    public EditModel(AppDbContext db, IActivityLogService log, IPasswordService password)
     {
         _db = db;
         _log = log;
+        _password = password;
     }
 
     public async Task<IActionResult> OnGetAsync(string id)
@@ -72,7 +74,7 @@ public class EditModel : PageModel
                 DanhSachChiNhanh = await _db.ChiNhanhShowroom.ToListAsync();
                 return Page();
             }
-            existing.MatKhau = MatKhauMoi;
+            existing.MatKhau = _password.Hash(MatKhauMoi);
         }
 
         await _db.SaveChangesAsync();

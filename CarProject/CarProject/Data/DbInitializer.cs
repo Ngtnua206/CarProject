@@ -1,4 +1,5 @@
 using CarProject.Models;
+using CarProject.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarProject.Data;
@@ -23,14 +24,15 @@ public static class DbInitializer
         }
         catch { /* login may already exist or not supported */ }
 
-        // Seed test users (plain text passwords match Login.cshtml.cs comparison)
+        // Seed test users
         if (!context.TaiKhoan.Any())
         {
+            var pwd = new PasswordService();
             context.TaiKhoan.AddRange(
                 new TaiKhoan
                 {
                     TenDangNhap = "admin",
-                    MatKhau = "admin123",
+                    MatKhau = pwd.Hash("admin123"),
                     VaiTro = "Admin",
                     TrangThai = "Active",
                     TenHienThi = "Admin",
@@ -41,7 +43,7 @@ public static class DbInitializer
                 new TaiKhoan
                 {
                     TenDangNhap = "user",
-                    MatKhau = "user123",
+                    MatKhau = pwd.Hash("user123"),
                     VaiTro = "User",
                     TrangThai = "Active",
                     TenHienThi = "Người dùng",

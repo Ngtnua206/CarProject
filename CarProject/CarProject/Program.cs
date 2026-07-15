@@ -66,6 +66,7 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<CarProject.Services.IActivityLogService, CarProject.Services.ActivityLogService>();
     builder.Services.AddScoped<CarProject.Services.IJwtService, CarProject.Services.JwtService>();
+    builder.Services.AddScoped<CarProject.Services.IPasswordService, CarProject.Services.PasswordService>();
     builder.Services.Configure<CarProject.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
     builder.Services.AddScoped<CarProject.Services.IEmailService, CarProject.Services.EmailService>();
 
@@ -375,9 +376,13 @@ try
             return Results.BadRequest(new { error = "Missing credentials" });
 
         var db = ctx.RequestServices.GetRequiredService<CarProject.Data.AppDbContext>();
-        var user = await db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == tenDangNhap && t.MatKhau == matKhau);
+        var user = await db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == tenDangNhap);
 
         if (user == null || (user.TrangThai != "Active" && user.TrangThai != "Hoạt động"))
+            return Results.Unauthorized();
+
+        var passwordService = ctx.RequestServices.GetRequiredService<CarProject.Services.IPasswordService>();
+        if (!passwordService.Verify(matKhau, user.MatKhau ?? ""))
             return Results.Unauthorized();
 
         var token = jwt.GenerateToken(user);

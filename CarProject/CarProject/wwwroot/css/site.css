@@ -42,6 +42,10 @@ body {
     overflow-x: hidden;
 }
 
+[data-theme="light"] body {
+    color: #333;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-title);
 }
@@ -634,7 +638,6 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', var(--font-title);
     font-size: 0.85rem;
     color: var(--brand-silver);
-    text-transform: uppercase;
     letter-spacing: 8px;
     font-weight: 600;
     margin-bottom: 1.5rem;

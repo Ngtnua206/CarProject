@@ -10,11 +10,13 @@ public class ProfileModel : PageModel
 {
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
+    private readonly IPasswordService _password;
 
-    public ProfileModel(AppDbContext db, IActivityLogService log)
+    public ProfileModel(AppDbContext db, IActivityLogService log, IPasswordService password)
     {
         _db = db;
         _log = log;
+        _password = password;
     }
 
     [BindProperty]
@@ -109,13 +111,13 @@ public class ProfileModel : PageModel
                 MessageType = "error";
                 return Page();
             }
-            if (user.MatKhau != MatKhauCu)
+            if (!_password.Verify(MatKhauCu, user.MatKhau ?? ""))
             {
                 Message = "Mật khẩu cũ không đúng.";
                 MessageType = "error";
                 return Page();
             }
-            user.MatKhau = MatKhauMoi;
+            user.MatKhau = _password.Hash(MatKhauMoi);
         }
 
         await _db.SaveChangesAsync();

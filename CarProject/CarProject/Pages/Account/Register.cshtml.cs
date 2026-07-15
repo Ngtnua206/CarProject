@@ -14,6 +14,7 @@ public class RegisterModel : PageModel
     private readonly IActivityLogService _log;
     private readonly IEmailService _email;
     private readonly IConfiguration _config;
+    private readonly IPasswordService _password;
 
     public string ErrorMessage { get; set; }
     public bool GoogleEnabled { get; set; }
@@ -22,12 +23,13 @@ public class RegisterModel : PageModel
     public bool DaGuiMail { get; set; }
     public bool XacNhanThanhCong { get; set; }
 
-    public RegisterModel(AppDbContext db, IActivityLogService log, IEmailService email, IConfiguration config)
+    public RegisterModel(AppDbContext db, IActivityLogService log, IEmailService email, IConfiguration config, IPasswordService password)
     {
         _db = db;
         _log = log;
         _email = email;
         _config = config;
+        _password = password;
         GoogleEnabled = !string.IsNullOrEmpty(config["Authentication:Google:ClientId"]);
     }
 
@@ -104,7 +106,7 @@ public class RegisterModel : PageModel
         var user = new TaiKhoan
         {
             TenDangNhap = email,
-            MatKhau = password,
+            MatKhau = _password.Hash(password),
             VaiTro = "User",
             TrangThai = "Active",
             TenHienThi = email.Split('@')[0],

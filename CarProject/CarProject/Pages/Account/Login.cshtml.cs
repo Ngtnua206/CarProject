@@ -15,6 +15,7 @@ public class LoginModel : PageModel
 {
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
+    private readonly IPasswordService _password;
 
     [BindProperty]
     public string TenDangNhap { get; set; }
@@ -29,10 +30,11 @@ public class LoginModel : PageModel
     public bool GoogleEnabled { get; set; }
     public string LoaiThongBao { get; set; }
 
-    public LoginModel(AppDbContext db, IActivityLogService log, IConfiguration config)
+    public LoginModel(AppDbContext db, IActivityLogService log, IConfiguration config, IPasswordService password)
     {
         _db = db;
         _log = log;
+        _password = password;
         GoogleEnabled = !string.IsNullOrEmpty(config["Authentication:Google:ClientId"]);
     }
 
@@ -46,9 +48,9 @@ public class LoginModel : PageModel
         }
 
         var user = await _db.TaiKhoan
-            .FirstOrDefaultAsync(t => t.TenDangNhap == TenDangNhap && t.MatKhau == MatKhau);
+            .FirstOrDefaultAsync(t => t.TenDangNhap == TenDangNhap);
 
-        if (user == null)
+        if (user == null || !_password.Verify(MatKhau, user.MatKhau ?? ""))
         {
             ErrorMessage = "Tên đăng nhập hoặc mật khẩu không đúng.";
             await _log.LogAsync("Đăng nhập thất bại", $"Tài khoản \"{TenDangNhap}\" không đúng");
