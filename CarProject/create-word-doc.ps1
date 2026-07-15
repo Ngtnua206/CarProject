@@ -212,5 +212,45 @@ Add-Bullet "Bieu do: Chart.js 4.4.1 (CDN)"
 # Save
 $outputPath = "D:\Code\Code\WebMVC\CarProject\BaoCao_HeThong_MyCar.docx"
 $doc.SaveAs2([ref]$outputPath, [ref]16)
+$selection.TypeParagraph()
+
+# Section 9 - Chatbot
+Add-Heading "9. Chatbot Hoi Dap (AI Assistant)" 1
+Add-Para "Y tuong: Tich hop mot module chatbot de tuong tac ho tro khach hang tren website, ho tro tra loi cau hoi thong thuong, huong dan san pham va ho tro dat hang. Chatbot chinh duoc thiet ke de hoat dong chinh trong tieng Anh va duoc ket hop voi module dich tu Tieng Anh sang Tieng Viet de phu hop nguoi dung VN."
+
+Add-Heading "9.1. Tap du lieu & Huong dan train" 2
+Add-Para "Nguon du lieu huan luyen: ket hop cac tap du lieu dong hoi thoai tieng Anh mo (public) va tap du lieu chuyen mon (FAQ, transcript support): PersonaChat, DailyDialog, MultiWOZ, va tap du lieu FAQ/SOP rieng cua MyLxCar. Datset duoc chuan hoa thanh cap doi (input, response) hoac pairs conversation-turns."
+Add-Bullet "Format: JSON lines hoac CSV: {\"input\": \"...\", \"response\": \"...\"}"
+Add-Bullet "Tien trinh tien xu ly: loai bo HTML, normalizetext, tokenization, hop nhat entity (model can optionally use slot-filling)."
+
+Add-Heading "9.2. Kien truc mo hinh" 2
+Add-Para "Lua chon mo hinh: transformer seq2seq hoac pretrained conversational model (vd. T5, BART, GPT-family). De tiet kiem chi phi va tai thuc hien tren server nho, co the dung lightweight fine-tuning tren pretrained model hoac su dung inference qua hosted API (Hugging Face / OpenAI)."
+Add-Table @("Lop mo hinh", "Muc dich") @(
+    @("Pretrained seq2seq (T5/BART)", "Fine-tune cho cau hoi-tra loi, hop voi token limit va latency hop ly"),
+    @("Causal LLM (GPT-style)", "Chat-style conversation, tot cho knowledge-grounded responses khi co access den context")
+)
+
+Add-Heading "9.3. Module dich Anh -> Viet" 2
+Add-Para "De phu hop nguoi dung VN, chat flow co the su dung mot trong hai chien luoc:")
+Add-Bullet "Translate-in: Dich van ban tieng Viet sang tieng Anh, chay qua English chatbot, dich tra loi tu Anh sang Viet truoc khi tra ve user (dung MarianMT / Opus-MT hoac cloud translate API)."
+Add-Bullet "Translate-out: Train chatbot truc tiep tren English dataset va luu cac cau tra loi goc; sau do khi tra loi bang tieng Anh, chuyen sang tieng Viet truoc khi hien thi."
+Add-Para "Module dich nen duoc tach rieng thanh service microservice (container) ho tro batch translation va cache ket qua dich de giam chi phi. Su dung mau transformer (Marian/OPUS-MT) neu muon giai phap hoan toan open-source.")
+
+Add-Heading "9.4. API va Tich hop voi Razor Pages" 2
+Add-Para "De ket noi frontend voi backend chatbot, them mot endpoint minimal API: POST /api/chatbot. Request chua: { 'text': '...', 'lang': 'vi' } va response: { 'reply': '...', 'lang': 'vi' }. Luu y: neu lang='vi' thi backend co the chuyen sang 'en' -> goi model -> dich ve 'vi' truoc khi tra ve."
+Add-Para "De giu context, su dung session hoac conversationId (luu conversation history toi muc ngan) va gioi han so turn de tranh phi nhieu bo nho."
+
+Add-Heading "9.5. Buoc trien khai & Can thiet" 2
+Add-Bullet "1) Thu thap va tien xu ly tap du lieu: gom FAQ, transcript, cau hoi thong thuong, va standardize format." 
+Add-Bullet "2) Fine-tune mo hinh tren dataset tieng Anh; danh gia bang BLEU/ROUGE va human eval cho chat experience." 
+Add-Bullet "3) Xay module dich (Marian/Opus-MT hoac cloud)." 
+Add-Bullet "4) Thiet ke API: /api/chatbot (inference), /api/chatbot/train (ops, batch retrain)." 
+Add-Bullet "5) Deploy mo hinh trong container (Docker) voi autoscaling neu can (k8s / app service)."
+
+Add-Heading "9.6. Quyen rieng tu & Hieu nang" 2
+Add-Para "Bao mat: khong luu thong tin nhiem vu ca nhan khong can thiet, neu luu thi ma hoa va luu an toan. De hien thi thong tin nhay cam, them cho phep moderator review va fallback to human agent."
+Add-Para "Hieu nang: dung cache cho nhung cau hoi thong dung, gioi han do dai context, va su dung hosted inference neu latency la yeu to quan trong."
+
+Add-Para "Ghi chu ky thuat ngắn: De nhanh, ban co the bat dau voi flow: (1) Translate (vi->en) -> (2) Hosted English chatbot (Hugging Face/OpenAI) -> (3) Translate (en->vi) -> (4) Return cho frontend. Khi mo rong, thay ban bang mo hinh fine-tuned rieng va deploy local." 
 $word.Quit()
 Write-Output "OK"
