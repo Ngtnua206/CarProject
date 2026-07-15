@@ -3,7 +3,7 @@ bin/
 obj/
 *.user
 *.suo
-
+*.psl
 appsettings.Development.json
 CarProject/Logs/
 CarProject/CarProject/Logs/
