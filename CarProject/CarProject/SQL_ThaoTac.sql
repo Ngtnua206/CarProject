@@ -166,3 +166,13 @@ USE CarShopDb;
 CREATE USER Vanh FOR LOGIN Vanh;
 ALTER ROLE db_datareader ADD MEMBER Vanh;
 ALTER ROLE db_datawriter ADD MEMBER Vanh;
+
+-- ==================== CAP NHAT MAT KHAU (PBKDF2 hash) ====================
+-- Chay sau khi da tao tai khoan, dung de chuyen mat khau plain text -> hash
+UPDATE TaiKhoan SET MatKhau = N'wNqykWOAM5hGb8+mPUYvaw==.JpcQKcXxRJl31glDE1nu6/PUQsZAxLvS5j1YHAwxLT4=' WHERE TenDangNhap = N'fntzzs682@gmail.com';
+UPDATE TaiKhoan SET MatKhau = N'0OUCfE9U3HuDS2VghvJd3g==.FNV/tRowCFfYXFBgTlPgmDYep6OCLtZyQEArjrxE4Vg=' WHERE TenDangNhap = N'minhquanmkp123@gmail.com';
+UPDATE TaiKhoan SET MatKhau = N'jfj5pQ4ZwoZuOVn4pZCu1Q==.aDRo1vo42rnvA2i/E+B4kqvHddiwNog1Ztj/3tY7S1k=' WHERE TenDangNhap = N'Ngttu2006@gmail.com';
+UPDATE TaiKhoan SET MatKhau = N'f1LPcH537MYN7s5VbzoamQ==.irSEdtlKdnMK1UQHBm/SKs75n4tls9HQXC+Gf+MXmTc=' WHERE TenDangNhap = N'quanly1';
+UPDATE TaiKhoan SET MatKhau = N'W/91Lmc0TaaA7wHTc+7Vvg==.usPMQz72I2LW9aN2XIPpxGP57LfvypZ+MPQPXWrxLmI=' WHERE TenDangNhap = N'thanhdac223@gmail.com';
+UPDATE TaiKhoan SET MatKhau = N'n2zN5/JWq7EppQ1RgTIZ4g==.HeZXQln7bNEKqIg6tC+U5w2z6N2SZiQ+wJI41bpdvYg=' WHERE TenDangNhap = N'user1';
+UPDATE TaiKhoan SET MatKhau = N'NErALrnWhGZIsGdyZMHueg==.qC0xjUR/NjlOtz8ZdBImkgq8qxDt9elxyC7hIyF2p/E=' WHERE TenDangNhap = N'Vanh280306@gmail.com';
