@@ -28,7 +28,8 @@ public class IndexModel : PageModel
         DanhSachChiNhanh = await _db.ChiNhanhShowroom.ToListAsync();
         UserShowroomMap = await _db.ChiNhanhShowroom
             .Where(c => c.MaQuanLy != null)
-            .ToDictionaryAsync(c => c.MaQuanLy, c => c.TenChiNhanh);
+            .GroupBy(c => c.MaQuanLy)
+            .ToDictionaryAsync(g => g.Key, g => g.First().TenChiNhanh);
         await _log.LogAsync("Xem danh sách người dùng");
     }
 
