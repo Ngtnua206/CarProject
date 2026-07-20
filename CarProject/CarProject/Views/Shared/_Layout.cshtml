@@ -89,6 +89,14 @@
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
 
+                <!-- Cart icon -->
+                <div class="nav-cart-wrapper">
+                    <a asp-page="/Orders/Cart/Index" class="nav-cart-link" title="Giỏ hàng">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                </div>
+
                 <!-- Auth stacked - right -->
                 <div class="nav-auth-stacked">
                     @if (isLoggedIn)
@@ -195,7 +203,7 @@
     </div>
 
     <!-- Toast container -->
-    <div class="toast-premium" id="toastContainer"></div>
+    <div class="toast-stack" id="toastContainer"></div>
 
     <footer class="footer-premium">
         <div class="container">
@@ -257,6 +265,90 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(function() {
+            function updateCartCount() {
+                $.get('/api/cart/count', function(data) {
+                    var badge = $('#cartCount');
+                    var count = data.count || 0;
+                    if (count > 0) {
+                        var display = count >= 10 ? '9+' : count;
+                        var prev = badge.data('prev') || 0;
+                        badge.text(display).addClass('visible');
+                        if (count !== prev) {
+                            badge.removeClass('cart-badge-bounce');
+                            void badge[0].offsetWidth;
+                            badge.addClass('cart-badge-bounce');
+                        }
+                        badge.data('prev', count);
+                    } else {
+                        badge.removeClass('visible').removeClass('cart-badge-bounce');
+                        badge.data('prev', 0);
+                    }
+                });
+            }
+            window.showToast = function(message, isError) {
+                var container = $('#toastContainer');
+                var id = 't' + Date.now() + Math.random().toString(36).substr(2, 4);
+                var toast = $(
+                    '<div class="toast-item" id="' + id + '">' +
+                        '<div class="toast-icon"><i class="fas ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') + '"></i></div>' +
+                        '<div class="toast-body">' +
+                            '<div class="toast-title">' + (isError ? 'Thất bại' : 'Thành công') + '</div>' +
+                            '<div class="toast-msg">' + message + '</div>' +
+                        '</div>' +
+                        '<button class="toast-close" onclick="closeToast(\'' + id + '\')">&times;</button>' +
+                        '<div class="toast-progress"></div>' +
+                    '</div>'
+                );
+                container.prepend(toast);
+                requestAnimationFrame(function() {
+                    toast.addClass('toast-visible');
+                });
+                var progress = toast.find('.toast-progress');
+                progress.css('animation', 'toastProgress 3s linear forwards');
+                var timer = setTimeout(function() {
+                    closeToast(id);
+                }, 3200);
+                toast.data('timer', timer);
+            };
+            window.closeToast = function(id) {
+                var toast = $('#' + id);
+                if (!toast.length) return;
+                var timer = toast.data('timer');
+                if (timer) clearTimeout(timer);
+                toast.removeClass('toast-visible').addClass('toast-hide');
+                setTimeout(function() { toast.remove(); }, 350);
+            };
+            window.addToCart = function(maPhienBan, tenPhienBan, tenDong, giaNiemYet, mauSac, dongCo, hopSo, duongDanAnh) {
+                $.ajax({
+                    url: '/api/cart/add',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        maPhienBan: maPhienBan,
+                        tenPhienBan: tenPhienBan,
+                        tenDong: tenDong,
+                        giaNiemYet: giaNiemYet,
+                        mauSac: mauSac || '',
+                        dongCo: dongCo || '',
+                        hopSo: hopSo || '',
+                        duongDanAnh: duongDanAnh || ''
+                    }),
+                    success: function(data) {
+                        if (data.success) {
+                            updateCartCount();
+                            showToast('Đã thêm <strong>' + tenPhienBan + '</strong> vào giỏ hàng.');
+                        }
+                    },
+                    error: function() {
+                        showToast('Vui lòng đăng nhập để sử dụng giỏ hàng.', true);
+                    }
+                });
+            };
+            updateCartCount();
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

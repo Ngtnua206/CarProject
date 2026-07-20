@@ -1,0 +1,109 @@
+@page
+@model CarProject.Pages.Orders.DepositResultModel
+@{
+    ViewData["Title"] = "Đặt cọc thành công";
+}
+
+<style>
+.result-card {
+    max-width: 600px; margin: 2rem auto;
+    background: rgba(255,255,255,0.03); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+    padding: 2.5rem; text-align: center;
+}
+.result-card .check-icon {
+    width: 70px; height: 70px; border-radius: 50%;
+    background: rgba(34,197,94,0.15); border: 2px solid rgba(34,197,94,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem; font-size: 1.8rem; color: #22c55e;
+}
+.bank-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 1.5rem; text-align: left; margin: 1.5rem 0;
+}
+.bank-card .row-line {
+    display: flex; justify-content: space-between; padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;
+}
+.bank-card .row-line:last-child { border-bottom: none; }
+.bank-card .label { color: rgba(255,255,255,0.4); }
+.bank-card .value { color: var(--brand-white); font-weight: 600; }
+
+.qr-container {
+    width: 250px; height: 250px; margin: 1.5rem auto;
+    background: white; border-radius: 12px; padding: 10px;
+    display: flex; align-items: center; justify-content: center;
+}
+.qr-container img { max-width: 100%; max-height: 100%; }
+</style>
+
+<div class="deposit-page" style="padding: 2rem 0;">
+    <div class="result-card">
+        <div class="check-icon"><i class="fas fa-check"></i></div>
+        <h4 style="color: var(--brand-white); margin-bottom: 0.3rem;">Đặt cọc thành công!</h4>
+        <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem;">
+            Cảm ơn <strong>@Model.HoTen</strong>! Vui lòng chuyển khoản để hoàn tất đặt cọc.
+        </p>
+
+        <div class="bank-card">
+            <div class="row-line">
+                <span class="label">Đơn cọc</span>
+                <span class="value">#@Model.MaDonCoc</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Phiên bản</span>
+                <span class="value">@Model.TenPhienBan</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Số tiền</span>
+                <span class="value" style="color: var(--brand-gold); font-size: 1.1rem;">@Model.SoTienCocStr</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Ngân hàng</span>
+                <span class="value">@Model.BankName</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Số tài khoản</span>
+                <span class="value" style="font-size: 1rem;">@Model.BankNumber</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Chủ tài khoản</span>
+                <span class="value">@Model.AccountName</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Nội dung chuyển khoản</span>
+                <span class="value" style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                    @Model.TransferContent
+                </span>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.QrImageUrl))
+        {
+            <div class="qr-container">
+                <img src="@Model.QrImageUrl" alt="QR thanh toán" />
+            </div>
+            <p style="color: rgba(255,255,255,0.3); font-size: 0.75rem; margin-top: 0.3rem;">
+                Quét QR bằng app ngân hàng để chuyển khoản nhanh
+            </p>
+        }
+        else
+        {
+            <div style="background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.85rem;">
+                <i class="fas fa-exclamation-triangle me-1" style="color: var(--brand-gold);"></i>
+                <span style="color: rgba(255,255,255,0.7);">
+                    Chuyển khoản theo thông tin bên trên. Hệ thống sẽ tự động xác nhận sau khi nhận được tiền.
+                </span>
+            </div>
+        }
+
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+            <a asp-page="/Profile" class="btn-premium btn-premium-solid" style="justify-content: center; padding: 0.7rem;">
+                <i class="fas fa-user"></i> Xem đơn của tôi
+            </a>
+            <a asp-page="/Index" class="btn-premium btn-premium-outline" style="justify-content: center; padding: 0.7rem;">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        </div>
+    </div>
+</div>

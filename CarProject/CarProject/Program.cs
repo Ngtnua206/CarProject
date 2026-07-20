@@ -7,6 +7,7 @@ using Serilog;
 using System.Text.Json;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
+using CarProject.Services;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
@@ -65,6 +66,7 @@ try
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<CarProject.Services.IActivityLogService, CarProject.Services.ActivityLogService>();
+    builder.Services.AddScoped<CarProject.Services.ICartService, CarProject.Services.CartService>();
     builder.Services.AddScoped<CarProject.Services.IJwtService, CarProject.Services.JwtService>();
     builder.Services.AddScoped<CarProject.Services.IPasswordService, CarProject.Services.PasswordService>();
     builder.Services.Configure<CarProject.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
@@ -399,6 +401,39 @@ try
                 avatarUrl = user.AvatarUrl ?? ""
             }
         });
+    });
+
+    // Minimal API for cart operations
+    app.MapGet("/api/cart/count", async (HttpContext ctx, ICartService cart) =>
+    {
+        var userName = ctx.Session.GetString("UserName");
+        if (string.IsNullOrEmpty(userName))
+            return Results.Ok(new { count = 0 });
+        var count = await cart.GetCartCountAsync();
+        return Results.Ok(new { count });
+    });
+
+    app.MapPost("/api/cart/add", async (HttpContext ctx, ICartService cart) =>
+    {
+        var userName = ctx.Session.GetString("UserName");
+        if (string.IsNullOrEmpty(userName))
+            return Results.Ok(new { success = false, error = "Vui lòng đăng nhập" });
+
+        string body;
+        using (var reader = new StreamReader(ctx.Request.Body))
+            body = await reader.ReadToEndAsync();
+
+        var payload = JsonSerializer.Deserialize<JsonElement>(body);
+        var item = JsonSerializer.Deserialize<CartItem>(body) ?? new CartItem();
+
+        await cart.AddToCartAsync(item);
+        return Results.Ok(new { success = true });
+    });
+
+    app.MapDelete("/api/cart/remove/{id:int}", async (int id, ICartService cart) =>
+    {
+        await cart.RemoveFromCartAsync(id);
+        return Results.Ok(new { success = true });
     });
 
     app.MapRazorPages();

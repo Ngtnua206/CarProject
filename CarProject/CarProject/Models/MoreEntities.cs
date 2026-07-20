@@ -17,6 +17,11 @@ public class DonDatCoc
     public DateTime? NgayHenNhanXe { get; set; }
     public string TrangThaiDonHang { get; set; }
     public string GhiChu { get; set; }
+    public string HoTen { get; set; }
+    public string SoDienThoai { get; set; }
+    public string DiaChi { get; set; }
+    public string MaGiaoDich { get; set; }
+    public string SepayTransactionId { get; set; }
 
     [ForeignKey("MaKhachHang")]
     public TaiKhoan KhachHang { get; set; }
@@ -165,4 +170,20 @@ public class ThongKeTongHop_Boss
 
     [ForeignKey("MaDongXeBanChayNhat")]
     public DongXe DongXeBanChay { get; set; }
+}
+
+public class GioHang
+{
+    [Key]
+    public int MaGioHang { get; set; }
+    public string MaTaiKhoan { get; set; }
+    public int MaPhienBan { get; set; }
+    public int SoLuong { get; set; }
+    public DateTime NgayTao { get; set; }
+
+    [ForeignKey("MaTaiKhoan")]
+    public TaiKhoan TaiKhoan { get; set; }
+
+    [ForeignKey("MaPhienBan")]
+    public PhienBanXe PhienBan { get; set; }
 }

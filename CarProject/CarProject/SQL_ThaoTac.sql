@@ -160,7 +160,7 @@ SELECT * FROM PhienBanXe_SanPham WHERE TenPhienBan LIKE '%C200%';
 
 -- Tìm hóa đơn theo mã
 SELECT * FROM HoaDonMuaXe WHERE MaHoaDon LIKE '%HD001%';
-
+select * from KenhTuVan;
 
 USE CarShopDb;
 CREATE USER Vanh FOR LOGIN Vanh;
