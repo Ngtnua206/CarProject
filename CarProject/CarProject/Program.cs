@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using CarProject.Services;
+using CarProject.Data;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
@@ -433,6 +434,125 @@ try
     app.MapDelete("/api/cart/remove/{id:int}", async (int id, ICartService cart) =>
     {
         await cart.RemoveFromCartAsync(id);
+        return Results.Ok(new { success = true });
+    });
+
+    // Inline admin editor API endpoints
+    app.MapPost("/api/admin/upload", async (HttpContext ctx, IWebHostEnvironment env) =>
+    {
+        var file = ctx.Request.Form.Files.FirstOrDefault();
+        if (file == null) return Results.BadRequest(new { error = "No file" });
+        var uploadsDir = Path.Combine(env.WebRootPath, "uploads", "admin");
+        Directory.CreateDirectory(uploadsDir);
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var path = Path.Combine(uploadsDir, fileName);
+        using (var stream = new FileStream(path, FileMode.Create))
+            await file.CopyToAsync(stream);
+        return Results.Ok(new { url = $"/uploads/admin/{fileName}" });
+    });
+
+    app.MapPost("/api/admin/banner/save", async (HttpContext ctx, AppDbContext db) =>
+    {
+        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+        var duongDanAnh = body.GetProperty("duongDanAnh").GetString();
+        var banner = await db.QuangCaoBanner.OrderBy(b => b.ThuTuHienThi).FirstOrDefaultAsync();
+        if (banner == null)
+        {
+            banner = new CarProject.Models.QuangCaoBanner
+            {
+                DuongDanAnh = duongDanAnh,
+                ThuTuHienThi = 1,
+                MaQuanLyCapNhat = ctx.Session.GetString("UserName") ?? "admin"
+            };
+            db.QuangCaoBanner.Add(banner);
+        }
+        else
+        {
+            banner.DuongDanAnh = duongDanAnh;
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true });
+    });
+
+    app.MapGet("/api/admin/dongxe/{id}", async (int id, AppDbContext db) =>
+    {
+        var dongXe = await db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes)
+            .FirstOrDefaultAsync(d => d.MaDong == id);
+        if (dongXe == null) return Results.NotFound();
+        var hx = dongXe.HangXe;
+        return Results.Ok(new
+        {
+            dongXe.MaDong,
+            dongXe.TenDong,
+            dongXe.KieuDang,
+            dongXe.MaHang,
+            dongXe.DuongDanAnh,
+            brand = hx != null ? new { hx.MaHang, hx.TenHang, hx.QuocGia, hx.DuongDanLogo } : null,
+            versions = dongXe.PhienBanXes?.Select(v => new
+            {
+                v.MaPhienBan,
+                v.TenPhienBan,
+                v.GiaNiemYet,
+                v.MauSac,
+                v.DongCo,
+                v.HopSo,
+                v.LoaiNhietLieu,
+                v.SoLuongTrongKho,
+                v.DuongDanAnh,
+                v.TrangThai,
+                v.MaKhuyenMai
+            }).ToList()
+        });
+    });
+
+    app.MapPost("/api/admin/hangxe/save", async (HttpContext ctx, AppDbContext db) =>
+    {
+        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+        var maHang = body.GetProperty("maHang").GetInt32();
+        var hangXe = await db.HangXe.FindAsync(maHang);
+        if (hangXe == null) return Results.NotFound();
+        if (body.TryGetProperty("tenHang", out var th)) hangXe.TenHang = th.GetString() ?? hangXe.TenHang;
+        if (body.TryGetProperty("quocGia", out var qg)) hangXe.QuocGia = qg.GetString() ?? hangXe.QuocGia;
+        if (body.TryGetProperty("duongDanLogo", out var ddl) && ddl.ValueKind != JsonValueKind.Null)
+            hangXe.DuongDanLogo = ddl.GetString();
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true });
+    });
+
+    app.MapPost("/api/admin/dongxe/save", async (HttpContext ctx, AppDbContext db) =>
+    {
+        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+        var maDong = body.GetProperty("maDong").GetInt32();
+        var dongXe = await db.DongXe.FindAsync(maDong);
+        if (dongXe == null) return Results.NotFound();
+        if (body.TryGetProperty("tenDong", out var td)) dongXe.TenDong = td.GetString() ?? dongXe.TenDong;
+        if (body.TryGetProperty("maHang", out var mh)) dongXe.MaHang = mh.GetInt32();
+        if (body.TryGetProperty("kieuDang", out var kd)) dongXe.KieuDang = kd.GetString() ?? dongXe.KieuDang;
+        if (body.TryGetProperty("duongDanAnh", out var dda) && dda.ValueKind != JsonValueKind.Null)
+            dongXe.DuongDanAnh = dda.GetString();
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true });
+    });
+
+    app.MapPost("/api/admin/phienban/save", async (HttpContext ctx, AppDbContext db) =>
+    {
+        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+        var maPhienBan = body.GetProperty("maPhienBan").GetInt32();
+        var pb = await db.PhienBanXe.FindAsync(maPhienBan);
+        if (pb == null) return Results.NotFound();
+        if (body.TryGetProperty("tenPhienBan", out var tp)) pb.TenPhienBan = tp.GetString() ?? pb.TenPhienBan;
+        if (body.TryGetProperty("giaNiemYet", out var gn)) pb.GiaNiemYet = gn.GetInt64();
+        if (body.TryGetProperty("mauSac", out var ms)) pb.MauSac = ms.GetString() ?? pb.MauSac;
+        if (body.TryGetProperty("dongCo", out var dc)) pb.DongCo = dc.GetString() ?? pb.DongCo;
+        if (body.TryGetProperty("hopSo", out var hs)) pb.HopSo = hs.GetString() ?? pb.HopSo;
+        if (body.TryGetProperty("loaiNhietLieu", out var lnl)) pb.LoaiNhietLieu = lnl.GetString() ?? pb.LoaiNhietLieu;
+        if (body.TryGetProperty("soLuongTrongKho", out var slk)) pb.SoLuongTrongKho = slk.GetInt32();
+        if (body.TryGetProperty("trangThai", out var tt)) pb.TrangThai = tt.GetString() ?? pb.TrangThai;
+        if (body.TryGetProperty("maKhuyenMai", out var km) && km.ValueKind != JsonValueKind.Null)
+            pb.MaKhuyenMai = km.GetString();
+        if (body.TryGetProperty("duongDanAnh", out var dda) && dda.ValueKind != JsonValueKind.Null)
+            pb.DuongDanAnh = dda.GetString();
+        await db.SaveChangesAsync();
         return Results.Ok(new { success = true });
     });
 

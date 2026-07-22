@@ -37,7 +37,7 @@ public class CarsModel : PageModel
     {
         HangXeList = await _db.HangXe.ToListAsync();
 
-        var query = _db.DongXe.Include(d => d.HangXe).AsQueryable();
+        var query = _db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes).AsQueryable();
 
         if (!string.IsNullOrEmpty(Search))
             query = query.Where(d => d.TenDong.Contains(Search));

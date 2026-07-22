@@ -2946,6 +2946,422 @@ body.has-admin-bar { padding-top: 36px; }
 body.has-admin-bar .navbar-premium { top: 36px; }
 body.has-admin-bar .contact-floating { bottom: 1rem; }
 
+/* ============= ADMIN VIEW EDITING CONTROLS ============= */
+body.has-admin-bar .admin-edit-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    opacity: 0;
+    background: rgba(0,0,0,0.7);
+    border-radius: 0 0 0 10px;
+    backdrop-filter: blur(4px);
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+body.has-admin-bar .admin-edit-overlay.start-0-override {
+    right: auto;
+    left: 0;
+}
+body.has-admin-bar .admin-edit-trigger:hover > .admin-edit-overlay,
+body.has-admin-bar .admin-edit-overlay:hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+body.has-admin-bar .admin-edit-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+body.has-admin-bar .admin-edit-btn.btn-edit {
+    background: rgba(13,110,253,0.9);
+    color: #fff;
+}
+body.has-admin-bar .admin-edit-btn.btn-edit:hover {
+    background: #0d6efd;
+    transform: scale(1.1);
+}
+body.has-admin-bar .admin-edit-btn.btn-delete {
+    background: rgba(220,53,69,0.9);
+    color: #fff;
+}
+body.has-admin-bar .admin-edit-btn.btn-delete:hover {
+    background: #dc3545;
+    transform: scale(1.1);
+}
+body.has-admin-bar .admin-edit-btn.btn-add {
+    background: rgba(25,135,84,0.9);
+    color: #fff;
+}
+body.has-admin-bar .admin-edit-btn.btn-add:hover {
+    background: #198754;
+    transform: scale(1.1);
+}
+
+/* ============= ADMIN EDIT MODAL (3-TAB) ============= */
+.modal-content.bg-dark {
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(192,192,192,0.05) !important;
+}
+.modal-content.bg-dark .modal-header {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 1.2rem 1.5rem 0.8rem;
+}
+.modal-content.bg-dark .modal-header .modal-title {
+    color: #e8e8e8;
+    font-family: var(--font-title);
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.modal-content.bg-dark .modal-body {
+    padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Tabs inside modal */
+.modal-content.bg-dark .nav-tabs {
+    border-bottom: 2px solid rgba(255,255,255,0.08);
+    gap: 2px;
+}
+.modal-content.bg-dark .nav-tabs .nav-link {
+    color: rgba(255,255,255,0.45);
+    font-family: var(--font-title);
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.65rem 1.2rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.25s ease;
+}
+.modal-content.bg-dark .nav-tabs .nav-link:hover {
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.06);
+}
+.modal-content.bg-dark .nav-tabs .nav-link.active {
+    color: #c0c0c0;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.1) rgba(255,255,255,0.1) rgba(255,255,255,0.08);
+    box-shadow: 0 -2px 8px rgba(192,192,192,0.08);
+}
+
+/* Form controls inside modal */
+.modal-content.bg-dark .form-control,
+.modal-content.bg-dark .form-select {
+    background: rgba(0,0,0,0.35) !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e0e0e0;
+    border-radius: 10px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.82rem;
+    transition: all 0.2s ease;
+}
+.modal-content.bg-dark .form-control:focus,
+.modal-content.bg-dark .form-select:focus {
+    background: rgba(0,0,0,0.45) !important;
+    border-color: rgba(192,192,192,0.35);
+    box-shadow: 0 0 0 3px rgba(192,192,192,0.1);
+    color: #fff;
+}
+.modal-content.bg-dark .form-control::placeholder {
+    color: rgba(255,255,255,0.25);
+}
+.modal-content.bg-dark .form-label {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+}
+.modal-content.bg-dark .form-select option {
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+/* Save buttons inside modal */
+.modal-content.bg-dark .btn-premium-solid {
+    background: linear-gradient(135deg, #c0c0c0 0%, #888 50%, #c0c0c0 100%) !important;
+    color: #000 !important;
+    border: none;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.7rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(192,192,192,0.2);
+}
+.modal-content.bg-dark .btn-premium-solid:hover {
+    background: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 50%, #e0e0e0 100%) !important;
+    box-shadow: 0 6px 20px rgba(192,192,192,0.35);
+    transform: translateY(-1px);
+}
+
+/* Tab pane spacing */
+.modal-content.bg-dark .tab-pane {
+    padding-top: 0.5rem;
+}
+.modal-content.bg-dark .tab-pane .row {
+    row-gap: 0.8rem;
+}
+
+/* Close button */
+.modal-content.bg-dark .btn-close-white {
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+}
+.modal-content.bg-dark .btn-close-white:hover {
+    opacity: 1;
+}
+
+/* ============= IMAGE CROP MODAL ============= */
+.crop-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+}
+.crop-overlay.active { display: flex; }
+
+.crop-dialog {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    width: 90vw;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+}
+.crop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.crop-header h6 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #c0c0c0;
+}
+.crop-header .btn-close-crop {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.crop-header .btn-close-crop:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+.crop-viewport {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+    background: #0a0a14;
+    cursor: grab;
+    user-select: none;
+}
+.crop-viewport:active { cursor: grabbing; }
+.crop-viewport img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    pointer-events: none;
+    max-width: none;
+}
+
+/* Crop guides (rule of thirds) */
+.crop-guide {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+.crop-guide::before,
+.crop-guide::after {
+    content: '';
+    position: absolute;
+    background: rgba(255,255,255,0.15);
+}
+.crop-guide::before {
+    /* vertical lines at 1/3 and 2/3 */
+    top: 0; bottom: 0;
+    left: 33.33%; width: 1px;
+    box-shadow: calc(33.33vw * -1) 0 0 0 rgba(255,255,255,0.15);
+}
+.crop-guide::after {
+    /* horizontal lines at 1/3 and 2/3 */
+    left: 0; right: 0;
+    top: 33.33%; height: 1px;
+    box-shadow: 0 calc(33.33vh * -1) 0 0 rgba(255,255,255,0.15);
+}
+
+/* Crop frame border */
+.crop-frame {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(192,192,192,0.5);
+    pointer-events: none;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.crop-controls {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.crop-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+.crop-zoom-row label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 40px;
+}
+.crop-zoom-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    outline: none;
+}
+.crop-zoom-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c0c0c0;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.crop-zoom-row .zoom-val {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    min-width: 36px;
+    text-align: right;
+}
+
+.crop-ratio-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.crop-ratio-row label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.crop-ratio-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.crop-ratio-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.crop-ratio-btn.active {
+    background: rgba(192,192,192,0.15);
+    border-color: rgba(192,192,192,0.4);
+    color: #c0c0c0;
+}
+
+.crop-actions {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: flex-end;
+    padding: 0 1.5rem 1.2rem;
+}
+.crop-btn-cancel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.55rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+.crop-btn-cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.crop-btn-apply {
+    background: linear-gradient(135deg, #c0c0c0, #888);
+    border: none;
+    color: #000;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.55rem 1.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(192,192,192,0.2);
+}
+.crop-btn-apply:hover {
+    background: linear-gradient(135deg, #e0e0e0, #a0a0a0);
+    box-shadow: 0 6px 16px rgba(192,192,192,0.35);
+    transform: translateY(-1px);
+}
+
 /* ============= THEME TOGGLE ============= */
 .theme-toggle-btn {
     background: none;

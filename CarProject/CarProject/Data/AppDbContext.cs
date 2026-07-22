@@ -77,7 +77,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<PhienBanXe>()
             .HasOne(p => p.DongXe)
-            .WithMany()
+            .WithMany(d => d.PhienBanXes)
             .HasForeignKey(p => p.MaDong)
             .OnDelete(DeleteBehavior.Restrict);
 

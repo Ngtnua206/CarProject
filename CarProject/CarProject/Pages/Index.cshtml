@@ -3,6 +3,9 @@
 
 @{
     ViewData["Title"] = "MyLxCar Showroom - Luxury Cars";
+    bool isAdminView = !string.IsNullOrEmpty(HttpContext.Session.GetString("UserName"))
+        && HttpContext.Session.GetString("UserRole") == "Admin"
+        && HttpContext.Session.GetString("AdminMode") == "View";
     var brandGradients = new Dictionary<string, string>
     {
         {"Toyota", "linear-gradient(135deg, #e2361c, #b82a12)"},
@@ -23,56 +26,52 @@
     };
     var testimonials = new[]
     {
-        new { Name = "Nguyễn Văn Hải", Role = "Chủ doanh nghiệp", Text = "Chất lượng phục vụ tại showroom cực kỳ chuyên nghiệp. Quy trình bàn giao chiếc S-Class sang trọng vượt ngoài kỳ vọng. Chắc chắn tôi sẽ tiếp tục đồng hành." },
-        new { Name = "Phạm Thu Trang", Role = "Nhà thiết kế thời trang", Text = "Chiếc EQS mang lại một trải nghiệm di chuyển hoàn toàn khác biệt. Êm ái, hiện đại và tràn ngập công nghệ tương lai. Đội ngũ kỹ thuật hỗ trợ rất tận tình." },
-        new { Name = "Lê Hoàng Nam", Role = "CEO Công nghệ", Text = "Tôi có thể chọn phối màu và tùy chọn phù hợp trước khi đến đại lý lái thử thực tế. Dịch vụ tư vấn chuyên nghiệp và tận tâm." },
+        new { Name = "Nguyễn Văn H.", Role = "Chủ doanh nghiệp", Text = "Chất lượng phục vụ tại showroom cực kỳ chuyên nghiệp. Quy trình bàn giao chiếc S-Class sang trọng vượt ngoài kỳ vọng." },
+        new { Name = "Phạm Thị M.", Role = "Nhà thiết kế thời trang", Text = "Chiếc EQS mang lại một trải nghiệm di chuyển hoàn toàn khác biệt. Êm ái, hiện đại và tràn ngập công nghệ tương lai." },
+        new { Name = "Lê Hoàng A.", Role = "CEO Công nghệ", Text = "Tôi có thể chọn phối màu và tùy chọn phù hợp trước khi đến đại lý lái thử thực tế." },
     };
-    var featuredCars = Model.DongXeList.Take(3).ToList();
 }
 
 <!-- Hero -->
-<section class="hero-premium">
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
+<section class="hero-premium admin-edit-trigger" style="position:relative;overflow:hidden;">
+    @if (isAdminView)
+    {
+        <div class="admin-edit-overlay" style="top:calc(var(--nav-height,76px) + 10px);right:10px;">
+            <a href="javascript:void(0)" onclick="openBannerEditor()" class="admin-edit-btn btn-edit" title="Sửa Banner"><i class="fas fa-pen"></i></a>
+            @if (Model.BannerId.HasValue)
+            {
+                <a asp-page="/Admin/Banner/Delete" asp-route-id="@Model.BannerId" class="admin-edit-btn btn-delete" title="Xóa Banner"><i class="fas fa-trash"></i></a>
+            }
+            <a href="javascript:void(0)" onclick="openBannerEditor()" class="admin-edit-btn btn-add" title="Thêm Ảnh Banner"><i class="fas fa-plus"></i></a>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.BannerUrl))
+    {
+        <div style="position:absolute;inset:0;background:url('@Model.BannerUrl') center/cover no-repeat;"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 100%);"></div>
+    }
+    else
+    {
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+    }
     <div class="container position-relative" style="z-index: 1;">
         <div class="row align-items-center g-5">
             <div class="col-lg-7">
                 <p class="hero-subtitle-top anim-fade-up">MyLxCar Luxury Experience</p>
-                <h1 class="hero-title anim-fade-up delay-1">
-                    Luxury<br>
-                    <span class="highlight">Showroom.</span>
-                </h1>
-                <p class="hero-desc anim-fade-up delay-2">
-                    Trải nghiệm chuẩn mực di chuyển thượng lưu. Khám phá các dòng xe đẳng cấp dẫn đầu công nghệ từ MyLxCar.
-                </p>
+                <h1 class="hero-title anim-fade-up delay-1">Luxury<br><span class="highlight">Showroom.</span></h1>
+                <p class="hero-desc anim-fade-up delay-2">Trải nghiệm chuẩn mức di chuyển thượng lưu. Khám phá các dòng xe đẳng cấp dẫn đầu công nghệ từ MyLxCar.</p>
                 <div class="hero-actions anim-fade-up delay-3">
-                    <a asp-page="/Cars" class="btn-premium btn-premium-solid">
-                        <i class="fas fa-search"></i> Khám phá ngay
-                    </a>
-                    <a asp-page="/TestDrive" class="btn-premium btn-premium-outline">
-                        <i class="fas fa-calendar-check"></i> Đặt lịch lái thử
-                    </a>
+                    <a asp-page="/Cars" class="btn-premium btn-premium-solid"><i class="fas fa-search"></i> Khám phá ngay</a>
+                    <a asp-page="/TestDrive" class="btn-premium btn-premium-outline"><i class="fas fa-calendar-check"></i> Đặt lịch lái thử</a>
                 </div>
                 <div class="hero-stats anim-fade-up delay-4">
-                    <div class="stat">
-                        <h3>@Model.TotalBrands</h3>
-                        <p>Thương hiệu</p>
-                    </div>
-                    <div class="stat">
-                        <h3>@Model.TotalModels</h3>
-                        <p>Dòng xe</p>
-                    </div>
-                    <div class="stat">
-                        <h3>@Model.TotalVersions</h3>
-                        <p>Phiên bản</p>
-                    </div>
+                    <div class="stat"><h3>@Model.TotalBrands</h3><p>Thương hiệu</p></div>
+                    <div class="stat"><h3>@Model.TotalModels</h3><p>Dòng xe</p></div>
+                    <div class="stat"><h3>@Model.TotalVersions</h3><p>Phiên bản</p></div>
                 </div>
             </div>
-            <div class="col-lg-5 d-none d-lg-block anim-fade-up delay-2 text-center">
-                <div style="font-size: 14rem; line-height: 1; user-select: none; filter: drop-shadow(0 40px 120px rgba(192,192,192,0.08));">
-                    <i class="fas fa-car" style="opacity: 0.08; font-size: 12rem;"></i>
-                </div>
-            </div>
+            <div class="col-lg-5 d-none d-lg-block"></div>
         </div>
     </div>
 </section>
@@ -89,8 +88,24 @@
             @foreach (var brand in Model.HangXeList)
             {
                 var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
-                <div class="brand-item reveal">
-                    <div class="brand-letter" style="background: @grad;">@brand.TenHang[0]</div>
+                <div class="brand-item reveal admin-edit-trigger" style="position:relative;">
+                    @if (isAdminView)
+                    {
+                        <div class="admin-edit-overlay start-0-override">
+                            <a href="javascript:void(0)" onclick="openBrandEditor(@brand.MaHang,'@brand.TenHang','@brand.QuocGia','@(brand.DuongDanLogo ?? "")')" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
+                            <a asp-page="/Admin/HangXe/Delete" asp-route-id="@brand.MaHang" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
+                        </div>
+                    }
+                    <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
+                        @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
+                        {
+                            <img src="@brand.DuongDanLogo" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
+                        }
+                        else
+                        {
+                            @brand.TenHang[0]
+                        }
+                    </div>
                     <h6>@brand.TenHang</h6>
                     <p>@brand.QuocGia</p>
                 </div>
@@ -107,20 +122,15 @@
                 <p class="section-label">Kiệt tác cơ khí</p>
                 <h2 class="section-heading">Dòng xe nổi bật</h2>
             </div>
-            <a asp-page="/Cars" style="font-family: var(--font-title); font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--brand-silver); text-decoration: none; border-bottom: 1px solid var(--brand-silver); padding-bottom: 2px; transition: all 0.3s;">
-                Xem tất cả xe <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
-            </a>
+            <a asp-page="/Cars" style="font-family:var(--font-title);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--brand-silver);text-decoration:none;border-bottom:1px solid var(--brand-silver);padding-bottom:2px;">Xem tất cả xe <i class="fas fa-chevron-right ms-1" style="font-size:0.55rem;"></i></a>
         </div>
-
         @if (!Model.DongXeList.Any())
         {
             <div class="text-center py-5">
-                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-car"></i></div>
-                <h4 style="color: var(--brand-white);">Chưa có xe nào</h4>
-                <p style="color: rgba(255,255,255,0.4);">Danh sách xe đang được cập nhật.</p>
+                <div style="font-size:3rem;margin-bottom:1rem;opacity:0.2;"><i class="fas fa-car"></i></div>
+                <h4 style="color:var(--brand-white);">Chưa có xe nào</h4>
             </div>
         }
-
         <div class="car-grid">
             @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
             {
@@ -128,14 +138,24 @@
                 var bg = carBgList[d.item.MaDong % carBgList.Count];
                 var brandInfo = d.item.HangXe;
                 var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
-                <div class="car-card-premium reveal" style="transition-delay: @(delay)s">
-                    <div class="card-image" style="background: @bg;">
-                        @if (brandInfo != null)
+                var firstVer = d.item.PhienBanXes?.FirstOrDefault();
+                var carImg = d.item.DuongDanAnh ?? firstVer?.DuongDanAnh;
+                var carPrice = firstVer?.GiaNiemYet;
+                <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;">
+                    @if (isAdminView)
+                    {
+                        <div class="admin-edit-overlay">
+                            <a href="javascript:void(0)" onclick="openCarEditorFull(@d.item.MaDong)" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
+                            <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
+                        </div>
+                    }
+                    <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? bg : $"url('{carImg}') center/cover");">
+                        @if (string.IsNullOrEmpty(carImg))
                         {
-                            <span class="brand-tag">@brandInfo.TenHang</span>
+                            if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
+                            <span class="card-badge">@d.item.KieuDang</span>
+                            <span class="car-icon">@carIcon</span>
                         }
-                        <span class="card-badge">@d.item.KieuDang</span>
-                        <span class="car-icon">@carIcon</span>
                     </div>
                     <div class="card-body">
                         <span class="model-series">@(brandInfo?.TenHang ?? "")</span>
@@ -147,11 +167,9 @@
                         <div class="price-row">
                             <div>
                                 <div class="price-label">Giá bán lẻ đề xuất</div>
-                                <div class="price-value">Liên hệ</div>
+                                <div class="price-value">@(carPrice.HasValue ? $"{carPrice.Value:N0}đ" : "Liên hệ")</div>
                             </div>
-                            <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
-                                Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
-                            </a>
+                            <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size:0.55rem;"></i></a>
                         </div>
                     </div>
                 </div>
@@ -161,40 +179,24 @@
 </section>
 
 <!-- Brand Story -->
-<section class="section-premium section-premium-alt reveal" style="position: relative; overflow: hidden;">
-    <div style="position: absolute; inset: 0; opacity: 0.08; background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(192,192,192,0.08) 0%, transparent 60%);"></div>
+<section class="section-premium section-premium-alt reveal" style="position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;opacity:0.08;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,0.1) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(192,192,192,0.08) 0%,transparent 60%);"></div>
     <div class="container position-relative">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <div class="reveal heritage-card">
                     <p class="section-label">Di sản</p>
-                    <h2 class="section-heading" style="font-size: 2rem;">Đẳng cấp xe hơi Việt</h2>
-                    <p class="heritage-text">
-                        Với hơn 130 năm lịch sử, MyLxCar là biểu tượng của sự sang trọng, đổi mới công nghệ và đẳng cấp vượt thời gian. Mỗi chiếc xe ra đời là một kiệt tác của kỹ thuật và nghệ thuật chế tác.
-                    </p>
-                    <a asp-page="/About" class="btn-premium btn-premium-outline heritage-btn">
-                        Tìm hiểu thêm <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
+                    <h2 class="section-heading" style="font-size:2rem;">Đẳng cấp xe hơi Việt</h2>
+                    <p class="heritage-text">Với hơn 130 năm lịch sử, MyLxCar là biểu tượng của sự sang trọng, đổi mới công nghệ và đẳng cấp vượt thời gian.</p>
+                    <a asp-page="/About" class="btn-premium btn-premium-outline heritage-btn">Tìm hiểu thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="heritage-grid">
-                    <div class="reveal reveal-stat" style="transition-delay: 0s;">
-                        <div class="heritage-num">130+</div>
-                        <div class="heritage-label">Năm lịch sử</div>
-                    </div>
-                    <div class="reveal reveal-stat" style="transition-delay: 0.1s;">
-                        <div class="heritage-num">50+</div>
-                        <div class="heritage-label">Quốc gia</div>
-                    </div>
-                    <div class="reveal reveal-stat" style="transition-delay: 0.2s;">
-                        <div class="heritage-num">5,000+</div>
-                        <div class="heritage-label">Khách hàng</div>
-                    </div>
-                    <div class="reveal reveal-stat" style="transition-delay: 0.3s;">
-                        <div class="heritage-num">100%</div>
-                        <div class="heritage-label">Hài lòng</div>
-                    </div>
+                    <div class="reveal reveal-stat" style="transition-delay:0s;"><div class="heritage-num">130+</div><div class="heritage-label">Năm lịch sử</div></div>
+                    <div class="reveal reveal-stat" style="transition-delay:0.1s;"><div class="heritage-num">50+</div><div class="heritage-label">Quốc gia</div></div>
+                    <div class="reveal reveal-stat" style="transition-delay:0.2s;"><div class="heritage-num">5,000+</div><div class="heritage-label">Khách hàng</div></div>
+                    <div class="reveal reveal-stat" style="transition-delay:0.3s;"><div class="heritage-num">100%</div><div class="heritage-label">Hài lòng</div></div>
                 </div>
             </div>
         </div>
@@ -209,21 +211,9 @@
             <h2 class="section-heading text-center">Tại sao chọn chúng tôi?</h2>
         </div>
         <div class="why-grid">
-            <div class="why-item reveal" style="transition-delay: 0s;">
-                <div class="icon"><i class="fas fa-shield-alt"></i></div>
-                <h5>Chất lượng đảm bảo</h5>
-                <p>Xe chính hãng 100% từ nhà sản xuất, bảo hành toàn diện, dịch vụ hậu mãi chu đáo.</p>
-            </div>
-            <div class="why-item reveal" style="transition-delay: 0.1s;">
-                <div class="icon"><i class="fas fa-tag"></i></div>
-                <h5>Giá tốt nhất</h5>
-                <p>Cam kết giá cạnh tranh, nhiều ưu đãi đặc biệt và hỗ trợ trả góp lãi suất thấp.</p>
-            </div>
-            <div class="why-item reveal" style="transition-delay: 0.2s;">
-                <div class="icon"><i class="fas fa-headset"></i></div>
-                <h5>Hỗ trợ 24/7</h5>
-                <p>Đội ngũ tư vấn chuyên nghiệp, hỗ trợ khách hàng mọi lúc mọi nơi.</p>
-            </div>
+            <div class="why-item reveal" style="transition-delay:0s;"><div class="icon"><i class="fas fa-shield-alt"></i></div><h5>Chất lượng đảm bảo</h5><p>Xe chính hãng 100% từ nhà sản xuất, bảo hành toàn diện.</p></div>
+            <div class="why-item reveal" style="transition-delay:0.1s;"><div class="icon"><i class="fas fa-tag"></i></div><h5>Giá tốt nhất</h5><p>Cam kết giá cạnh tranh, nhiều ưu đãi đặc biệt.</p></div>
+            <div class="why-item reveal" style="transition-delay:0.2s;"><div class="icon"><i class="fas fa-headset"></i></div><h5>Hỗ trợ 24/7</h5><p>Đội ngũ tư vấn chuyên nghiệp, hỗ trợ mọi lúc mọi nơi.</p></div>
         </div>
     </div>
 </section>
@@ -238,22 +228,440 @@
         <div class="row g-4">
             @foreach (var t in testimonials.Select((item, idx) => new { item, idx }))
             {
-                <div class="col-md-4 reveal" style="transition-delay: @(t.idx * 0.1)s">
+                <div class="col-md-4 reveal" style="transition-delay:@(t.idx * 0.1)s">
                     <div class="testimonial-card">
-                        <div class="stars">
-                            @for (int i = 0; i < 5; i++) { <i class="fas fa-star"></i> }
-                        </div>
+                        <div class="stars">@for (int i = 0; i < 5; i++) { <i class="fas fa-star"></i> }</div>
                         <p>"@t.item.Text"</p>
-                        <div class="author">
-                            <div class="avatar"><i class="fas fa-user"></i></div>
-                            <div class="info">
-                                <strong>@t.item.Name</strong>
-                                <span>@t.item.Role</span>
-                            </div>
-                        </div>
+                        <div class="author"><div class="avatar"><i class="fas fa-user"></i></div><div class="info"><strong>@t.item.Name</strong><span>@t.item.Role</span></div></div>
                     </div>
                 </div>
             }
         </div>
     </div>
 </section>
+
+<!-- ========== ADMIN EDIT MODALS ========== -->
+
+<div class="modal fade" id="bannerEditorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
+            <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-image me-2"></i> Banner Image</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="bannerUrlInput" class="form-control form-control-dark" placeholder="https://..." /></div>
+                <div class="mb-3 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="bannerFileInput" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('bannerFileInput','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                <button onclick="saveBanner()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-save me-2"></i>Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="brandEditorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
+            <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-tag me-2"></i> Sửa Thương Hiệu</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" id="brandEditId" />
+                <div class="mb-3"><label class="form-label small text-secondary">Tên hãng</label><input type="text" id="brandEditName" class="form-control form-control-dark" /></div>
+                <div class="mb-3"><label class="form-label small text-secondary">Quốc gia</label><input type="text" id="brandEditCountry" class="form-control form-control-dark" /></div>
+                <div class="mb-3"><label class="form-label small text-secondary">Logo URL</label><input type="url" id="brandEditLogo" class="form-control form-control-dark" placeholder="https://..." /></div>
+                <div class="mb-3"><label class="form-label small text-secondary">Or upload file</label><input type="file" id="brandEditFile" class="form-control form-control-dark" accept="image/*" /></div>
+                <button onclick="saveBrandEdit()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-save me-2"></i>Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="carEditorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-car me-2"></i> Sửa Thông Tin Xe</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabBrand">Hãng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabModel">Dòng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabVersion">Phiên Bản</a></li>
+                </ul>
+                <div class="tab-content">
+                    <!-- Tab: Hang Xe -->
+                    <div class="tab-pane fade show active" id="tabBrand">
+                        <input type="hidden" id="editBrandId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên hãng</label><input type="text" id="editBrandName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Quốc gia</label><input type="text" id="editBrandCountry" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Logo URL</label><input type="url" id="editBrandLogo" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editBrandFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editBrandFile','1:1')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="saveBrandFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Hãng Xe</button>
+                    </div>
+                    <!-- Tab: Dong Xe -->
+                    <div class="tab-pane fade" id="tabModel">
+                        <input type="hidden" id="editModelId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Hãng xe</label><select id="editModelBrand" class="form-select form-select-dark">
+                                @foreach (var b in Model.HangXeList) { <option value="@b.MaHang">@b.TenHang</option> }
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên dòng xe</label><input type="text" id="editModelName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Kiểu dáng</label><select id="editModelStyle" class="form-select form-select-dark">
+                                <option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Hatchback">Hatchback</option><option value="Coupe">Coupe</option><option value="MPV">MPV</option><option value="Pickup">Pickup</option><option value="Van">Van</option>
+                            </select></div>
+                            <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="editModelImage" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editModelFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="saveModelFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Dòng Xe</button>
+                    </div>
+                    <!-- Tab: Phien Ban -->
+                    <div class="tab-pane fade" id="tabVersion">
+                        <div class="mb-3"><label class="form-label small text-secondary">Chọn phiên bản</label><select id="editVersionSelect" class="form-select form-select-dark" onchange="loadVersionData()"></select></div>
+                        <input type="hidden" id="editVerId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên phiên bản</label><input type="text" id="editVerName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Giá niêm yết (VND)</label><input type="number" id="editVerPrice" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Màu sắc</label><input type="text" id="editVerColor" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Động cơ</label><input type="text" id="editVerEngine" class="form-control form-control-dark" placeholder="e.g. 2.0L Turbo I4" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Hộp số</label><input type="text" id="editVerTransmission" class="form-control form-control-dark" placeholder="e.g. S-Tronic 7" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Nhiên liệu</label><select id="editVerFuel" class="form-select form-select-dark">
+                                <option value="Xăng">Xăng</option><option value="Dầu">Dầu</option><option value="Điện">Điện</option><option value="Hybrid">Hybrid</option><option value="Hydro">Hydro</option>
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Số lượng kho</label><input type="number" id="editVerStock" class="form-control form-control-dark" min="0" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Trạng thái</label><select id="editVerStatus" class="form-select form-select-dark">
+                                <option value="Còn hàng">Còn hàng</option><option value="Hết hàng">Hết hàng</option><option value="Đặt trước">Đặt trước</option><option value="Ngừng bán">Ngừng bán</option>
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Khuyến mãi</label><input type="text" id="editVerPromo" class="form-control form-control-dark" placeholder="Mã khuyến mãi" /></div>
+                            <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="editVerImage" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editVerFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editVerFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="saveVersionFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Phiên Bản</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div class="crop-overlay" id="cropOverlay">
+    <div class="crop-dialog">
+        <div class="crop-header">
+            <h6><i class="fas fa-crop-alt me-2"></i> Chỉnh sửa ảnh</h6>
+            <button class="btn-close-crop" onclick="closeCropModal()">&times;</button>
+        </div>
+        <div class="crop-viewport" id="cropViewport">
+            <img id="cropImage" src="" alt="Crop" />
+            <div class="crop-frame"></div>
+            <div class="crop-guide"></div>
+        </div>
+        <div class="crop-controls">
+            <div class="crop-zoom-row">
+                <label><i class="fas fa-search-plus"></i></label>
+                <input type="range" id="cropZoom" min="10" max="300" value="100" oninput="onCropZoom()" />
+                <span class="zoom-val" id="cropZoomVal">100%</span>
+            </div>
+            <div class="crop-ratio-row">
+                <label>Tỷ lệ:</label>
+                <button class="crop-ratio-btn active" data-ratio="free" onclick="setCropRatio('free',this)">Tự do</button>
+                <button class="crop-ratio-btn" data-ratio="16:9" onclick="setCropRatio('16:9',this)">16:9</button>
+                <button class="crop-ratio-btn" data-ratio="4:3" onclick="setCropRatio('4:3',this)">4:3</button>
+                <button class="crop-ratio-btn" data-ratio="1:1" onclick="setCropRatio('1:1',this)">1:1</button>
+                <button class="crop-ratio-btn" data-ratio="3:2" onclick="setCropRatio('3:2',this)">3:2</button>
+            </div>
+        </div>
+        <div class="crop-actions">
+            <button class="crop-btn-cancel" onclick="closeCropModal()">Hủy</button>
+            <button class="crop-btn-apply" onclick="applyCrop()"><i class="fas fa-check me-1"></i> Áp dụng</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let _carVersions = [];
+
+/* ========== IMAGE CROP SYSTEM ========== */
+let _cropState = { targetInput: null, img: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, start: {x:0,y:0}, imgW: 0, imgH: 0 };
+
+function openCropModal(inputId, aspectRatio) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    _cropState.targetInput = input;
+    _cropState.ratio = aspectRatio || 'free';
+    _cropState.zoom = 1;
+
+    const overlay = document.getElementById('cropOverlay');
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const zoomSlider = document.getElementById('cropZoom');
+    zoomSlider.value = 100;
+    document.getElementById('cropZoomVal').textContent = '100%';
+
+    document.querySelectorAll('.crop-ratio-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.ratio === _cropState.ratio);
+    });
+
+    let src = '';
+    if (input.files && input.files.length > 0) {
+        src = URL.createObjectURL(input.files[0]);
+    } else {
+        src = input.value.trim();
+    }
+    if (!src) return;
+
+    img.onload = function() {
+        _cropState.imgW = img.naturalWidth;
+        _cropState.imgH = img.naturalHeight;
+        _cropState.drag = { x: 0, y: 0 };
+        _cropState.zoom = 1;
+        fitCropImage();
+    };
+    img.src = src;
+    overlay.classList.add('active');
+}
+
+function fitCropImage() {
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const iw = _cropState.imgW;
+    const ih = _cropState.imgH;
+    if (!iw || !ih) return;
+
+    let scale = Math.min(vw / iw, vh / ih) * 0.9;
+    img.style.width = (iw * scale * _cropState.zoom) + 'px';
+    img.style.height = (ih * scale * _cropState.zoom) + 'px';
+    img.style.left = _cropState.drag.x + 'px';
+    img.style.top = _cropState.drag.y + 'px';
+}
+
+function onCropZoom() {
+    const val = parseInt(document.getElementById('cropZoom').value);
+    _cropState.zoom = val / 100;
+    document.getElementById('cropZoomVal').textContent = val + '%';
+    fitCropImage();
+}
+
+function setCropRatio(ratio, btn) {
+    _cropState.ratio = ratio;
+    document.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function closeCropModal() {
+    document.getElementById('cropOverlay').classList.remove('active');
+}
+
+function applyCrop() {
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let outW = vw, outH = vh;
+    if (_cropState.ratio !== 'free') {
+        const parts = _cropState.ratio.split(':');
+        const rW = parseInt(parts[0]), rH = parseInt(parts[1]);
+        if (vw / vh > rW / rH) { outH = vh; outW = vh * rW / rH; }
+        else { outW = vw; outH = vw * rH / rW; }
+    }
+    canvas.width = outW;
+    canvas.height = outH;
+
+    const imgRect = img.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    const sx = (vpRect.left + (vw - outW) / 2 - imgRect.left) / (imgRect.width / _cropState.imgW);
+    const sy = (vpRect.top + (vh - outH) / 2 - imgRect.top) / (imgRect.height / _cropState.imgH);
+    const sw = outW / (imgRect.width / _cropState.imgW);
+    const sh = outH / (imgRect.height / _cropState.imgH);
+
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+
+    canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        if (_cropState.targetInput) {
+            // Set data URL to input for preview, store blob URL for upload
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                _cropState.targetInput.setAttribute('data-crop-url', url);
+                _cropState.targetInput.setAttribute('data-crop-blob', e.target.result);
+                // Show preview if possible
+                const previewId = _cropState.targetInput.id.replace('File','Preview').replace('Input','Preview');
+                const previewEl = document.getElementById(previewId);
+                if (previewEl) previewEl.src = e.target.result;
+            };
+            reader.readAsDataURL(blob);
+        }
+        closeCropModal();
+    }, 'image/jpeg', 0.92);
+}
+
+/* Drag to pan */
+(function() {
+    const vp = document.getElementById('cropViewport');
+    if (!vp) return;
+    let startX, startY, startDragX, startDragY;
+    vp.addEventListener('mousedown', e => {
+        e.preventDefault();
+        _cropState.isDragging = true;
+        startX = e.clientX; startY = e.clientY;
+        startDragX = _cropState.drag.x; startDragY = _cropState.drag.y;
+    });
+    document.addEventListener('mousemove', e => {
+        if (!_cropState.isDragging) return;
+        _cropState.drag.x = startDragX + (e.clientX - startX);
+        _cropState.drag.y = startDragY + (e.clientY - startY);
+        fitCropImage();
+    });
+    document.addEventListener('mouseup', () => { _cropState.isDragging = false; });
+})();
+/* ======================================== */
+
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        return data.url;
+    } catch (e) { alert('Upload failed. Try pasting an image URL instead.'); return null; }
+}
+
+function openBannerEditor() { new bootstrap.Modal(document.getElementById('bannerEditorModal')).show(); }
+
+function openBrandEditor(id, name, country, logo) {
+    document.getElementById('brandEditId').value = id;
+    document.getElementById('brandEditName').value = name;
+    document.getElementById('brandEditCountry').value = country;
+    document.getElementById('brandEditLogo').value = logo;
+    new bootstrap.Modal(document.getElementById('brandEditorModal')).show();
+}
+
+function openCarEditorFull(id) {
+    fetch('/api/admin/dongxe/' + id).then(r=>r.json()).then(d=>{
+        _carVersions = d.versions || [];
+        // Brand tab
+        if (d.brand) {
+            document.getElementById('editBrandId').value = d.brand.maHang;
+            document.getElementById('editBrandName').value = d.brand.tenHang;
+            document.getElementById('editBrandCountry').value = d.brand.quocGia;
+            document.getElementById('editBrandLogo').value = d.brand.duongDanLogo || '';
+        }
+        // Model tab
+        document.getElementById('editModelId').value = d.maDong;
+        document.getElementById('editModelName').value = d.tenDong;
+        document.getElementById('editModelBrand').value = d.maHang;
+        document.getElementById('editModelStyle').value = d.kieuDang;
+        document.getElementById('editModelImage').value = d.duongDanAnh || '';
+        // Version tab
+        const sel = document.getElementById('editVersionSelect');
+        sel.innerHTML = '';
+        _carVersions.forEach((v,i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.text = v.tenPhienBan + ' - ' + (v.giaNiemYet ? v.giaNiemYet.toLocaleString('vi-VN') + 'đ' : 'Liên hệ');
+            sel.appendChild(opt);
+        });
+        if (_carVersions.length > 0) loadVersionData();
+        new bootstrap.Modal(document.getElementById('carEditorModal')).show();
+    });
+}
+
+function loadVersionData() {
+    const idx = parseInt(document.getElementById('editVersionSelect').value);
+    const v = _carVersions[idx];
+    if (!v) return;
+    document.getElementById('editVerId').value = v.maPhienBan;
+    document.getElementById('editVerName').value = v.tenPhienBan;
+    document.getElementById('editVerPrice').value = v.giaNiemYet || '';
+    document.getElementById('editVerColor').value = v.mauSac || '';
+    document.getElementById('editVerEngine').value = v.dongCo || '';
+    document.getElementById('editVerTransmission').value = v.hopSo || '';
+    document.getElementById('editVerFuel').value = v.loaiNhietLieu || 'Xăng';
+    document.getElementById('editVerStock').value = v.soLuongTrongKho || 0;
+    document.getElementById('editVerStatus').value = v.trangThai || 'Còn hàng';
+    document.getElementById('editVerPromo').value = v.maKhuyenMai || '';
+    document.getElementById('editVerImage').value = v.duongDanAnh || '';
+}
+
+async function saveBanner() {
+    const urlInput = document.getElementById('bannerUrlInput');
+    const fileInput = document.getElementById('bannerFileInput');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
+    if (!url) return;
+    await fetch('/api/admin/banner/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({duongDanAnh:url}) });
+    location.reload();
+}
+
+async function saveBrandEdit() {
+    const id = document.getElementById('brandEditId').value;
+    const urlInput = document.getElementById('brandEditLogo');
+    const fileInput = document.getElementById('brandEditFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
+    if (!url) return;
+    await fetch('/api/admin/hangxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({maHang:parseInt(id),duongDanAnh:url}) });
+    location.reload();
+}
+
+async function saveBrandFull() {
+    const id = document.getElementById('editBrandId').value;
+    const urlInput = document.getElementById('editBrandLogo');
+    const fileInput = document.getElementById('editBrandFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
+    const payload = {
+        maHang: parseInt(id),
+        tenHang: document.getElementById('editBrandName').value.trim(),
+        quocGia: document.getElementById('editBrandCountry').value.trim(),
+        duongDanLogo: url || null
+    };
+    await fetch('/api/admin/hangxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+
+async function saveModelFull() {
+    const id = document.getElementById('editModelId').value;
+    const urlInput = document.getElementById('editModelImage');
+    const fileInput = document.getElementById('editModelFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
+    const payload = {
+        maDong: parseInt(id),
+        tenDong: document.getElementById('editModelName').value.trim(),
+        maHang: parseInt(document.getElementById('editModelBrand').value),
+        kieuDang: document.getElementById('editModelStyle').value,
+        duongDanAnh: url || null
+    };
+    await fetch('/api/admin/dongxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+
+async function saveVersionFull() {
+    const id = document.getElementById('editVerId').value;
+    const urlInput = document.getElementById('editVerImage');
+    const fileInput = document.getElementById('editVerFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
+    const payload = {
+        maPhienBan: parseInt(id),
+        tenPhienBan: document.getElementById('editVerName').value.trim(),
+        giaNiemYet: parseInt(document.getElementById('editVerPrice').value) || 0,
+        mauSac: document.getElementById('editVerColor').value.trim(),
+        dongCo: document.getElementById('editVerEngine').value.trim(),
+        hopSo: document.getElementById('editVerTransmission').value.trim(),
+        loaiNhietLieu: document.getElementById('editVerFuel').value,
+        soLuongTrongKho: parseInt(document.getElementById('editVerStock').value) || 0,
+        trangThai: document.getElementById('editVerStatus').value,
+        maKhuyenMai: document.getElementById('editVerPromo').value.trim() || null,
+        duongDanAnh: url || null
+    };
+    await fetch('/api/admin/phienban/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+</script>
+}

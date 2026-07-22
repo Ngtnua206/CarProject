@@ -19,9 +19,11 @@ public class DongXe
     public int MaHang { get; set; }
     public string TenDong { get; set; }
     public string KieuDang { get; set; }
+    public string? DuongDanAnh { get; set; }
 
     [ForeignKey("MaHang")]
-    public HangXe HangXe { get; set; }
+    public HangXe HangXe { get; set; } = null!;
+    public ICollection<PhienBanXe> PhienBanXes { get; set; } = new List<PhienBanXe>();
 }
 
 public class PhienBanXe
@@ -41,7 +43,7 @@ public class PhienBanXe
     public string TrangThai { get; set; }
 
     [ForeignKey("MaDong")]
-    public DongXe DongXe { get; set; }
+    public DongXe DongXe { get; set; } = null!;
 }
 
 // Tối giản một vài model khác từ sơ đồ để sau này mở rộng

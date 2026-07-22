@@ -3,16 +3,16 @@
 
 @{
     ViewData["Title"] = "Showroom - MyLxCar";
+    bool isAdminView = !string.IsNullOrEmpty(HttpContext.Session.GetString("UserName"))
+        && HttpContext.Session.GetString("UserRole") == "Admin"
+        && HttpContext.Session.GetString("AdminMode") == "View";
     var carIconMap = new Dictionary<string, string>
     {
         {"Toyota Camry", "\U0001f697"}, {"Toyota Hilux", "\U0001f699"}, {"Honda Civic", "\U0001f697"},
         {"Honda Pilot", "\U0001f699"}, {"Ford Explorer", "\U0001f699"}, {"BMW 3 Series", "\U0001f697"},
         {"VinFast Lux SA", "\U0001f699"}, {"VinFast Fadil", "\U0001f695"}
     };
-    var carBgList = new List<string>
-    {
-        "#050505", "#0a0a0a", "#0f0f0f", "#080808", "#070707", "#0c0c0c"
-    };
+    var carBgList = new List<string> { "#050505", "#0a0a0a", "#0f0f0f", "#080808", "#070707", "#0c0c0c" };
     var bodyTypes = Model.DongXeList.Select(d => d.KieuDang).Distinct().ToList();
 }
 
@@ -29,13 +29,11 @@
             <div class="col-lg-3 reveal">
                 <div class="filter-sidebar">
                     <h6><i class="fas fa-sliders-h me-2"></i> Bộ lọc</h6>
-
                     <form method="get" id="filterForm">
                         <div class="search-box">
                             <i class="fas fa-search" style="color: rgba(255,255,255,0.3);"></i>
                             <input type="text" name="Search" value="@Model.Search" placeholder="Tìm kiếm xe..." />
                         </div>
-
                         <div class="filter-group">
                             <span class="filter-label">Hãng xe</span>
                             @foreach (var brand in Model.HangXeList)
@@ -52,7 +50,6 @@
                                 <a asp-page="/Cars" class="clear-filter">Xóa lọc</a>
                             }
                         </div>
-
                         <div class="filter-group">
                             <span class="filter-label">Kiểu dáng</span>
                             @foreach (var type in bodyTypes)
@@ -65,10 +62,9 @@
                                 </label>
                             }
                         </div>
-
                         @if (!string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Brand) || !string.IsNullOrEmpty(Model.BodyType))
                         {
-                            <a asp-page="/Cars" class="btn-premium btn-premium-outline" style="width: 100%; justify-content: center; padding: 0.5rem; font-size: 0.65rem;">
+                            <a asp-page="/Cars" class="btn-premium btn-premium-outline" style="width:100%;justify-content:center;padding:0.5rem;font-size:0.65rem;">
                                 <i class="fas fa-times-circle"></i> Xóa bộ lọc
                             </a>
                         }
@@ -82,7 +78,7 @@
                     <span class="result-count"><strong>@Model.TotalCount</strong> xe được tìm thấy</span>
                     <div class="sort-group">
                         <label>Sắp xếp:</label>
-                        <select onchange="window.location.href='?sort='+this.value">
+                        <select onchange="window.location.href='?sort='+this.value+((new URLSearchParams(window.location.search).get('brand'))?'&brand='+new URLSearchParams(window.location.search).get('brand'):'')">
                             <option value="">Mặc định</option>
                             <option value="name_asc" selected="@(Model.Sort == "name_asc")">Tên A-Z</option>
                             <option value="name_desc" selected="@(Model.Sort == "name_desc")">Tên Z-A</option>
@@ -93,9 +89,9 @@
                 @if (!Model.DongXeList.Any())
                 {
                     <div class="text-center py-5">
-                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-search"></i></div>
-                        <h4 style="color: var(--brand-white);">Không tìm thấy xe</h4>
-                        <p style="color: rgba(255,255,255,0.4);">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                        <div style="font-size:3rem;margin-bottom:1rem;opacity:0.2;"><i class="fas fa-search"></i></div>
+                        <h4 style="color:var(--brand-white);">Không tìm thấy xe</h4>
+                        <p style="color:rgba(255,255,255,0.4);">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
                     </div>
                 }
 
@@ -106,22 +102,28 @@
                         var bg = carBgList[d.item.MaDong % carBgList.Count];
                         var brandInfo = d.item.HangXe;
                         var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
-                        <div class="car-card-premium reveal" style="transition-delay: @(delay)s">
-                            <div class="card-image" style="background: @bg;">
-                                @if (brandInfo != null)
-                                {
-                                    <span class="brand-tag">@brandInfo.TenHang</span>
-                                }
-                                <span class="card-badge">@d.item.KieuDang</span>
-                                <div class="card-actions">
-                                    <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="action-btn" title="Chi tiết">
-                                        <i class="fas fa-info"></i>
-                                    </a>
-                                    <a asp-page="/Viewer360" asp-route-id="@d.item.MaDong" class="action-btn" title="Xem 360\u00b0">
-                                        <i class="fas fa-sync"></i>
-                                    </a>
+                        var firstVer = d.item.PhienBanXes?.FirstOrDefault();
+                        var carImg = d.item.DuongDanAnh ?? firstVer?.DuongDanAnh;
+                        var carPrice = firstVer?.GiaNiemYet;
+                        <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;">
+                            @if (isAdminView)
+                            {
+                                <div class="admin-edit-overlay">
+                                    <a href="javascript:void(0)" onclick="openCarsEditorFull(@d.item.MaDong)" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
+                                    <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
                                 </div>
-                                <span class="car-icon">@carIcon</span>
+                            }
+                            <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? bg : $"url('{carImg}') center/cover");">
+                                @if (string.IsNullOrEmpty(carImg))
+                                {
+                                    if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
+                                    <span class="card-badge">@d.item.KieuDang</span>
+                                    <div class="card-actions">
+                                        <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="action-btn" title="Chi tiết"><i class="fas fa-info"></i></a>
+                                        <a asp-page="/Viewer360" asp-route-id="@d.item.MaDong" class="action-btn" title="Xem 360°"><i class="fas fa-sync"></i></a>
+                                    </div>
+                                    <span class="car-icon">@carIcon</span>
+                                }
                             </div>
                             <div class="card-body">
                                 <span class="model-series">@(brandInfo?.TenHang ?? "")</span>
@@ -133,10 +135,10 @@
                                 <div class="price-row">
                                     <div>
                                         <div class="price-label">Giá bán lẻ đề xuất</div>
-                                        <div class="price-value">Liên hệ</div>
+                                        <div class="price-value">@(carPrice.HasValue ? $"{carPrice.Value:N0}d" : "Liên hệ")</div>
                                     </div>
                                     <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="btn-detail">
-                                        Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size: 0.55rem;"></i>
+                                        Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size:0.55rem;"></i>
                                     </a>
                                 </div>
                             </div>
@@ -147,3 +149,359 @@
         </div>
     </div>
 </div>
+
+<!-- Car editor modal (3-tab) -->
+<div class="modal fade" id="carsCarEditorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-car me-2"></i> Sửa Thông Tin Xe</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#carsTabBrand">Hãng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#carsTabModel">Dòng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#carsTabVersion">Phiên Bản</a></li>
+                </ul>
+                <div class="tab-content">
+                    <!-- Tab: Hang Xe -->
+                    <div class="tab-pane fade show active" id="carsTabBrand">
+                        <input type="hidden" id="carsEditBrandId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên hãng</label><input type="text" id="carsEditBrandName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Quốc gia</label><input type="text" id="carsEditBrandCountry" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Logo URL</label><input type="url" id="carsEditBrandLogo" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="carsEditBrandFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('carsEditBrandFile','1:1')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="carsSaveBrandFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Hãng Xe</button>
+                    </div>
+                    <!-- Tab: Dong Xe -->
+                    <div class="tab-pane fade" id="carsTabModel">
+                        <input type="hidden" id="carsEditModelId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Hãng xe</label><select id="carsEditModelBrand" class="form-select form-select-dark">
+                                @foreach (var b in Model.HangXeList) { <option value="@b.MaHang">@b.TenHang</option> }
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên dòng xe</label><input type="text" id="carsEditModelName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Kiểu dáng</label><select id="carsEditModelStyle" class="form-select form-select-dark">
+                                <option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Hatchback">Hatchback</option><option value="Coupe">Coupe</option><option value="MPV">MPV</option><option value="Pickup">Pickup</option><option value="Van">Van</option>
+                            </select></div>
+                            <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="carsEditModelImage" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="carsEditModelFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('carsEditModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="carsSaveModelFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Dòng Xe</button>
+                    </div>
+                    <!-- Tab: Phien Ban -->
+                    <div class="tab-pane fade" id="carsTabVersion">
+                        <div class="mb-3"><label class="form-label small text-secondary">Chọn phiên bản</label><select id="carsEditVersionSelect" class="form-select form-select-dark" onchange="carsLoadVersionData()"></select></div>
+                        <input type="hidden" id="carsEditVerId" />
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small text-secondary">Tên phiên bản</label><input type="text" id="carsEditVerName" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Giá niêm yết (VND)</label><input type="number" id="carsEditVerPrice" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Màu sắc</label><input type="text" id="carsEditVerColor" class="form-control form-control-dark" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Động cơ</label><input type="text" id="carsEditVerEngine" class="form-control form-control-dark" placeholder="e.g. 2.0L Turbo I4" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Hộp số</label><input type="text" id="carsEditVerTransmission" class="form-control form-control-dark" placeholder="e.g. S-Tronic 7" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Nhiên liệu</label><select id="carsEditVerFuel" class="form-select form-select-dark">
+                                <option value="Xăng">Xăng</option><option value="Dầu">Dầu</option><option value="Điện">Điện</option><option value="Hybrid">Hybrid</option><option value="Hydro">Hydro</option>
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Số lượng kho</label><input type="number" id="carsEditVerStock" class="form-control form-control-dark" min="0" /></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Trạng thái</label><select id="carsEditVerStatus" class="form-select form-select-dark">
+                                <option value="Còn hàng">Còn hàng</option><option value="Hết hàng">Hết hàng</option><option value="Đặt trước">Đặt trước</option><option value="Ngừng bán">Ngừng bán</option>
+                            </select></div>
+                            <div class="col-md-4"><label class="form-label small text-secondary">Khuyến mãi</label><input type="text" id="carsEditVerPromo" class="form-control form-control-dark" placeholder="Mã khuyến mãi" /></div>
+                            <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="carsEditVerImage" class="form-control form-control-dark" placeholder="https://..." /></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="carsEditVerFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('carsEditVerFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                        </div>
+                        <button onclick="carsSaveVersionFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Phiên Bản</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div class="crop-overlay" id="cropOverlay">
+    <div class="crop-dialog">
+        <div class="crop-header">
+            <h6><i class="fas fa-crop-alt me-2"></i> Chỉnh sửa ảnh</h6>
+            <button class="btn-close-crop" onclick="closeCropModal()">&times;</button>
+        </div>
+        <div class="crop-viewport" id="cropViewport">
+            <img id="cropImage" src="" alt="Crop" />
+            <div class="crop-frame"></div>
+            <div class="crop-guide"></div>
+        </div>
+        <div class="crop-controls">
+            <div class="crop-zoom-row">
+                <label><i class="fas fa-search-plus"></i></label>
+                <input type="range" id="cropZoom" min="10" max="300" value="100" oninput="onCropZoom()" />
+                <span class="zoom-val" id="cropZoomVal">100%</span>
+            </div>
+            <div class="crop-ratio-row">
+                <label>Tỷ lệ:</label>
+                <button class="crop-ratio-btn active" data-ratio="free" onclick="setCropRatio('free',this)">Tự do</button>
+                <button class="crop-ratio-btn" data-ratio="16:9" onclick="setCropRatio('16:9',this)">16:9</button>
+                <button class="crop-ratio-btn" data-ratio="4:3" onclick="setCropRatio('4:3',this)">4:3</button>
+                <button class="crop-ratio-btn" data-ratio="1:1" onclick="setCropRatio('1:1',this)">1:1</button>
+                <button class="crop-ratio-btn" data-ratio="3:2" onclick="setCropRatio('3:2',this)">3:2</button>
+            </div>
+        </div>
+        <div class="crop-actions">
+            <button class="crop-btn-cancel" onclick="closeCropModal()">Hủy</button>
+            <button class="crop-btn-apply" onclick="applyCrop()"><i class="fas fa-check me-1"></i> Áp dụng</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let _carsVersions = [];
+
+/* ========== IMAGE CROP SYSTEM ========== */
+let _cropState = { targetInput: null, img: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, start: {x:0,y:0}, imgW: 0, imgH: 0 };
+
+function openCropModal(inputId, aspectRatio) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    _cropState.targetInput = input;
+    _cropState.ratio = aspectRatio || 'free';
+    _cropState.zoom = 1;
+
+    const overlay = document.getElementById('cropOverlay');
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const zoomSlider = document.getElementById('cropZoom');
+    zoomSlider.value = 100;
+    document.getElementById('cropZoomVal').textContent = '100%';
+
+    document.querySelectorAll('.crop-ratio-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.ratio === _cropState.ratio);
+    });
+
+    let src = '';
+    if (input.files && input.files.length > 0) {
+        src = URL.createObjectURL(input.files[0]);
+    } else {
+        src = input.value.trim();
+    }
+    if (!src) return;
+
+    img.onload = function() {
+        _cropState.imgW = img.naturalWidth;
+        _cropState.imgH = img.naturalHeight;
+        _cropState.drag = { x: 0, y: 0 };
+        _cropState.zoom = 1;
+        fitCropImage();
+    };
+    img.src = src;
+    overlay.classList.add('active');
+}
+
+function fitCropImage() {
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const iw = _cropState.imgW;
+    const ih = _cropState.imgH;
+    if (!iw || !ih) return;
+
+    let scale = Math.min(vw / iw, vh / ih) * 0.9;
+    img.style.width = (iw * scale * _cropState.zoom) + 'px';
+    img.style.height = (ih * scale * _cropState.zoom) + 'px';
+    img.style.left = _cropState.drag.x + 'px';
+    img.style.top = _cropState.drag.y + 'px';
+}
+
+function onCropZoom() {
+    const val = parseInt(document.getElementById('cropZoom').value);
+    _cropState.zoom = val / 100;
+    document.getElementById('cropZoomVal').textContent = val + '%';
+    fitCropImage();
+}
+
+function setCropRatio(ratio, btn) {
+    _cropState.ratio = ratio;
+    document.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function closeCropModal() {
+    document.getElementById('cropOverlay').classList.remove('active');
+}
+
+function applyCrop() {
+    const viewport = document.getElementById('cropViewport');
+    const img = document.getElementById('cropImage');
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let outW = vw, outH = vh;
+    if (_cropState.ratio !== 'free') {
+        const parts = _cropState.ratio.split(':');
+        const rW = parseInt(parts[0]), rH = parseInt(parts[1]);
+        if (vw / vh > rW / rH) { outH = vh; outW = vh * rW / rH; }
+        else { outW = vw; outH = vw * rH / rW; }
+    }
+    canvas.width = outW;
+    canvas.height = outH;
+
+    const imgRect = img.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    const sx = (vpRect.left + (vw - outW) / 2 - imgRect.left) / (imgRect.width / _cropState.imgW);
+    const sy = (vpRect.top + (vh - outH) / 2 - imgRect.top) / (imgRect.height / _cropState.imgH);
+    const sw = outW / (imgRect.width / _cropState.imgW);
+    const sh = outH / (imgRect.height / _cropState.imgH);
+
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+
+    canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        if (_cropState.targetInput) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                _cropState.targetInput.setAttribute('data-crop-url', url);
+                _cropState.targetInput.setAttribute('data-crop-blob', e.target.result);
+            };
+            reader.readAsDataURL(blob);
+        }
+        closeCropModal();
+    }, 'image/jpeg', 0.92);
+}
+
+(function() {
+    const vp = document.getElementById('cropViewport');
+    if (!vp) return;
+    let startX, startY, startDragX, startDragY;
+    vp.addEventListener('mousedown', e => {
+        e.preventDefault();
+        _cropState.isDragging = true;
+        startX = e.clientX; startY = e.clientY;
+        startDragX = _cropState.drag.x; startDragY = _cropState.drag.y;
+    });
+    document.addEventListener('mousemove', e => {
+        if (!_cropState.isDragging) return;
+        _cropState.drag.x = startDragX + (e.clientX - startX);
+        _cropState.drag.y = startDragY + (e.clientY - startY);
+        fitCropImage();
+    });
+    document.addEventListener('mouseup', () => { _cropState.isDragging = false; });
+})();
+/* ======================================== */
+
+async function carsUploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        return data.url;
+    } catch (e) { alert('Upload failed. Try pasting an image URL instead.'); return null; }
+}
+
+function openCarsEditorFull(id) {
+    fetch('/api/admin/dongxe/' + id).then(r=>r.json()).then(d=>{
+        _carsVersions = d.versions || [];
+        if (d.brand) {
+            document.getElementById('carsEditBrandId').value = d.brand.maHang;
+            document.getElementById('carsEditBrandName').value = d.brand.tenHang;
+            document.getElementById('carsEditBrandCountry').value = d.brand.quocGia;
+            document.getElementById('carsEditBrandLogo').value = d.brand.duongDanLogo || '';
+        }
+        document.getElementById('carsEditModelId').value = d.maDong;
+        document.getElementById('carsEditModelName').value = d.tenDong;
+        document.getElementById('carsEditModelBrand').value = d.maHang;
+        document.getElementById('carsEditModelStyle').value = d.kieuDang;
+        document.getElementById('carsEditModelImage').value = d.duongDanAnh || '';
+        const sel = document.getElementById('carsEditVersionSelect');
+        sel.innerHTML = '';
+        _carsVersions.forEach((v,i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.text = v.tenPhienBan + ' - ' + (v.giaNiemYet ? v.giaNiemYet.toLocaleString('vi-VN') + 'd' : 'Liên hệ');
+            sel.appendChild(opt);
+        });
+        if (_carsVersions.length > 0) carsLoadVersionData();
+        new bootstrap.Modal(document.getElementById('carsCarEditorModal')).show();
+    });
+}
+
+function carsLoadVersionData() {
+    const idx = parseInt(document.getElementById('carsEditVersionSelect').value);
+    const v = _carsVersions[idx];
+    if (!v) return;
+    document.getElementById('carsEditVerId').value = v.maPhienBan;
+    document.getElementById('carsEditVerName').value = v.tenPhienBan;
+    document.getElementById('carsEditVerPrice').value = v.giaNiemYet || '';
+    document.getElementById('carsEditVerColor').value = v.mauSac || '';
+    document.getElementById('carsEditVerEngine').value = v.dongCo || '';
+    document.getElementById('carsEditVerTransmission').value = v.hopSo || '';
+    document.getElementById('carsEditVerFuel').value = v.loaiNhietLieu || 'Xăng';
+    document.getElementById('carsEditVerStock').value = v.soLuongTrongKho || 0;
+    document.getElementById('carsEditVerStatus').value = v.trangThai || 'Còn hàng';
+    document.getElementById('carsEditVerPromo').value = v.maKhuyenMai || '';
+    document.getElementById('carsEditVerImage').value = v.duongDanAnh || '';
+}
+
+async function carsSaveBrandFull() {
+    const id = document.getElementById('carsEditBrandId').value;
+    const urlInput = document.getElementById('carsEditBrandLogo');
+    const fileInput = document.getElementById('carsEditBrandFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0]);
+    const payload = {
+        maHang: parseInt(id),
+        tenHang: document.getElementById('carsEditBrandName').value.trim(),
+        quocGia: document.getElementById('carsEditBrandCountry').value.trim(),
+        duongDanLogo: url || null
+    };
+    await fetch('/api/admin/hangxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+
+async function carsSaveModelFull() {
+    const id = document.getElementById('carsEditModelId').value;
+    const urlInput = document.getElementById('carsEditModelImage');
+    const fileInput = document.getElementById('carsEditModelFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0]);
+    const payload = {
+        maDong: parseInt(id),
+        tenDong: document.getElementById('carsEditModelName').value.trim(),
+        maHang: parseInt(document.getElementById('carsEditModelBrand').value),
+        kieuDang: document.getElementById('carsEditModelStyle').value,
+        duongDanAnh: url || null
+    };
+    await fetch('/api/admin/dongxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+
+async function carsSaveVersionFull() {
+    const id = document.getElementById('carsEditVerId').value;
+    const urlInput = document.getElementById('carsEditVerImage');
+    const fileInput = document.getElementById('carsEditVerFile');
+    let url = urlInput.value.trim();
+    if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0]);
+    const payload = {
+        maPhienBan: parseInt(id),
+        tenPhienBan: document.getElementById('carsEditVerName').value.trim(),
+        giaNiemYet: parseInt(document.getElementById('carsEditVerPrice').value) || 0,
+        mauSac: document.getElementById('carsEditVerColor').value.trim(),
+        dongCo: document.getElementById('carsEditVerEngine').value.trim(),
+        hopSo: document.getElementById('carsEditVerTransmission').value.trim(),
+        loaiNhietLieu: document.getElementById('carsEditVerFuel').value,
+        soLuongTrongKho: parseInt(document.getElementById('carsEditVerStock').value) || 0,
+        trangThai: document.getElementById('carsEditVerStatus').value,
+        maKhuyenMai: document.getElementById('carsEditVerPromo').value.trim() || null,
+        duongDanAnh: url || null
+    };
+    await fetch('/api/admin/phienban/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    location.reload();
+}
+</script>
+}
