@@ -11,6 +11,7 @@ CarProject/build/*.pfx
 create_users.sql
 fix_perms.sql
 *.log
+*.bat
 server_*.log
 CarProject/CarProject/wwwroot/uploads/avatars/*
 CarProject/Module/*.zip
