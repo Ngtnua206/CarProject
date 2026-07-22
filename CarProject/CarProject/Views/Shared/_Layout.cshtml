@@ -1,10 +1,11 @@
 ﻿@inject CarProject.Data.AppDbContext _db
+@using CarProject.Services
 @{
-    var hasLogin = !string.IsNullOrEmpty(Context.Session.GetString("UserName"));
-    var userRole = Context.Session.GetString("UserRole");
-    var userName = Context.Session.GetString("TenHienThi") ?? Context.Session.GetString("UserName") ?? "";
-    var avatarUrl = Context.Session.GetString("AvatarUrl");
-    var adminMode = Context.Session.GetString("AdminMode");
+    var hasLogin = User.IsJwtLoggedIn();
+    var userRole = User.GetJwtRole();
+    var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "";
+    var avatarUrl = User.GetJwtAvatar();
+    var adminMode = Context.Request.Cookies["AdminMode"];
     var isAdminView = hasLogin && userRole == "Admin" && adminMode == "View";
     var isLoggedIn = isAdminView ? false : hasLogin;
     string ActivePage(string page) => ViewContext.RouteData.Values["page"]?.ToString() == page ? "active" : "";

@@ -9,7 +9,13 @@ public class ToggleModeModel : PageModel
     {
         if (mode == "View" || mode == "Control")
         {
-            HttpContext.Session.SetString("AdminMode", mode);
+            Response.Cookies.Append("AdminMode", mode, new CookieOptions
+            {
+                HttpOnly = false,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(30),
+                Path = "/"
+            });
         }
 
         var redirectUrl = returnUrl ?? "/";

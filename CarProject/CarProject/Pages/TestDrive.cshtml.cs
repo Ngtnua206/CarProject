@@ -52,7 +52,7 @@ public class TestDriveModel : PageModel
     {
         DanhSachXe = await _db.DongXe.Include(d => d.HangXe).ToListAsync();
 
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         var lichHen = new LichHenLaiThu
         {
             MaKhachHang = userId ?? "",

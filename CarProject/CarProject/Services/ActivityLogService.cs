@@ -23,8 +23,8 @@ public class ActivityLogService : IActivityLogService
     public async Task LogAsync(string hanhDong, string chiTiet = null)
     {
         var ctx = _http.HttpContext;
-        var userName = ctx?.Session.GetString("UserName") ?? "(anonymous)";
-        var role = ctx?.Session.GetString("UserRole") ?? "Guest";
+        var userName = ctx?.User.GetJwtUserName() ?? "(anonymous)";
+        var role = ctx?.User.GetJwtRole() ?? "Guest";
         var ip = ctx?.Connection.RemoteIpAddress?.ToString();
         var path = ctx?.Request.Path;
 
@@ -37,7 +37,7 @@ public class ActivityLogService : IActivityLogService
         {
             var entry = new NhatKyHeThong
             {
-                MaTaiKhoan = ctx?.Session.GetString("UserName"),
+                MaTaiKhoan = ctx?.User.GetJwtUserName(),
                 TenDangNhap = userName,
                 VaiTro = role,
                 HanhDong = hanhDong,

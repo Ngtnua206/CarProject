@@ -22,7 +22,7 @@ public class CreateModel : PageModel
 
     public void OnGet()
     {
-        Banner = new QuangCaoBanner { MaQuanLyCapNhat = HttpContext.Session.GetString("UserName") ?? "" };
+        Banner = new QuangCaoBanner { MaQuanLyCapNhat = User.GetJwtUserName() ?? "" };
     }
 
     public async Task<IActionResult> OnPostAsync()

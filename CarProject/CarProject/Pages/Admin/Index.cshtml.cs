@@ -34,7 +34,7 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         // Check login
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserName")))
+        if (!User.IsJwtLoggedIn())
         {
             RedirectToPage("/Account/Login");
             return;

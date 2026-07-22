@@ -44,7 +44,7 @@ public class CartService : ICartService
 
     private string? GetUserId()
     {
-        return _http.HttpContext?.Session.GetString("UserName");
+        return _http.HttpContext?.User.GetJwtUserName();
     }
 
     public async Task<List<CartItem>> GetCartAsync()

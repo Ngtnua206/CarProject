@@ -75,7 +75,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        SetSession(user);
+        SetJwtCookie(user);
         await _log.LogAsync("Đăng nhập thành công", $"Tài khoản \"{user.TenDangNhap}\" vai trò {user.VaiTro}");
 
         if (user.VaiTro == "Admin")
@@ -89,7 +89,7 @@ public class LoginModel : PageModel
 
     public IActionResult OnGet()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UserName")))
+        if (User.IsJwtLoggedIn())
             return RedirectToPage("/Index");
 
         if (Request.Query.ContainsKey("daCoTaiKhoan"))
@@ -171,7 +171,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        SetSession(user);
+        SetJwtCookie(user);
         await _log.LogAsync("Đăng nhập Google", $"Tài khoản \"{email}\"");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -188,16 +188,9 @@ public class LoginModel : PageModel
         return RedirectToPage("/Index");
     }
 
-    private void SetSession(TaiKhoan user)
+    private void SetJwtCookie(TaiKhoan user)
     {
-        HttpContext.Session.SetString("UserName", user.TenDangNhap);
-        HttpContext.Session.SetString("UserRole", user.VaiTro);
-        HttpContext.Session.SetString("TenHienThi", user.TenHienThi ?? user.TenDangNhap);
-        HttpContext.Session.SetString("AvatarUrl", user.AvatarUrl ?? "");
-        HttpContext.Session.SetString("UserEmail", user.Email ?? user.TenDangNhap);
-        HttpContext.Session.SetInt32("MaTaiKhoan", user.MaTaiKhoan);
-
         var jwt = HttpContext.RequestServices.GetRequiredService<CarProject.Services.IJwtService>();
-        HttpContext.Session.SetString("JwtToken", jwt.GenerateToken(user));
+        HttpContext.SetJwtCookie(jwt.GenerateToken(user));
     }
 }

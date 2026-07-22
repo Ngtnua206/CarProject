@@ -46,7 +46,7 @@ public class ProfileModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userId))
             return RedirectToPage("/Account/Login");
 
@@ -65,7 +65,7 @@ public class ProfileModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userId))
             return RedirectToPage("/Account/Login");
 
@@ -76,12 +76,11 @@ public class ProfileModel : PageModel
         if (!string.IsNullOrWhiteSpace(TenHienThi))
         {
             user.TenHienThi = TenHienThi.Trim();
-            HttpContext.Session.SetString("TenHienThi", user.TenHienThi);
+            HttpContext.SetJwtCookie(HttpContext.RequestServices.GetRequiredService<IJwtService>().GenerateToken(user));
         }
         if (!string.IsNullOrWhiteSpace(Email))
         {
             user.Email = Email.Trim();
-            HttpContext.Session.SetString("UserEmail", user.Email);
         }
 
         if (!string.IsNullOrWhiteSpace(AvatarUrl))
@@ -89,7 +88,7 @@ public class ProfileModel : PageModel
             user.AvatarUrl = AvatarUrl.Trim();
         }
 
-        HttpContext.Session.SetString("AvatarUrl", user.AvatarUrl ?? "");
+        HttpContext.SetJwtCookie(HttpContext.RequestServices.GetRequiredService<IJwtService>().GenerateToken(user));
 
         if (!string.IsNullOrWhiteSpace(MatKhauMoi) || !string.IsNullOrWhiteSpace(MatKhauCu))
         {

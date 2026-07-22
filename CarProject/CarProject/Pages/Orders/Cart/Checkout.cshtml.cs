@@ -70,7 +70,7 @@ public class CheckoutModel : PageModel
             return Page();
         }
 
-        var userName = HttpContext.Session.GetString("UserName");
+        var userName = User.GetJwtUserName();
         var groupCode = $"MGC{DateTime.Now:yyMMddHHmmss}";
 
         var createdDeposits = new List<int>();

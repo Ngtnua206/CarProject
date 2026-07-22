@@ -15,12 +15,13 @@ public class LogoutModel : PageModel
 
     public async Task<IActionResult> OnGet()
     {
-        var name = HttpContext.Session.GetString("UserName") ?? "(unknown)";
+        var name = User.GetJwtUserName() ?? "(unknown)";
         await _log.LogAsync("Đăng xuất", $"Tài khoản \"{name}\"");
-        HttpContext.Session.Clear();
+        HttpContext.ClearJwtCookie();
         foreach (var cookie in Request.Cookies.Keys)
         {
-            Response.Cookies.Delete(cookie);
+            if (cookie != JwtCookieExtensions.CookieName)
+                Response.Cookies.Delete(cookie);
         }
         return RedirectToPage("/Index");
     }

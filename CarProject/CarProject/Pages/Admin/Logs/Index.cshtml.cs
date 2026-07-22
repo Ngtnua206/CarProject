@@ -32,7 +32,7 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync(int? p)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserName")))
+        if (!User.IsJwtLoggedIn())
         {
             RedirectToPage("/Account/Login");
             return;
@@ -42,8 +42,8 @@ public class IndexModel : PageModel
         if (PageIndex < 1) PageIndex = 1;
 
         var query = _db.NhatKyHeThong.AsQueryable();
-        var role = HttpContext.Session.GetString("UserRole") ?? "Guest";
-        var userName = HttpContext.Session.GetString("UserName") ?? "";
+        var role = User.GetJwtRole() ?? "Guest";
+        var userName = User.GetJwtUserName() ?? "";
 
         // Admin: xem tất cả; User thường: chỉ xem log của mình
         if (role != "Admin")

@@ -125,7 +125,7 @@ public class IndexModel : PageModel
             return RedirectToPage();
         }
 
-        var currentUser = HttpContext.Session.GetString("UserName");
+        var currentUser = User.GetJwtUserName();
         if (currentUser == tenDangNhap)
         {
             TempData["Error"] = "Không thể xóa tài khoản của chính bạn.";

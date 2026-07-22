@@ -33,14 +33,14 @@ public class DashboardModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var userName = HttpContext.Session.GetString("UserName");
-        var role = HttpContext.Session.GetString("UserRole");
+        var userName = User.GetJwtUserName();
+        var role = User.GetJwtRole();
 
         if (string.IsNullOrEmpty(userName))
             return RedirectToPage("/Account/Login");
 
         TenDangNhap = userName;
-        TenHienThi = HttpContext.Session.GetString("TenHienThi") ?? userName;
+        TenHienThi = User.GetJwtDisplayName() ?? userName;
 
         // Tìm showroom được giao quản lý
         Showroom = await _db.ChiNhanhShowroom

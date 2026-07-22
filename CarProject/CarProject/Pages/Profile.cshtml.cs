@@ -50,7 +50,7 @@ public class ProfileModel : PageModel
 
     public async Task OnGetAsync()
     {
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         if (!string.IsNullOrEmpty(userId))
         {
             TaiKhoan = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == userId);
@@ -81,7 +81,7 @@ public class ProfileModel : PageModel
 
     public async Task<IActionResult> OnPostUpdateNameAsync()
     {
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userId)) return RedirectToPage("/Account/Login");
 
         var user = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == userId);
@@ -89,7 +89,8 @@ public class ProfileModel : PageModel
         {
             user.TenHienThi = NewTenHienThi.Trim();
             await _db.SaveChangesAsync();
-            HttpContext.Session.SetString("TenHienThi", user.TenHienThi);
+            var jwt = HttpContext.RequestServices.GetRequiredService<IJwtService>();
+            HttpContext.SetJwtCookie(jwt.GenerateToken(user));
             Message = "Cập nhật tên hiển thị thành công.";
             MessageType = "success";
             await _log.LogAsync("Cập nhật tên hiển thị");
@@ -99,7 +100,7 @@ public class ProfileModel : PageModel
 
     public async Task<IActionResult> OnPostChangePasswordAsync()
     {
-        var userId = HttpContext.Session.GetString("UserName");
+        var userId = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userId)) return RedirectToPage("/Account/Login");
 
         if (string.IsNullOrEmpty(MatKhauCu) || string.IsNullOrEmpty(MatKhauMoi) || string.IsNullOrEmpty(XacNhanMatKhau))
@@ -147,7 +148,7 @@ public class ProfileModel : PageModel
     {
         try
         {
-            var userId = HttpContext.Session.GetString("UserName");
+            var userId = User.GetJwtUserName();
             if (string.IsNullOrEmpty(userId)) return RedirectToPage("/Account/Login");
 
             string body;
@@ -207,7 +208,8 @@ public class ProfileModel : PageModel
             {
                 user.AvatarUrl = $"/uploads/avatars/{fileName}";
                 await _db.SaveChangesAsync();
-                HttpContext.Session.SetString("AvatarUrl", user.AvatarUrl);
+                var jwtSvc = HttpContext.RequestServices.GetRequiredService<IJwtService>();
+                HttpContext.SetJwtCookie(jwtSvc.GenerateToken(user));
             }
 
             System.IO.File.AppendAllText(logPathDebug,

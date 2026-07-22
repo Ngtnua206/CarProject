@@ -35,7 +35,7 @@ public class RegisterModel : PageModel
 
     public IActionResult OnGet()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UserName")))
+        if (User.IsJwtLoggedIn())
             return RedirectToPage("/Index");
 
         if (Request.Query.ContainsKey("step2"))

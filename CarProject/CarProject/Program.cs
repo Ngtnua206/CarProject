@@ -50,12 +50,7 @@ try
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();
 
-    builder.Services.AddSession(options =>
-    {
-        options.IdleTimeout = TimeSpan.FromMinutes(30);
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
-    });
+    builder.Services.AddDistributedMemoryCache();
 
     // Allow larger uploads from browsers / IDE-run profiles (set to 100 MB)
     builder.Services.Configure<FormOptions>(options =>
@@ -193,7 +188,20 @@ try
         Log.Information("<-- {Method} {Path} => {StatusCode} ({Elapsed}ms)", method, path, context.Response.StatusCode, sw.ElapsedMilliseconds);
     });
 
-    app.UseSession();
+    // JWT cookie auth middleware (replaces session)
+    app.Use(async (context, next) =>
+    {
+        var token = context.GetJwtFromCookie();
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwt = context.RequestServices.GetRequiredService<CarProject.Services.IJwtService>();
+            var principal = jwt.ValidateToken(token);
+            if (principal != null)
+                context.User = principal;
+        }
+        await next(context);
+    });
+
     app.UseAuthentication();
     app.UseAuthorization();
 
@@ -201,8 +209,8 @@ try
     app.Use(async (context, next) =>
     {
         var path = context.Request.Path.Value ?? "";
-        var role = context.Session.GetString("UserRole");
-        var isLoggedIn = !string.IsNullOrEmpty(context.Session.GetString("UserName"));
+        var role = context.User.GetJwtRole();
+        var isLoggedIn = context.User.IsJwtLoggedIn();
 
         // /Admin/* -> chỉ Admin
         if (path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase))
@@ -220,7 +228,7 @@ try
         }
 
         // /Orders/*, /Profile, /TestDrive, /QuanLy/* -> cần đăng nhập
-        if ((path.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) ||
+        if (((path.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) && !path.StartsWith("/Orders/DepositForm", StringComparison.OrdinalIgnoreCase)) ||
              path.Equals("/Profile", StringComparison.OrdinalIgnoreCase) ||
              path.Equals("/TestDrive", StringComparison.OrdinalIgnoreCase) ||
              path.StartsWith("/TestDrive", StringComparison.OrdinalIgnoreCase) ||
@@ -252,7 +260,7 @@ try
     {
         try
         {
-            var userId = ctx.Session.GetString("UserName");
+            var userId = ctx.User.GetJwtUserName();
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
@@ -290,7 +298,8 @@ try
             {
                 user.AvatarUrl = $"/uploads/avatars/{fileName}";
                 await db.SaveChangesAsync();
-                ctx.Session.SetString("AvatarUrl", user.AvatarUrl);
+                var jwtSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.IJwtService>();
+                ctx.SetJwtCookie(jwtSvc.GenerateToken(user));
             }
 
             var log = ctx.RequestServices.GetRequiredService<CarProject.Services.IActivityLogService>();
@@ -349,9 +358,12 @@ try
             user.AvatarUrl = $"/uploads/avatars/{fileName}";
             await db.SaveChangesAsync();
 
-            // Update session if active
-            if (!string.IsNullOrEmpty(ctx.Session.GetString("UserName")))
-                ctx.Session.SetString("AvatarUrl", user.AvatarUrl);
+            // Regenerate JWT if active
+            if (ctx.User.IsJwtLoggedIn())
+            {
+                var jwtSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.IJwtService>();
+                ctx.SetJwtCookie(jwtSvc.GenerateToken(user));
+            }
 
             var log = ctx.RequestServices.GetRequiredService<CarProject.Services.IActivityLogService>();
             await log.LogAsync("Cập nhật ảnh đại diện (admin)");
@@ -407,7 +419,7 @@ try
     // Minimal API for cart operations
     app.MapGet("/api/cart/count", async (HttpContext ctx, ICartService cart) =>
     {
-        var userName = ctx.Session.GetString("UserName");
+        var userName = ctx.User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName))
             return Results.Ok(new { count = 0 });
         var count = await cart.GetCartCountAsync();
@@ -416,7 +428,7 @@ try
 
     app.MapPost("/api/cart/add", async (HttpContext ctx, ICartService cart) =>
     {
-        var userName = ctx.Session.GetString("UserName");
+        var userName = ctx.User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName))
             return Results.Ok(new { success = false, error = "Vui lòng đăng nhập" });
 
@@ -462,7 +474,7 @@ try
             {
                 DuongDanAnh = duongDanAnh,
                 ThuTuHienThi = 1,
-                MaQuanLyCapNhat = ctx.Session.GetString("UserName") ?? "admin"
+                MaQuanLyCapNhat = ctx.User.GetJwtUserName() ?? "admin"
             };
             db.QuangCaoBanner.Add(banner);
         }
