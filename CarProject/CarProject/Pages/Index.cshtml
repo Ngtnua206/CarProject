@@ -248,7 +248,7 @@
             <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-image me-2"></i> Banner Image</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <div class="mb-3"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="bannerUrlInput" class="form-control form-control-dark" placeholder="https://..." /></div>
-                <div class="mb-3 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="bannerFileInput" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('bannerFileInput','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                <div class="mb-3 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="bannerFileInput" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('bannerFileInput','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('bannerFileInput','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
                 <button onclick="saveBanner()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-save me-2"></i>Save</button>
             </div>
         </div>
@@ -292,7 +292,7 @@
                             <div class="col-md-4"><label class="form-label small text-secondary">Tên hãng</label><input type="text" id="editBrandName" class="form-control form-control-dark" /></div>
                             <div class="col-md-4"><label class="form-label small text-secondary">Quốc gia</label><input type="text" id="editBrandCountry" class="form-control form-control-dark" /></div>
                             <div class="col-md-4"><label class="form-label small text-secondary">Logo URL</label><input type="url" id="editBrandLogo" class="form-control form-control-dark" placeholder="https://..." /></div>
-                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editBrandFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editBrandFile','1:1')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editBrandFile" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('editBrandFile','1:1')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editBrandFile','1:1')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
                         </div>
                         <button onclick="saveBrandFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Hãng Xe</button>
                     </div>
@@ -308,7 +308,7 @@
                                 <option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Hatchback">Hatchback</option><option value="Coupe">Coupe</option><option value="MPV">MPV</option><option value="Pickup">Pickup</option><option value="Van">Van</option>
                             </select></div>
                             <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="editModelImage" class="form-control form-control-dark" placeholder="https://..." /></div>
-                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editModelFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editModelFile" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('editModelFile','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
                         </div>
                         <button onclick="saveModelFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Dòng Xe</button>
                     </div>
@@ -331,7 +331,7 @@
                             </select></div>
                             <div class="col-md-4"><label class="form-label small text-secondary">Khuyến mãi</label><input type="text" id="editVerPromo" class="form-control form-control-dark" placeholder="Mã khuyến mãi" /></div>
                             <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="editVerImage" class="form-control form-control-dark" placeholder="https://..." /></div>
-                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editVerFile" class="form-control form-control-dark" accept="image/*" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editVerFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                            <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editVerFile" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('editVerFile','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editVerFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
                         </div>
                         <button onclick="saveVersionFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Phiên Bản</button>
                     </div>
@@ -380,17 +380,17 @@
 let _carVersions = [];
 
 /* ========== IMAGE CROP SYSTEM ========== */
-let _cropState = { targetInput: null, img: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, start: {x:0,y:0}, imgW: 0, imgH: 0 };
+let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };
+let _croppedBlobs = {};
 
 function openCropModal(inputId, aspectRatio) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    _cropState.targetInput = input;
+    _cropState.targetInputId = inputId;
     _cropState.ratio = aspectRatio || 'free';
     _cropState.zoom = 1;
 
     const overlay = document.getElementById('cropOverlay');
-    const viewport = document.getElementById('cropViewport');
     const img = document.getElementById('cropImage');
     const zoomSlider = document.getElementById('cropZoom');
     zoomSlider.value = 100;
@@ -406,7 +406,7 @@ function openCropModal(inputId, aspectRatio) {
     } else {
         src = input.value.trim();
     }
-    if (!src) return;
+    if (!src) { alert('Vui lòng chọn ảnh hoặc nhập URL trước.'); return; }
 
     img.onload = function() {
         _cropState.imgW = img.naturalWidth;
@@ -424,10 +424,8 @@ function fitCropImage() {
     const img = document.getElementById('cropImage');
     const vw = viewport.clientWidth;
     const vh = viewport.clientHeight;
-    const iw = _cropState.imgW;
-    const ih = _cropState.imgH;
+    const iw = _cropState.imgW, ih = _cropState.imgH;
     if (!iw || !ih) return;
-
     let scale = Math.min(vw / iw, vh / ih) * 0.9;
     img.style.width = (iw * scale * _cropState.zoom) + 'px';
     img.style.height = (ih * scale * _cropState.zoom) + 'px';
@@ -455,16 +453,14 @@ function closeCropModal() {
 function applyCrop() {
     const viewport = document.getElementById('cropViewport');
     const img = document.getElementById('cropImage');
-    const vw = viewport.clientWidth;
-    const vh = viewport.clientHeight;
+    const vw = viewport.clientWidth, vh = viewport.clientHeight;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
     let outW = vw, outH = vh;
     if (_cropState.ratio !== 'free') {
-        const parts = _cropState.ratio.split(':');
-        const rW = parseInt(parts[0]), rH = parseInt(parts[1]);
+        const p = _cropState.ratio.split(':');
+        const rW = parseInt(p[0]), rH = parseInt(p[1]);
         if (vw / vh > rW / rH) { outH = vh; outW = vh * rW / rH; }
         else { outW = vw; outH = vw * rH / rW; }
     }
@@ -477,59 +473,52 @@ function applyCrop() {
     const sy = (vpRect.top + (vh - outH) / 2 - imgRect.top) / (imgRect.height / _cropState.imgH);
     const sw = outW / (imgRect.width / _cropState.imgW);
     const sh = outH / (imgRect.height / _cropState.imgH);
-
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
 
     canvas.toBlob(function(blob) {
-        const url = URL.createObjectURL(blob);
-        if (_cropState.targetInput) {
-            // Set data URL to input for preview, store blob URL for upload
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                _cropState.targetInput.setAttribute('data-crop-url', url);
-                _cropState.targetInput.setAttribute('data-crop-blob', e.target.result);
-                // Show preview if possible
-                const previewId = _cropState.targetInput.id.replace('File','Preview').replace('Input','Preview');
-                const previewEl = document.getElementById(previewId);
-                if (previewEl) previewEl.src = e.target.result;
-            };
-            reader.readAsDataURL(blob);
+        if (blob && _cropState.targetInputId) {
+            _croppedBlobs[_cropState.targetInputId] = blob;
+            const tag = document.getElementById('cropStatus');
+            if (tag) tag.textContent = 'Đã cắt ảnh ✓';
         }
         closeCropModal();
     }, 'image/jpeg', 0.92);
 }
 
 /* Drag to pan */
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     const vp = document.getElementById('cropViewport');
     if (!vp) return;
-    let startX, startY, startDragX, startDragY;
+    let startX, startY, sdx, sdy;
     vp.addEventListener('mousedown', e => {
         e.preventDefault();
         _cropState.isDragging = true;
         startX = e.clientX; startY = e.clientY;
-        startDragX = _cropState.drag.x; startDragY = _cropState.drag.y;
+        sdx = _cropState.drag.x; sdy = _cropState.drag.y;
     });
     document.addEventListener('mousemove', e => {
         if (!_cropState.isDragging) return;
-        _cropState.drag.x = startDragX + (e.clientX - startX);
-        _cropState.drag.y = startDragY + (e.clientY - startY);
+        _cropState.drag.x = sdx + (e.clientX - startX);
+        _cropState.drag.y = sdy + (e.clientY - startY);
         fitCropImage();
     });
     document.addEventListener('mouseup', () => { _cropState.isDragging = false; });
-})();
-/* ======================================== */
+});
 
-async function uploadFile(file) {
+/* Upload: use cropped blob if available, else original file */
+async function uploadFile(file, inputId) {
+    let blob = (inputId && _croppedBlobs[inputId]) ? _croppedBlobs[inputId] : file;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', blob, blob.name || 'cropped.jpg');
     try {
         const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
         if (!res.ok) throw new Error(res.statusText);
         const data = await res.json();
+        if (inputId) delete _croppedBlobs[inputId];
         return data.url;
-    } catch (e) { alert('Upload failed. Try pasting an image URL instead.'); return null; }
+    } catch (e) { alert('Upload thất bại. Thử dán URL ảnh thay thế.'); return null; }
 }
+/* ======================================== */
 
 function openBannerEditor() { new bootstrap.Modal(document.getElementById('bannerEditorModal')).show(); }
 
@@ -544,20 +533,17 @@ function openBrandEditor(id, name, country, logo) {
 function openCarEditorFull(id) {
     fetch('/api/admin/dongxe/' + id).then(r=>r.json()).then(d=>{
         _carVersions = d.versions || [];
-        // Brand tab
         if (d.brand) {
             document.getElementById('editBrandId').value = d.brand.maHang;
             document.getElementById('editBrandName').value = d.brand.tenHang;
             document.getElementById('editBrandCountry').value = d.brand.quocGia;
             document.getElementById('editBrandLogo').value = d.brand.duongDanLogo || '';
         }
-        // Model tab
         document.getElementById('editModelId').value = d.maDong;
         document.getElementById('editModelName').value = d.tenDong;
         document.getElementById('editModelBrand').value = d.maHang;
         document.getElementById('editModelStyle').value = d.kieuDang;
         document.getElementById('editModelImage').value = d.duongDanAnh || '';
-        // Version tab
         const sel = document.getElementById('editVersionSelect');
         sel.innerHTML = '';
         _carVersions.forEach((v,i) => {
@@ -587,81 +573,135 @@ function loadVersionData() {
     document.getElementById('editVerImage').value = v.duongDanAnh || '';
 }
 
+function showToast(msg, type) {
+    const c = document.getElementById('toastContainer');
+    if (!c) return;
+    const el = document.createElement('div');
+    el.className = 'toast-item toast-visible' + (type === 'error' ? ' toast-error' : '');
+    el.innerHTML = '<div class="toast-icon">' + (type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>') + '</div>'
+        + '<div class="toast-body"><div class="toast-title">' + (type === 'error' ? 'Lỗi' : 'Thành công') + '</div><div class="toast-msg">' + msg + '</div></div>'
+        + '<button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>'
+        + '<div class="toast-progress"><div class="toast-progress-bar" style="animation:toastProgress 3s linear forwards;"></div></div>';
+    c.appendChild(el);
+    setTimeout(() => { el.classList.add('toast-hide'); setTimeout(() => el.remove(), 400); }, 3000);
+}
+
+async function apiPost(url, payload) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || res.statusText);
+    return data;
+}
+
 async function saveBanner() {
-    const urlInput = document.getElementById('bannerUrlInput');
-    const fileInput = document.getElementById('bannerFileInput');
-    let url = urlInput.value.trim();
-    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
-    if (!url) return;
-    await fetch('/api/admin/banner/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({duongDanAnh:url}) });
-    location.reload();
+    try {
+        const urlInput = document.getElementById('bannerUrlInput');
+        const fileInput = document.getElementById('bannerFileInput');
+        let url = urlInput.value.trim();
+        if (fileInput.files.length > 0) {
+            url = await uploadFile(fileInput.files[0], 'bannerFileInput');
+        }
+        if (!url) { showToast('Vui lòng nhập URL hoặc chọn file ảnh', 'error'); return; }
+        await apiPost('/api/admin/banner/save', { duongDanAnh: url });
+        showToast('Đã lưu banner!');
+        setTimeout(() => location.reload(), 500);
+    } catch (e) { showToast('Lỗi lưu banner: ' + e.message, 'error'); }
 }
 
 async function saveBrandEdit() {
-    const id = document.getElementById('brandEditId').value;
-    const urlInput = document.getElementById('brandEditLogo');
-    const fileInput = document.getElementById('brandEditFile');
-    let url = urlInput.value.trim();
-    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
-    if (!url) return;
-    await fetch('/api/admin/hangxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({maHang:parseInt(id),duongDanAnh:url}) });
-    location.reload();
+    try {
+        const id = document.getElementById('brandEditId').value;
+        const urlInput = document.getElementById('brandEditLogo');
+        const fileInput = document.getElementById('brandEditFile');
+        let url = urlInput.value.trim();
+        if (fileInput.files.length > 0) {
+            url = await uploadFile(fileInput.files[0], 'brandEditFile');
+        }
+        const payload = {
+            maHang: parseInt(id),
+            tenHang: document.getElementById('brandEditName').value.trim(),
+            quocGia: document.getElementById('brandEditCountry').value.trim(),
+            duongDanLogo: url || null
+        };
+        await apiPost('/api/admin/hangxe/save', payload);
+        showToast('Đã lưu hãng xe!');
+        setTimeout(() => location.reload(), 500);
+    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
 }
 
 async function saveBrandFull() {
-    const id = document.getElementById('editBrandId').value;
-    const urlInput = document.getElementById('editBrandLogo');
-    const fileInput = document.getElementById('editBrandFile');
-    let url = urlInput.value.trim();
-    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
-    const payload = {
-        maHang: parseInt(id),
-        tenHang: document.getElementById('editBrandName').value.trim(),
-        quocGia: document.getElementById('editBrandCountry').value.trim(),
-        duongDanLogo: url || null
-    };
-    await fetch('/api/admin/hangxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    location.reload();
+    try {
+        const id = document.getElementById('editBrandId').value;
+        const urlInput = document.getElementById('editBrandLogo');
+        const fileInput = document.getElementById('editBrandFile');
+        let url = urlInput.value.trim();
+        if (fileInput.files.length > 0) {
+            url = await uploadFile(fileInput.files[0], 'editBrandFile');
+        }
+        const payload = {
+            maHang: parseInt(id),
+            tenHang: document.getElementById('editBrandName').value.trim(),
+            quocGia: document.getElementById('editBrandCountry').value.trim(),
+            duongDanLogo: url || null
+        };
+        await apiPost('/api/admin/hangxe/save', payload);
+        showToast('Đã lưu hãng xe!');
+        setTimeout(() => location.reload(), 500);
+    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
 }
 
 async function saveModelFull() {
-    const id = document.getElementById('editModelId').value;
-    const urlInput = document.getElementById('editModelImage');
-    const fileInput = document.getElementById('editModelFile');
-    let url = urlInput.value.trim();
-    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
-    const payload = {
-        maDong: parseInt(id),
-        tenDong: document.getElementById('editModelName').value.trim(),
-        maHang: parseInt(document.getElementById('editModelBrand').value),
-        kieuDang: document.getElementById('editModelStyle').value,
-        duongDanAnh: url || null
-    };
-    await fetch('/api/admin/dongxe/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    location.reload();
+    try {
+        const id = document.getElementById('editModelId').value;
+        const urlInput = document.getElementById('editModelImage');
+        const fileInput = document.getElementById('editModelFile');
+        let url = urlInput.value.trim();
+        if (fileInput.files.length > 0) {
+            url = await uploadFile(fileInput.files[0], 'editModelFile');
+        }
+        const payload = {
+            maDong: parseInt(id),
+            tenDong: document.getElementById('editModelName').value.trim(),
+            maHang: parseInt(document.getElementById('editModelBrand').value),
+            kieuDang: document.getElementById('editModelStyle').value,
+            duongDanAnh: url || null
+        };
+        await apiPost('/api/admin/dongxe/save', payload);
+        showToast('Đã lưu dòng xe!');
+        setTimeout(() => location.reload(), 500);
+    } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); }
 }
 
 async function saveVersionFull() {
-    const id = document.getElementById('editVerId').value;
-    const urlInput = document.getElementById('editVerImage');
-    const fileInput = document.getElementById('editVerFile');
-    let url = urlInput.value.trim();
-    if (fileInput.files.length > 0) url = await uploadFile(fileInput.files[0]);
-    const payload = {
-        maPhienBan: parseInt(id),
-        tenPhienBan: document.getElementById('editVerName').value.trim(),
-        giaNiemYet: parseInt(document.getElementById('editVerPrice').value) || 0,
-        mauSac: document.getElementById('editVerColor').value.trim(),
-        dongCo: document.getElementById('editVerEngine').value.trim(),
-        hopSo: document.getElementById('editVerTransmission').value.trim(),
-        loaiNhietLieu: document.getElementById('editVerFuel').value,
-        soLuongTrongKho: parseInt(document.getElementById('editVerStock').value) || 0,
-        trangThai: document.getElementById('editVerStatus').value,
-        maKhuyenMai: document.getElementById('editVerPromo').value.trim() || null,
-        duongDanAnh: url || null
-    };
-    await fetch('/api/admin/phienban/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    location.reload();
+    try {
+        const id = document.getElementById('editVerId').value;
+        const urlInput = document.getElementById('editVerImage');
+        const fileInput = document.getElementById('editVerFile');
+        let url = urlInput.value.trim();
+        if (fileInput.files.length > 0) {
+            url = await uploadFile(fileInput.files[0], 'editVerFile');
+        }
+        const payload = {
+            maPhienBan: parseInt(id),
+            tenPhienBan: document.getElementById('editVerName').value.trim(),
+            giaNiemYet: parseInt(document.getElementById('editVerPrice').value) || 0,
+            mauSac: document.getElementById('editVerColor').value.trim(),
+            dongCo: document.getElementById('editVerEngine').value.trim(),
+            hopSo: document.getElementById('editVerTransmission').value.trim(),
+            loaiNhietLieu: document.getElementById('editVerFuel').value,
+            soLuongTrongKho: parseInt(document.getElementById('editVerStock').value) || 0,
+            trangThai: document.getElementById('editVerStatus').value,
+            maKhuyenMai: document.getElementById('editVerPromo').value.trim() || null,
+            duongDanAnh: url || null
+        };
+        await apiPost('/api/admin/phienban/save', payload);
+        showToast('Đã lưu phiên bản!');
+        setTimeout(() => location.reload(), 500);
+    } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); }
 }
 </script>
 }
