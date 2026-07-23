@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Dashboard";
-    var userName = HttpContext.Session.GetString("TenHienThi") ?? HttpContext.Session.GetString("UserName") ?? "Admin";
+    var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "Admin";
 }
 
 <div>

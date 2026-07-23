@@ -79,7 +79,7 @@ public class LoginModel : PageModel
         await _log.LogAsync("Đăng nhập thành công", $"Tài khoản \"{user.TenDangNhap}\" vai trò {user.VaiTro}");
 
         if (user.VaiTro == "Admin")
-            return RedirectToPage("/Admin/Index");
+            return RedirectToPage("/Index");
 
         if (user.VaiTro == "Quản Lý")
             return RedirectToPage("/QuanLy/Dashboard");
@@ -177,7 +177,7 @@ public class LoginModel : PageModel
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         if (user.VaiTro == "Admin")
-            return RedirectToPage("/Admin/Index");
+            return RedirectToPage("/Index");
 
         if (user.VaiTro == "Quản Lý")
             return RedirectToPage("/QuanLy/Dashboard");

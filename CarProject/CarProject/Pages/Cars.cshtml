@@ -3,9 +3,9 @@
 
 @{
     ViewData["Title"] = "Showroom - MyLxCar";
-    bool isAdminView = !string.IsNullOrEmpty(HttpContext.Session.GetString("UserName"))
-        && HttpContext.Session.GetString("UserRole") == "Admin"
-        && HttpContext.Session.GetString("AdminMode") == "View";
+    bool isAdminView = User.IsJwtLoggedIn()
+        && User.GetJwtRole() == "Admin"
+        && Request.Cookies["AdminMode"] == "View";
     var carIconMap = new Dictionary<string, string>
     {
         {"Toyota Camry", "\U0001f697"}, {"Toyota Hilux", "\U0001f699"}, {"Honda Civic", "\U0001f697"},

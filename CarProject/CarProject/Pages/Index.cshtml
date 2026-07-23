@@ -3,9 +3,9 @@
 
 @{
     ViewData["Title"] = "MyLxCar Showroom - Luxury Cars";
-    bool isAdminView = !string.IsNullOrEmpty(HttpContext.Session.GetString("UserName"))
-        && HttpContext.Session.GetString("UserRole") == "Admin"
-        && HttpContext.Session.GetString("AdminMode") == "View";
+    bool isAdminView = User.IsJwtLoggedIn()
+        && User.GetJwtRole() == "Admin"
+        && Request.Cookies["AdminMode"] == "View";
     var brandGradients = new Dictionary<string, string>
     {
         {"Toyota", "linear-gradient(135deg, #e2361c, #b82a12)"},

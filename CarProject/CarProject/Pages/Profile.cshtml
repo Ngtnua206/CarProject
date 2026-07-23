@@ -1,16 +1,14 @@
 @page
 @model ProfileModel
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "Tài khoản của tôi";
-    var session = HttpContextAccessor.HttpContext?.Session;
-    var isLoggedIn = !string.IsNullOrEmpty(session?.GetString("UserName"));
-    var userName = session?.GetString("TenHienThi") ?? session?.GetString("UserName") ?? "Người dùng";
-    var userEmail = session?.GetString("UserEmail");
-    var userRole = session?.GetString("UserRole");
-    var avatarUrl = session?.GetString("AvatarUrl");
-    var maTaiKhoan = session?.GetInt32("MaTaiKhoan");
+    var isLoggedIn = User.IsJwtLoggedIn();
+    var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "Người dùng";
+    var userEmail = User.GetJwtEmail();
+    var userRole = User.GetJwtRole();
+    var avatarUrl = User.GetJwtAvatar();
+    var maTaiKhoan = User.GetJwtMaTaiKhoan();
     var isFirstTime = Request.Query["firstTime"] == "True";
 }
 
@@ -391,7 +389,7 @@ function cropAndUpload(e) {
         const t = new Date().getTime();
         document.querySelector('#avatarPreview img')?.remove();
         const prev = document.getElementById('avatarPreview');
-        const user = '@session?.GetString("UserName")';
+        const user = '@User.GetJwtUserName()';
         prev.innerHTML = '<img src="/uploads/avatars/' + user + '.jpg?v=' + t + '" alt="Avatar" style="width:100%;height:100%;object-fit:cover;" />';
         const navAvatar = document.querySelector('.navbar-avatar-img');
         if (navAvatar) navAvatar.src = '/uploads/avatars/' + user + '.jpg?v=' + t;

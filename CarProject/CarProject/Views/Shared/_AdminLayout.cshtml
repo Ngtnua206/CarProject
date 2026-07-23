@@ -12,8 +12,8 @@
 </head>
 <body class="admin-body">
     @{
-        var userName = Context.Session.GetString("TenHienThi") ?? Context.Session.GetString("UserName") ?? "Admin";
-        var avatarUrl = Context.Session.GetString("AvatarUrl");
+        var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "Admin";
+        var avatarUrl = User.GetJwtAvatar();
     }
 
     <div class="admin-wrapper">
