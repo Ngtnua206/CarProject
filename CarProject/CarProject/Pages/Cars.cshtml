@@ -103,7 +103,7 @@
                         var brandInfo = d.item.HangXe;
                         var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
                         var firstVer = d.item.PhienBanXes?.FirstOrDefault();
-                        var carImg = d.item.DuongDanAnh ?? firstVer?.DuongDanAnh;
+                        var carImg = d.item.DuongDanAnh ?? firstVer?.DuongDanAnh ?? brandInfo?.DuongDanLogo;
                         var carPrice = firstVer?.GiaNiemYet;
                         <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;">
                             @if (isAdminView)
@@ -441,7 +441,9 @@ function openCarsEditorFull(id) {
             sel.appendChild(opt);
         });
         if (_carsVersions.length > 0) carsLoadVersionData();
-        new bootstrap.Modal(document.getElementById('carsCarEditorModal')).show();
+        const modal = new bootstrap.Modal(document.getElementById('carsCarEditorModal'));
+        modal.show();
+        document.querySelector('#carsCarEditorModal a[href="#carsTabModel"]')?.click();
     });
 }
 
