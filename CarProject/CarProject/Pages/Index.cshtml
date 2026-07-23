@@ -99,7 +99,7 @@
                     <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
                         @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
                         {
-                            <img src="@brand.DuongDanLogo" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
+                            <img src="@brand.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
                         }
                         else
                         {
@@ -608,7 +608,7 @@ async function saveBanner() {
         if (!url) { showToast('Vui lòng nhập URL hoặc chọn file ảnh', 'error'); return; }
         await apiPost('/api/admin/banner/save', { duongDanAnh: url });
         showToast('Đã lưu banner!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu banner: ' + e.message, 'error'); }
 }
 
@@ -629,7 +629,7 @@ async function saveBrandEdit() {
         };
         await apiPost('/api/admin/hangxe/save', payload);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
 }
 
@@ -650,7 +650,7 @@ async function saveBrandFull() {
         };
         await apiPost('/api/admin/hangxe/save', payload);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
 }
 
@@ -672,7 +672,7 @@ async function saveModelFull() {
         };
         await apiPost('/api/admin/dongxe/save', payload);
         showToast('Đã lưu dòng xe!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); }
 }
 
@@ -700,7 +700,7 @@ async function saveVersionFull() {
         };
         await apiPost('/api/admin/phienban/save', payload);
         showToast('Đã lưu phiên bản!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); }
 }
 </script>

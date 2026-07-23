@@ -113,7 +113,7 @@
                                     <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
                                 </div>
                             }
-                            <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? bg : $"url('{carImg}') center/cover");">
+                            <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? bg : $"url('{carImg}?v={DateTime.Now.Ticks}') center/cover");">
                                 @if (string.IsNullOrEmpty(carImg))
                                 {
                                     if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
@@ -477,7 +477,7 @@ async function carsSaveBrandFull() {
         };
         await carsApiPost('/api/admin/hangxe/save', payload);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
 }
 
@@ -497,7 +497,7 @@ async function carsSaveModelFull() {
         };
         await carsApiPost('/api/admin/dongxe/save', payload);
         showToast('Đã lưu dòng xe!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); }
 }
 
@@ -523,7 +523,7 @@ async function carsSaveVersionFull() {
         };
         await carsApiPost('/api/admin/phienban/save', payload);
         showToast('Đã lưu phiên bản!');
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(true), 500);
     } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); }
 }
 </script>
