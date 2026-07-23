@@ -606,10 +606,12 @@ async function saveBanner() {
             url = await uploadFile(fileInput.files[0], 'bannerFileInput');
         }
         if (!url) { showToast('Vui lòng nhập URL hoặc chọn file ảnh', 'error'); return; }
-        await apiPost('/api/admin/banner/save', { duongDanAnh: url });
+        console.log('Saving banner URL:', url);
+        const res = await apiPost('/api/admin/banner/save', { duongDanAnh: url });
+        console.log('Banner save response:', res);
         showToast('Đã lưu banner!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu banner: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu banner: ' + e.message, 'error'); console.error(e); }
 }
 
 async function saveBrandEdit() {
@@ -627,10 +629,12 @@ async function saveBrandEdit() {
             quocGia: document.getElementById('brandEditCountry').value.trim(),
             duongDanLogo: url || null
         };
-        await apiPost('/api/admin/hangxe/save', payload);
+        console.log('Saving brand:', payload);
+        const res = await apiPost('/api/admin/hangxe/save', payload);
+        console.log('Brand save response:', res);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); console.error(e); }
 }
 
 async function saveBrandFull() {
@@ -648,10 +652,12 @@ async function saveBrandFull() {
             quocGia: document.getElementById('editBrandCountry').value.trim(),
             duongDanLogo: url || null
         };
-        await apiPost('/api/admin/hangxe/save', payload);
+        console.log('Saving brand full:', payload);
+        const res = await apiPost('/api/admin/hangxe/save', payload);
+        console.log('Brand full response:', res);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); console.error(e); }
 }
 
 async function saveModelFull() {
@@ -670,10 +676,12 @@ async function saveModelFull() {
             kieuDang: document.getElementById('editModelStyle').value,
             duongDanAnh: url || null
         };
-        await apiPost('/api/admin/dongxe/save', payload);
+        console.log('Saving model:', payload);
+        const modelRes = await apiPost('/api/admin/dongxe/save', payload);
+        console.log('Model save response:', modelRes);
         showToast('Đã lưu dòng xe!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); console.error(e); }
 }
 
 async function saveVersionFull() {
@@ -698,10 +706,12 @@ async function saveVersionFull() {
             maKhuyenMai: document.getElementById('editVerPromo').value.trim() || null,
             duongDanAnh: url || null
         };
-        await apiPost('/api/admin/phienban/save', payload);
+        console.log('Saving version:', payload);
+        const verRes = await apiPost('/api/admin/phienban/save', payload);
+        console.log('Version save response:', verRes);
         showToast('Đã lưu phiên bản!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); console.error(e); }
 }
 </script>
 }

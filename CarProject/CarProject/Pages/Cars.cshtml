@@ -475,10 +475,12 @@ async function carsSaveBrandFull() {
             quocGia: document.getElementById('carsEditBrandCountry').value.trim(),
             duongDanLogo: url || null
         };
-        await carsApiPost('/api/admin/hangxe/save', payload);
+        console.log('Cars saving brand:', payload);
+        const brandRes = await carsApiPost('/api/admin/hangxe/save', payload);
+        console.log('Cars brand save response:', brandRes);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); console.error(e); }
 }
 
 async function carsSaveModelFull() {
@@ -495,10 +497,12 @@ async function carsSaveModelFull() {
             kieuDang: document.getElementById('carsEditModelStyle').value,
             duongDanAnh: url || null
         };
-        await carsApiPost('/api/admin/dongxe/save', payload);
+        console.log('Cars saving model:', payload);
+        const modelRes = await carsApiPost('/api/admin/dongxe/save', payload);
+        console.log('Cars model save response:', modelRes);
         showToast('Đã lưu dòng xe!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu dòng xe: ' + e.message, 'error'); console.error(e); }
 }
 
 async function carsSaveVersionFull() {
@@ -521,10 +525,12 @@ async function carsSaveVersionFull() {
             maKhuyenMai: document.getElementById('carsEditVerPromo').value.trim() || null,
             duongDanAnh: url || null
         };
-        await carsApiPost('/api/admin/phienban/save', payload);
+        console.log('Cars saving version:', payload);
+        const verRes = await carsApiPost('/api/admin/phienban/save', payload);
+        console.log('Cars version save response:', verRes);
         showToast('Đã lưu phiên bản!');
-        setTimeout(() => location.reload(true), 500);
-    } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); }
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); console.error(e); }
 }
 </script>
 }
