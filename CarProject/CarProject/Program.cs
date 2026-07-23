@@ -525,8 +525,8 @@ try
         if (hangXe == null) return Results.NotFound();
         if (body.TryGetProperty("tenHang", out var th)) hangXe.TenHang = th.GetString() ?? hangXe.TenHang;
         if (body.TryGetProperty("quocGia", out var qg)) hangXe.QuocGia = qg.GetString() ?? hangXe.QuocGia;
-        if (body.TryGetProperty("duongDanLogo", out var ddl) && ddl.ValueKind != JsonValueKind.Null)
-            hangXe.DuongDanLogo = ddl.GetString();
+        if (body.TryGetProperty("duongDanLogo", out var ddl))
+            hangXe.DuongDanLogo = ddl.ValueKind == JsonValueKind.Null || string.IsNullOrEmpty(ddl.GetString()) ? "" : ddl.GetString();
         await db.SaveChangesAsync();
         return Results.Ok(new { success = true });
     });
@@ -540,8 +540,8 @@ try
         if (body.TryGetProperty("tenDong", out var td)) dongXe.TenDong = td.GetString() ?? dongXe.TenDong;
         if (body.TryGetProperty("maHang", out var mh)) dongXe.MaHang = mh.GetInt32();
         if (body.TryGetProperty("kieuDang", out var kd)) dongXe.KieuDang = kd.GetString() ?? dongXe.KieuDang;
-        if (body.TryGetProperty("duongDanAnh", out var dda) && dda.ValueKind != JsonValueKind.Null)
-            dongXe.DuongDanAnh = dda.GetString();
+        if (body.TryGetProperty("duongDanAnh", out var dda))
+            dongXe.DuongDanAnh = dda.ValueKind == JsonValueKind.Null || string.IsNullOrEmpty(dda.GetString()) ? null : dda.GetString();
         await db.SaveChangesAsync();
         return Results.Ok(new { success = true });
     });
@@ -560,10 +560,10 @@ try
         if (body.TryGetProperty("loaiNhietLieu", out var lnl)) pb.LoaiNhietLieu = lnl.GetString() ?? pb.LoaiNhietLieu;
         if (body.TryGetProperty("soLuongTrongKho", out var slk)) pb.SoLuongTrongKho = slk.GetInt32();
         if (body.TryGetProperty("trangThai", out var tt)) pb.TrangThai = tt.GetString() ?? pb.TrangThai;
-        if (body.TryGetProperty("maKhuyenMai", out var km) && km.ValueKind != JsonValueKind.Null)
-            pb.MaKhuyenMai = km.GetString();
-        if (body.TryGetProperty("duongDanAnh", out var dda) && dda.ValueKind != JsonValueKind.Null)
-            pb.DuongDanAnh = dda.GetString();
+        if (body.TryGetProperty("maKhuyenMai", out var km))
+            pb.MaKhuyenMai = km.ValueKind == JsonValueKind.Null || string.IsNullOrEmpty(km.GetString()) ? "" : km.GetString();
+        if (body.TryGetProperty("duongDanAnh", out var dda))
+            pb.DuongDanAnh = dda.ValueKind == JsonValueKind.Null || string.IsNullOrEmpty(dda.GetString()) ? "" : dda.GetString();
         await db.SaveChangesAsync();
         return Results.Ok(new { success = true });
     });

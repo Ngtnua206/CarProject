@@ -280,13 +280,13 @@
             </div>
             <div class="modal-body">
                 <ul class="nav nav-tabs mb-3" role="tablist">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabBrand">Hãng Xe</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabModel">Dòng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabBrand">Hãng Xe</a></li>
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabModel">Dòng Xe</a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabVersion">Phiên Bản</a></li>
                 </ul>
                 <div class="tab-content">
                     <!-- Tab: Hang Xe -->
-                    <div class="tab-pane fade show active" id="tabBrand">
+                    <div class="tab-pane fade" id="tabBrand">
                         <input type="hidden" id="editBrandId" />
                         <div class="row g-3">
                             <div class="col-md-4"><label class="form-label small text-secondary">Tên hãng</label><input type="text" id="editBrandName" class="form-control form-control-dark" /></div>
@@ -297,7 +297,7 @@
                         <button onclick="saveBrandFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Hãng Xe</button>
                     </div>
                     <!-- Tab: Dong Xe -->
-                    <div class="tab-pane fade" id="tabModel">
+                    <div class="tab-pane fade show active" id="tabModel">
                         <input type="hidden" id="editModelId" />
                         <div class="row g-3">
                             <div class="col-md-4"><label class="form-label small text-secondary">Hãng xe</label><select id="editModelBrand" class="form-select form-select-dark">
@@ -336,6 +336,8 @@
                         <button onclick="saveVersionFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Phiên Bản</button>
                     </div>
                 </div>
+                <hr class="border-secondary my-3">
+                <button onclick="saveAllFull()" class="btn btn-premium btn-premium-solid" style="width:100%;padding:0.75rem;border-radius:12px;font-size:0.85rem;letter-spacing:1px;"><i class="fas fa-save me-2"></i> Lưu Tất Cả</button>
             </div>
         </div>
     </div>
@@ -554,7 +556,6 @@ function openCarEditorFull(id) {
         if (_carVersions.length > 0) loadVersionData();
         const modal = new bootstrap.Modal(document.getElementById('carEditorModal'));
         modal.show();
-        document.querySelector('#carEditorModal a[href="#tabModel"]')?.click();
     });
 }
 
@@ -714,6 +715,64 @@ async function saveVersionFull() {
         showToast('Đã lưu phiên bản!');
         setTimeout(() => location.reload(true), 1500);
     } catch (e) { showToast('Lỗi lưu phiên bản: ' + e.message, 'error'); console.error(e); }
+}
+
+async function saveAllFull() {
+    try {
+        const brandUrlInput = document.getElementById('editBrandLogo');
+        const brandFileInput = document.getElementById('editBrandFile');
+        let brandUrl = brandUrlInput.value.trim();
+        if (brandFileInput.files.length > 0) brandUrl = await uploadFile(brandFileInput.files[0], 'editBrandFile');
+
+        const modelUrlInput = document.getElementById('editModelImage');
+        const modelFileInput = document.getElementById('editModelFile');
+        let modelUrl = modelUrlInput.value.trim();
+        if (modelFileInput.files.length > 0) modelUrl = await uploadFile(modelFileInput.files[0], 'editModelFile');
+
+        const verUrlInput = document.getElementById('editVerImage');
+        const verFileInput = document.getElementById('editVerFile');
+        let verUrl = verUrlInput.value.trim();
+        if (verFileInput.files.length > 0) verUrl = await uploadFile(verFileInput.files[0], 'editVerFile');
+
+        const brandPayload = {
+            maHang: parseInt(document.getElementById('editBrandId').value),
+            tenHang: document.getElementById('editBrandName').value.trim(),
+            quocGia: document.getElementById('editBrandCountry').value.trim(),
+            duongDanLogo: brandUrl || null
+        };
+        const modelPayload = {
+            maDong: parseInt(document.getElementById('editModelId').value),
+            tenDong: document.getElementById('editModelName').value.trim(),
+            maHang: parseInt(document.getElementById('editModelBrand').value),
+            kieuDang: document.getElementById('editModelStyle').value,
+            duongDanAnh: modelUrl || null
+        };
+        const verId = document.getElementById('editVerId').value;
+        let versionPayload = null;
+        if (verId) {
+            versionPayload = {
+                maPhienBan: parseInt(verId),
+                tenPhienBan: document.getElementById('editVerName').value.trim(),
+                giaNiemYet: parseInt(document.getElementById('editVerPrice').value) || 0,
+                mauSac: document.getElementById('editVerColor').value.trim(),
+                dongCo: document.getElementById('editVerEngine').value.trim(),
+                hopSo: document.getElementById('editVerTransmission').value.trim(),
+                loaiNhietLieu: document.getElementById('editVerFuel').value,
+                soLuongTrongKho: parseInt(document.getElementById('editVerStock').value) || 0,
+                trangThai: document.getElementById('editVerStatus').value,
+                maKhuyenMai: document.getElementById('editVerPromo').value.trim() || null,
+                duongDanAnh: verUrl || null
+            };
+        }
+
+        console.log('Saving all - brand:', brandPayload, 'model:', modelPayload, 'version:', versionPayload);
+        await apiPost('/api/admin/hangxe/save', brandPayload);
+        await apiPost('/api/admin/dongxe/save', modelPayload);
+        if (versionPayload) await apiPost('/api/admin/phienban/save', versionPayload);
+        console.log('All saved successfully');
+        showToast('Đã lưu tất cả!');
+        setTimeout(() => location.reload(true), 1500);
+    } catch (e) { showToast('Lỗi lưu: ' + e.message, 'error'); console.error(e); }
 }
 </script>
 }
