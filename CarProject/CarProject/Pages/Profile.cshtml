@@ -18,7 +18,7 @@
         <div class="container text-center">
             <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-user-lock"></i></div>
             <h2 style="color: var(--brand-white);">Vui lòng đăng nhập</h2>
-            <p style="color: rgba(255,255,255,0.5); margin-bottom: 2rem;">Bạn cần đăng nhập để xem trang này.</p>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Bạn cần đăng nhập để xem trang này.</p>
             <a asp-page="/Account/Login" class="btn-premium btn-premium-solid">
                 <i class="fas fa-sign-in-alt me-2"></i> Đăng nhập
             </a>
@@ -72,7 +72,7 @@ else
             {
                 <div style="background: linear-gradient(135deg, rgba(0,51,102,0.3), rgba(0,0,0,0.5)); border: 1px solid var(--brand-silver); padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
                     <h4 style="color: var(--brand-white); font-family: var(--font-title); font-weight: 700;">Chào mừng bạn!</h4>
-                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">Hãy đặt tên hiển thị để bạn bè dễ nhận ra bạn trên hệ thống.</p>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Hãy đặt tên hiển thị để bạn bè dễ nhận ra bạn trên hệ thống.</p>
                 </div>
             }
 
@@ -96,7 +96,7 @@ else
 
                         <!-- Avatar Upload with Crop -->
                         <div style="margin-bottom: 1.5rem;">
-                            <label style="font-size: 0.75rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Ảnh đại diện</label>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Ảnh đại diện</label>
                             <div class="d-flex align-items-center gap-3">
                                 <div id="avatarPreview" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand-silver); display: flex; align-items: center; justify-content: center; background: var(--brand-light-gray); flex-shrink: 0;">
                                     @if (!string.IsNullOrEmpty(avatarUrl))
@@ -109,7 +109,7 @@ else
                                     }
                                 </div>
                                 <div>
-                                    <input type="file" id="avatarInput" accept="image/*" style="font-size: 0.78rem; color: rgba(255,255,255,0.6); max-width: 140px;" />
+                                    <input type="file" id="avatarInput" accept="image/*" style="font-size: 0.78rem; color: var(--text-secondary); max-width: 140px;" />
                                 </div>
                             </div>
                         </div>
@@ -117,7 +117,7 @@ else
 
                         <!-- Display Name -->
                         <form method="post" asp-page-handler="UpdateName" style="margin-bottom: 1.5rem;">
-                            <label asp-for="NewTenHienThi" style="font-size: 0.75rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Tên hiển thị</label>
+                            <label asp-for="NewTenHienThi" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Tên hiển thị</label>
                             <div class="d-flex gap-2">
                                 <input asp-for="NewTenHienThi" class="form-control" value="@userName" style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.08); color: var(--brand-white); font-size: 0.85rem; flex: 1;" />
                                 <button type="submit" class="btn-premium btn-premium-solid" style="padding: 0.35rem 1rem; font-size: 0.65rem;">
@@ -128,7 +128,7 @@ else
 
                         <!-- Change Password -->
                         <form method="post" asp-page-handler="ChangePassword">
-                            <label style="font-size: 0.75rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Đổi mật khẩu</label>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Đổi mật khẩu</label>
                             <div class="mb-2">
                                 <input asp-for="MatKhauCu" type="password" class="form-control" placeholder="Mật khẩu cũ" style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.08); color: var(--brand-white); font-size: 0.82rem;" />
                             </div>
@@ -153,17 +153,17 @@ else
                         </h5>
                         @if (!Model.DonDatCocList.Any())
                         {
-                            <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">Chưa có đơn cọc nào.</p>
+                            <p style="color: var(--text-muted); font-size: 0.85rem;">Chưa có đơn cọc nào.</p>
                         }
                         @foreach (var d in Model.DonDatCocList)
                         {
                             <div style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white);">@d.PhienBan?.TenPhienBan</span>
-                                    <span style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">@d.NgayTaoDon.ToString("dd/MM/yyyy")</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@d.NgayTaoDon.ToString("dd/MM/yyyy")</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.5);">@d.SoTienCoc.ToString("N0") VNĐ</span>
+                                    <span style="color: var(--text-muted);">@d.SoTienCoc.ToString("N0") VNĐ</span>
                                     <span style="color: var(--brand-silver);">@d.TrangThaiDonHang</span>
                                 </div>
                             </div>
@@ -184,17 +184,17 @@ else
                         </h5>
                         @if (!Model.LichHenList.Any())
                         {
-                            <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">Chưa có lịch hẹn nào.</p>
+                            <p style="color: var(--text-muted); font-size: 0.85rem;">Chưa có lịch hẹn nào.</p>
                         }
                         @foreach (var l in Model.LichHenList)
                         {
                             <div style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white);">@l.DongXe?.TenDong</span>
-                                    <span style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">@l.NgayHen.ToString("dd/MM/yyyy")</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@l.NgayHen.ToString("dd/MM/yyyy")</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.5);">@l.GioHen</span>
+                                    <span style="color: var(--text-muted);">@l.GioHen</span>
                                     <span style="color: var(--brand-silver);">@l.TrangThai</span>
                                 </div>
                             </div>

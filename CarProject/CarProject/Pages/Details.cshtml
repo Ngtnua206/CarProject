@@ -12,11 +12,11 @@
     <div class="gallery-section">
         <div class="container position-relative">
             <nav class="breadcrumb-premium position-absolute" style="top: 1.5rem; left: 1rem; z-index: 2;">
-                <a asp-page="/Index" style="color: rgba(255,255,255,0.4);"><i class="fas fa-home"></i> Trang chủ</a>
-                <span style="color: rgba(255,255,255,0.3);">/</span>
-                <a asp-page="/Cars" style="color: rgba(255,255,255,0.4);">Showroom</a>
-                <span style="color: rgba(255,255,255,0.3);">/</span>
-                <span style="color: rgba(255,255,255,0.7);">@Model.Dong?.TenDong</span>
+                <a asp-page="/Index" style="color: var(--text-muted);"><i class="fas fa-home"></i> Trang chủ</a>
+                <span style="color: var(--text-faint);">/</span>
+                <a asp-page="/Cars" style="color: var(--text-muted);">Showroom</a>
+                <span style="color: var(--text-faint);">/</span>
+                <span style="color: var(--text-soft);">@Model.Dong?.TenDong</span>
             </nav>
             <div class="row align-items-center" style="min-height: 500px;">
                 <div class="col-lg-8 offset-lg-2 text-center">
@@ -143,7 +143,7 @@
                     <h6 style="font-family: var(--font-title); font-weight: 700; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--brand-white); letter-spacing: 1px; text-transform: uppercase;">
                         <i class="fas fa-headset"></i> Cần tư vấn?
                     </h6>
-                    <p style="font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-bottom: 1rem;">
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
                         Đội ngũ chuyên viên của chúng tôi sẵn sàng hỗ trợ bạn.
                     </p>
                     <a href="tel:18006886" class="btn-premium btn-premium-silver" style="width: 100%; justify-content: center; padding: 0.6rem; font-size: 0.7rem;">

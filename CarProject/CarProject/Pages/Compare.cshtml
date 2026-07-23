@@ -24,7 +24,7 @@
             <div class="text-center py-5">
                 <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"><i class="fas fa-balance-scale"></i></div>
                 <h4 style="color: var(--brand-white);">Chưa có xe nào</h4>
-                <p style="color: rgba(255,255,255,0.4);">Vui lòng thêm xe từ danh sách showroom.</p>
+                <p style="color: var(--text-muted);">Vui lòng thêm xe từ danh sách showroom.</p>
                 <a asp-page="/Cars" class="btn-premium btn-premium-solid mt-3 d-inline-flex">
                     <i class="fas fa-car me-2"></i> Xem showroom
                 </a>
@@ -75,12 +75,12 @@
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <th style="padding: 1rem; text-align: left; color: rgba(255,255,255,0.5); font-family: var(--font-title); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; width: 150px;">Thông số</th>
+                                <th style="padding: 1rem; text-align: left; color: var(--text-muted); font-family: var(--font-title); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; width: 150px;">Thông số</th>
                                 @foreach (var d in Model.DongXeList)
                                 {
                                     <th style="padding: 1rem; text-align: center;">
                                         <div style="font-family: var(--font-title); font-size: 1rem; font-weight: 700; color: var(--brand-white);">@d.TenDong</div>
-                                        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">@d.HangXe?.TenHang</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);">@d.HangXe?.TenHang</div>
                                         <a asp-page="/Details" asp-route-id="@d.MaDong" class="btn-premium btn-premium-outline" style="padding: 0.3rem 1rem; font-size: 0.55rem; margin-top: 0.5rem; display: inline-flex;">
                                             Chi tiết
                                         </a>
@@ -90,7 +90,7 @@
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td style="padding: 0.8rem 1rem; color: rgba(255,255,255,0.4); font-size: 0.82rem;">Kiểu dáng</td>
+                                <td style="padding: 0.8rem 1rem; color: var(--text-muted); font-size: 0.82rem;">Kiểu dáng</td>
                                 @foreach (var d in Model.DongXeList)
                                 {
                                     <td style="padding: 0.8rem 1rem; text-align: center; color: var(--brand-white); font-weight: 500; font-size: 0.88rem;">@d.KieuDang</td>
@@ -104,7 +104,7 @@
             else if (Model.DongXeList.Count == 1)
             {
                 <div class="text-center py-4">
-                    <p style="color: rgba(255,255,255,0.5);">Chọn thêm ít nhất 1 xe nữa để so sánh.</p>
+                    <p style="color: var(--text-muted);">Chọn thêm ít nhất 1 xe nữa để so sánh.</p>
                 </div>
             }
         }

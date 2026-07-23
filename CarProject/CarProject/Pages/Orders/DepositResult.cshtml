@@ -26,7 +26,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;
 }
 .bank-card .row-line:last-child { border-bottom: none; }
-.bank-card .label { color: rgba(255,255,255,0.4); }
+.bank-card .label { color: var(--text-muted); }
 .bank-card .value { color: var(--brand-white); font-weight: 600; }
 
 .qr-container {
@@ -41,7 +41,7 @@
     <div class="result-card">
         <div class="check-icon"><i class="fas fa-check"></i></div>
         <h4 style="color: var(--brand-white); margin-bottom: 0.3rem;">Đặt cọc thành công!</h4>
-        <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem;">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
             Cảm ơn <strong>@Model.HoTen</strong>! Vui lòng chuyển khoản để hoàn tất đặt cọc.
         </p>
 
@@ -83,7 +83,7 @@
             <div class="qr-container">
                 <img src="@Model.QrImageUrl" alt="QR thanh toán" />
             </div>
-            <p style="color: rgba(255,255,255,0.3); font-size: 0.75rem; margin-top: 0.3rem;">
+            <p style="color: var(--text-faint); font-size: 0.75rem; margin-top: 0.3rem;">
                 Quét QR bằng app ngân hàng để chuyển khoản nhanh
             </p>
         }
@@ -91,7 +91,7 @@
         {
             <div style="background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.85rem;">
                 <i class="fas fa-exclamation-triangle me-1" style="color: var(--brand-gold);"></i>
-                <span style="color: rgba(255,255,255,0.7);">
+                <span style="color: var(--text-soft);">
                     Chuyển khoản theo thông tin bên trên. Hệ thống sẽ tự động xác nhận sau khi nhận được tiền.
                 </span>
             </div>

@@ -37,19 +37,19 @@
                             <h4>@Model.PhienBan.TenPhienBan</h4>
                             <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem;">
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.4);">Dòng xe</span>
+                                    <span style="color: var(--text-muted);">Dòng xe</span>
                                     <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.DongXe?.TenDong</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.4);">Màu sắc</span>
+                                    <span style="color: var(--text-muted);">Màu sắc</span>
                                     <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.MauSac</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.4);">Động cơ</span>
+                                    <span style="color: var(--text-muted);">Động cơ</span>
                                     <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.DongCo</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.82rem;">
-                                    <span style="color: rgba(255,255,255,0.4);">Hộp số</span>
+                                    <span style="color: var(--text-muted);">Hộp số</span>
                                     <span style="font-weight: 600; color: var(--brand-white);">@Model.PhienBan.HopSo</span>
                                 </div>
                             </div>
@@ -59,7 +59,7 @@
                                         ? $"{Model.PhienBan.GiaNiemYet / 1_000_000_000:N1} tỷ"
                                         : $"{Model.PhienBan.GiaNiemYet / 1_000_000:N0} triệu";
                                 }
-                                @price <small style="font-size: 0.78rem; font-weight: 400; color: rgba(255,255,255,0.4);">VNĐ</small>
+                                @price <small style="font-size: 0.78rem; font-weight: 400; color: var(--text-muted);">VNĐ</small>
                             </div>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
                 <div class="col-lg-7">
                     <div class="deposit-card">
                         <h4>Thông tin đặt cọc</h4>
-                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-bottom: 1.5rem;">Vui lòng điền đầy đủ thông tin bên dưới</p>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Vui lòng điền đầy đủ thông tin bên dưới</p>
 
                         <form method="post">
                             <input type="hidden" asp-for="DepositData.MaPhienBan" value="@Model.PhienBan.MaPhienBan" />

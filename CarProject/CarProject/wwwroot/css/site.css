@@ -24,6 +24,13 @@
     --radius-lg: 16px;
     --radius-xl: 24px;
     --nav-height: 80px;
+    --text-faint: rgba(255,255,255,0.35);
+    --text-muted: rgba(255,255,255,0.5);
+    --text-secondary: rgba(255,255,255,0.6);
+    --text-soft: rgba(255,255,255,0.75);
+    --border-faint: rgba(255,255,255,0.06);
+    --border-light: rgba(255,255,255,0.1);
+    --bg-subtle: rgba(255,255,255,0.03);
 }
 
 * { box-sizing: border-box; }
@@ -3434,6 +3441,13 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
     --shadow: 0 8px 32px rgba(0,0,0,0.08);
     --shadow-lg: 0 16px 48px rgba(0,0,0,0.1);
     --shadow-xl: 0 24px 64px rgba(0,0,0,0.12);
+    --text-faint: rgba(0,0,0,0.4);
+    --text-muted: rgba(0,0,0,0.5);
+    --text-secondary: rgba(0,0,0,0.6);
+    --text-soft: rgba(0,0,0,0.75);
+    --border-faint: rgba(0,0,0,0.08);
+    --border-light: rgba(0,0,0,0.12);
+    --bg-subtle: rgba(0,0,0,0.03);
 }
 [data-theme="light"] body {
     background: var(--brand-black);
@@ -3531,6 +3545,7 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
 [data-theme="light"] .hero-premium .hero-stats .stat p { color: #777; }
 
 [data-theme="light"] .section-desc { color: #888; }
+[data-theme="light"] .hero-premium .hero-desc { color: #666; }
 
 [data-theme="light"] .about-hero { background: var(--brand-black); }
 [data-theme="light"] .about-hero p { color: #777; }
@@ -3627,13 +3642,45 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
     color: #666;
 }
 
-[data-theme="light"] .car-card {
+[data-theme="light"] .car-card-premium {
     background: #ffffff;
     border: 1px solid #e0e0e0;
 }
-[data-theme="light"] .car-card:hover {
+[data-theme="light"] .car-card-premium:hover {
     border-color: #bbb;
     box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .car-card-premium .card-body .quick-specs {
+    border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .car-card-premium .card-body .quick-specs span {
+    color: #777;
+}
+[data-theme="light"] .car-card-premium .card-body .quick-specs span strong {
+    color: #1a1a1a;
+}
+[data-theme="light"] .car-card-premium .card-body .price-row .price-label {
+    color: #999;
+}
+[data-theme="light"] .car-card-premium .card-body .model-series {
+    color: #888;
+}
+[data-theme="light"] .car-card-premium .card-body .price-row .btn-detail {
+    color: #1a1a1a;
+    border-color: rgba(0,0,0,0.2);
+}
+[data-theme="light"] .car-card-premium .card-body .price-row .btn-detail:hover {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+}
+[data-theme="light"] .car-card-premium .card-image .brand-tag {
+    background: rgba(255,255,255,0.9);
+    color: #1a1a1a;
+}
+[data-theme="light"] .car-card-premium .card-image .card-badge {
+    background: #1a1a1a;
+    color: #fff;
 }
 
 [data-theme="light"] .brand-grid { background: #ffffff; }
@@ -3765,6 +3812,87 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
 [data-theme="light"] .details-gallery .breadcrumb-overlay .active { color: #1a1a1a; }
 [data-theme="light"] .specs-table th { color: #888; }
 [data-theme="light"] .specs-table td { color: #333; }
+[data-theme="light"] .breadcrumb-premium,
+[data-theme="light"] .breadcrumb-premium a { color: #888; }
+[data-theme="light"] .breadcrumb-premium span { color: #1a1a1a; }
+[data-theme="light"] .breadcrumb-premium a:hover { color: #333; }
+[data-theme="light"] .detail-premium .info-panel .quick-specs-grid .spec-item {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .detail-premium .info-panel .quick-specs-grid .spec-item .label { color: #888; }
+[data-theme="light"] .detail-premium .info-panel .quick-specs-grid .spec-item .value { color: #1a1a1a; }
+[data-theme="light"] .detail-premium .info-panel .cta-group .btn-zalo-cta {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(0,0,0,0.12);
+    color: #555;
+}
+[data-theme="light"] .detail-premium .info-panel .cta-group .btn-zalo-cta:hover {
+    border-color: #333;
+    color: #1a1a1a;
+}
+[data-theme="light"] .version-tabs .tab {
+    border-color: rgba(0,0,0,0.12);
+    color: #888;
+}
+[data-theme="light"] .version-tabs .tab:hover,
+[data-theme="light"] .version-tabs .tab.active {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+}
+[data-theme="light"] .search-box {
+    background: #fff;
+    border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .search-box input {
+    color: #1a1a1a;
+}
+[data-theme="light"] .search-box input::placeholder {
+    color: #aaa;
+}
+[data-theme="light"] .search-box i {
+    color: #aaa;
+}
+[data-theme="light"] .news-card {
+    background: #fff;
+    border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .news-card .news-body .news-date { color: #aaa; }
+[data-theme="light"] .news-card .news-body p { color: #666; }
+[data-theme="light"] .compare-floater {
+    background: rgba(255,255,255,0.95);
+    border-color: rgba(0,0,0,0.1);
+}
+[data-theme="light"] .compare-floater span { color: #666; }
+[data-theme="light"] .compare-floater a { color: #1a1a1a; border-color: #1a1a1a; }
+[data-theme="light"] .compare-floater a:hover { color: #888; border-color: #888; }
+[data-theme="light"] .nav-cart-link:hover {
+    color: #1a1a1a;
+    background: rgba(0,0,0,0.06);
+}
+[data-theme="light"] .navbar-toggler {
+    border-color: rgba(0,0,0,0.15);
+}
+[data-theme="light"] .toggler-bar {
+    background: #555;
+}
+[data-theme="light"] .scroll-btn {
+    background: rgba(0,0,0,0.06);
+    color: #888;
+}
+[data-theme="light"] .scroll-btn:hover {
+    background: rgba(0,0,0,0.12);
+    color: #1a1a1a;
+}
+[data-theme="light"] .glass-card-hover:hover {
+    border-color: rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.9) !important;
+}
+[data-theme="light"] .detail-premium .info-panel .brand-badge {
+    background: rgba(0,0,0,0.05);
+    color: #555;
+}
 [data-theme="light"] .login-card .form-text,
 [data-theme="light"] .login-card .text-muted,
 [data-theme="light"] .deposit-form-wrapper .form-text,

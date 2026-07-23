@@ -149,7 +149,7 @@
                             <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
                         </div>
                     }
-                    <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? bg : $"url('{carImg}') center/cover");">
+                    <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}') center/cover");">
                         @if (string.IsNullOrEmpty(carImg))
                         {
                             if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
