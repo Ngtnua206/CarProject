@@ -3,7 +3,8 @@
 
 @{
     ViewData["Title"] = Model.Dong?.TenDong ?? "Chi tiết xe";
-    var carIcons = new List<string> { "\U0001f697", "\U0001f699" };
+    var firstVer = Model.PhienBans?.FirstOrDefault();
+    var carImg = Model.Dong?.DuongDanAnh ?? firstVer?.DuongDanAnh;
 }
 
 <div class="detail-premium">
@@ -18,11 +19,15 @@
                 <span style="color: rgba(255,255,255,0.7);">@Model.Dong?.TenDong</span>
             </nav>
             <div class="row align-items-center" style="min-height: 500px;">
-                <div class="col-lg-6 offset-lg-3 text-center">
-                    @{
-                        var carIcon = carIcons[Model.Dong?.MaDong % 2 ?? 0];
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    @if (!string.IsNullOrEmpty(carImg))
+                    {
+                        <img src="@carImg?v=@DateTime.Now.Ticks" alt="@Model.Dong?.TenDong" class="detail-hero-img" style="max-width:100%;max-height:450px;border-radius:16px;object-fit:contain;" />
                     }
-                    <div class="car-display">@carIcon</div>
+                    else
+                    {
+                        <div style="font-size:8rem;opacity:0.15;">🚗</div>
+                    }
                 </div>
             </div>
         </div>
