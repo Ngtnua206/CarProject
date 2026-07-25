@@ -11,6 +11,7 @@ public class DepositFormModel : PageModel
 {
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
+    private readonly INotificationService _notif;
 
     public PhienBanXe PhienBan { get; set; }
     public string SuccessMessage { get; set; }
@@ -18,10 +19,11 @@ public class DepositFormModel : PageModel
     [BindProperty]
     public DepositRequest DepositData { get; set; }
 
-    public DepositFormModel(AppDbContext db, IActivityLogService log)
+    public DepositFormModel(AppDbContext db, IActivityLogService log, INotificationService notif)
     {
         _db = db;
         _log = log;
+        _notif = notif;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -47,16 +49,67 @@ public class DepositFormModel : PageModel
             return Page();
         }
 
-        // Demo: không lưu vào database, chỉ hiển thị thành công
-        SuccessMessage = $"Cảm ơn {DepositData.HoTen}! Đơn đặt cọc của bạn đã được tiếp nhận. " +
-                        $"Chúng tôi sẽ liên hệ với bạn qua số {DepositData.SoDienThoai} sớm nhất.";
+        if (string.IsNullOrEmpty(DepositData.HoTen) || string.IsNullOrEmpty(DepositData.SoDienThoai))
+        {
+            PhienBan = await _db.PhienBanXe
+                .Include(p => p.DongXe)
+                .FirstOrDefaultAsync(p => p.MaPhienBan == DepositData.MaPhienBan);
+            ModelState.AddModelError("", "Vui lòng điền họ tên và số điện thoại.");
+            return Page();
+        }
 
         PhienBan = await _db.PhienBanXe
             .Include(p => p.DongXe)
             .FirstOrDefaultAsync(p => p.MaPhienBan == DepositData.MaPhienBan);
 
+        if (PhienBan == null)
+            return NotFound();
+
+        var deposit = new DonDatCoc
+        {
+            MaKhachHang = User.GetJwtUserName() ?? "",
+            MaPhienBan = DepositData.MaPhienBan,
+            SoTienCoc = DepositData.SoTienCoc,
+            PhuongThucThanhToan = DepositData.PhuongThucThanhToan ?? "Chuyển khoản",
+            TrangThaiThanhToan = "Chưa thanh toán",
+            TrangThaiDonHang = "Chờ xử lý",
+            NgayTaoDon = DateTime.Now,
+            HoTen = DepositData.HoTen,
+            SoDienThoai = DepositData.SoDienThoai,
+            DiaChi = DepositData.DiaChi ?? "",
+            GhiChu = DepositData.GhiChu ?? "",
+            MaGiaoDich = $"MGC{DateTime.Now:yyMMddHHmmss}-{DepositData.MaPhienBan}"
+        };
+
+        _db.DonDatCoc.Add(deposit);
+        await _db.SaveChangesAsync();
+
+        var tenXe = $"{PhienBan.DongXe?.TenDong ?? ""} {PhienBan.TenPhienBan}".Trim();
+
+        await _notif.SendAsync(deposit.MaKhachHang, "Đặt cọc thành công",
+            $"Xe {tenXe} - {DepositData.SoTienCoc:N0} VNĐ. Mã đơn: #{deposit.MaDonCoc}",
+            $"/Orders/DepositResult?maDonCoc={deposit.MaDonCoc}");
+
+        await _notif.SendToRoleAsync("Admin", "Đơn cọc mới",
+            $"{DepositData.HoTen} đặt cọc {tenXe} - {DepositData.SoTienCoc:N0} VNĐ",
+            $"/Admin/DonCoc/Edit?maDonCoc={deposit.MaDonCoc}");
+
+        var showroom = await _db.ChiNhanhShowroom
+            .Where(c => c.MaQuanLy != null && c.TrangThai == "Active")
+            .FirstOrDefaultAsync();
+
+        if (showroom != null)
+        {
+            await _notif.SendAsync(showroom.MaQuanLy, "Đơn cọc mới",
+                $"{DepositData.HoTen} đặt cọc {tenXe} - {DepositData.SoTienCoc:N0} VNĐ",
+                $"/QuanLy/Dashboard");
+        }
+
         await _log.LogAsync("Gửi đơn đặt cọc",
-            $"{DepositData.HoTen} - {DepositData.SoDienThoai} - {PhienBan?.TenPhienBan} - {DepositData.SoTienCoc:N0} VNĐ");
+            $"{DepositData.HoTen} - {DepositData.SoDienThoai} - {tenXe} - {DepositData.SoTienCoc:N0} VNĐ");
+
+        SuccessMessage = $"Cảm ơn {DepositData.HoTen}! Đơn đặt cọc của bạn đã được tiếp nhận. " +
+                        $"Mã đơn: #{deposit.MaDonCoc}. Chúng tôi sẽ liên hệ qua số {DepositData.SoDienThoai}.";
 
         return Page();
     }

@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<NhatKyHeThong> NhatKyHeThong { get; set; }
     public DbSet<ThongKeTongHop_Boss> ThongKeTongHop_Boss { get; set; }
     public DbSet<GioHang> GioHang { get; set; }
+    public DbSet<ThongBao> ThongBao { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,5 +168,14 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(g => g.MaPhienBan)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ThongBao>().ToTable("ThongBao");
+        modelBuilder.Entity<ThongBao>().HasKey(t => t.MaThongBao);
+
+        modelBuilder.Entity<ThongBao>()
+            .HasOne(t => t.NguoiNhan)
+            .WithMany()
+            .HasForeignKey(t => t.MaNguoiNhan)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

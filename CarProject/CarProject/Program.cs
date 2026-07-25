@@ -67,6 +67,7 @@ try
     builder.Services.AddScoped<CarProject.Services.IPasswordService, CarProject.Services.PasswordService>();
     builder.Services.Configure<CarProject.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
     builder.Services.AddScoped<CarProject.Services.IEmailService, CarProject.Services.EmailService>();
+    builder.Services.AddScoped<CarProject.Services.INotificationService, CarProject.Services.NotificationService>();
 
     // JWT config
     var jwtKey = builder.Configuration["Jwt:Key"] ?? "CarProjectSuperSecretKey2024@MustBe32CharsLong!";
@@ -227,8 +228,9 @@ try
             }
         }
 
-        // /Orders/*, /Profile, /TestDrive, /QuanLy/* -> cần đăng nhập
-        if (((path.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) && !path.StartsWith("/Orders/DepositForm", StringComparison.OrdinalIgnoreCase)) ||
+        // /Notifications/*, /Orders/*, /Profile, /TestDrive, /QuanLy/* -> cần đăng nhập
+        if (((path.StartsWith("/Notifications", StringComparison.OrdinalIgnoreCase)) ||
+             path.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) ||
              path.Equals("/Profile", StringComparison.OrdinalIgnoreCase) ||
              path.Equals("/TestDrive", StringComparison.OrdinalIgnoreCase) ||
              path.StartsWith("/TestDrive", StringComparison.OrdinalIgnoreCase) ||

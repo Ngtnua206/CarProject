@@ -223,6 +223,19 @@ h1, h2, h3, h4, h5, h6 {
     width: auto;
 }
 
+.footer-brand-text {
+    display: block;
+    width: 100%;
+    font-size: 13px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--brand-white);
+    letter-spacing: 3px;
+    font-family: monospace;
+    margin-top: 4px;
+    text-align: center;
+}
+
 /* ====== Desktop scrollable nav area ====== */
 .nav-scroll-area {
     flex: 1;
@@ -494,6 +507,145 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
+}
+
+/* Notification bell */
+.nav-notif-wrapper {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.nav-notif-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--brand-silver);
+    font-size: 1.2rem;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+}
+
+.nav-notif-link:hover {
+    color: var(--brand-white);
+    background: rgba(255,255,255,0.06);
+}
+
+.notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FF3B30;
+    color: #fff;
+    font-family: var(--font-title);
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+    border-radius: 50px;
+    border: 1.5px solid #fff;
+    box-shadow: 0 2px 6px rgba(255,59,48,0.4);
+    z-index: 5;
+}
+
+/* Notifications page */
+.notif-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.notif-header h1 {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--brand-white);
+    margin: 0;
+}
+
+.notif-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-faint);
+}
+
+.notif-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.notif-empty p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.notif-item.notif-unread {
+    border-left: 3px solid var(--brand-accent);
+    background: rgba(212,175,55,0.05);
+}
+
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--brand-white);
+    margin-bottom: 0.25rem;
+}
+
+.notif-body {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.notif-time {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+}
+
+.notif-actions {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
 }
 
 .cart-badge-bounce {
@@ -1626,8 +1778,9 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 3px;
     text-transform: uppercase;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     margin-bottom: 1rem;
     text-decoration: none;
 }
@@ -2547,8 +2700,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .sidebar-brand {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.15rem;
     color: var(--brand-white);
     text-decoration: none;
     font-size: 0.9rem;
@@ -2557,6 +2711,16 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.5px;
 }
 .sidebar-brand:hover { color: var(--brand-silver); }
+
+.sidebar-brand-text {
+    font-size: 11px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--brand-silver);
+    letter-spacing: 3px;
+    font-family: monospace;
+    line-height: 1;
+}
 .sidebar-nav {
     flex: 1;
     padding: 0.75rem 0;

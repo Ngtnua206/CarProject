@@ -13,6 +13,7 @@ public class CheckoutModel : PageModel
     private readonly AppDbContext _db;
     private readonly ICartService _cart;
     private readonly IActivityLogService _log;
+    private readonly INotificationService _notif;
 
     [BindProperty]
     public string HoTen { get; set; } = "";
@@ -29,11 +30,12 @@ public class CheckoutModel : PageModel
     public decimal TotalDeposit { get; set; }
     public string? ErrorMessage { get; set; }
 
-    public CheckoutModel(AppDbContext db, ICartService cart, IActivityLogService log)
+    public CheckoutModel(AppDbContext db, ICartService cart, IActivityLogService log, INotificationService notif)
     {
         _db = db;
         _cart = cart;
         _log = log;
+        _notif = notif;
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -75,6 +77,7 @@ public class CheckoutModel : PageModel
 
         var createdDeposits = new List<int>();
         var totalXe = CartItems.Sum(c => c.SoLuong);
+        var tenXeList = new List<string>();
 
         foreach (var item in CartItems)
         {
@@ -99,7 +102,32 @@ public class CheckoutModel : PageModel
                 _db.DonDatCoc.Add(deposit);
                 await _db.SaveChangesAsync();
                 createdDeposits.Add(deposit.MaDonCoc);
+                tenXeList.Add(item.TenPhienBan);
             }
+        }
+
+        var tenXeStr = string.Join(", ", tenXeList.Distinct());
+
+        if (userName != null)
+        {
+            await _notif.SendAsync(userName, "Đặt cọc giỏ hàng thành công",
+                $"{totalXe} xe - Tổng cọc: {TotalDeposit:N0} VNĐ. Mã đơn: #{string.Join(", #", createdDeposits)}",
+                $"/Orders/Cart/CheckoutResult");
+        }
+
+        await _notif.SendToRoleAsync("Admin", "Đơn cọc giỏ hàng mới",
+            $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ",
+            $"/Admin/DonCoc/Index");
+
+        var showroom = await _db.ChiNhanhShowroom
+            .Where(c => c.MaQuanLy != null && c.TrangThai == "Active")
+            .FirstOrDefaultAsync();
+
+        if (showroom != null)
+        {
+            await _notif.SendAsync(showroom.MaQuanLy, "Đơn cọc giỏ hàng mới",
+                $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ",
+                $"/QuanLy/Dashboard");
         }
 
         await _log.LogAsync("Đặt cọc giỏ hàng",

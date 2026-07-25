@@ -172,6 +172,21 @@ public class ThongKeTongHop_Boss
     public DongXe DongXeBanChay { get; set; }
 }
 
+public class ThongBao
+{
+    [Key]
+    public int MaThongBao { get; set; }
+    public string MaNguoiNhan { get; set; }
+    public string TieuDe { get; set; }
+    public string NoiDung { get; set; }
+    public string DuongDan { get; set; }
+    public bool DaXem { get; set; }
+    public DateTime NgayTao { get; set; }
+
+    [ForeignKey("MaNguoiNhan")]
+    public TaiKhoan NguoiNhan { get; set; }
+}
+
 public class GioHang
 {
     [Key]

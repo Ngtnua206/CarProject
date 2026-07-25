@@ -21,6 +21,7 @@
             <div class="sidebar-header">
                 <a asp-page="/Admin/Index" class="sidebar-brand">
                     <img src="~/uploads/Logo/LogoTrenChu.png" alt="MyLxCar" style="height: 28px; width: auto;" />
+                    <span class="sidebar-brand-text">MyLxCar</span>
                 </a>
             </div>
 
@@ -69,8 +70,11 @@
                         <div style="font-size: 0.6rem; color: var(--text-faint));">Admin</div>
                     </div>
                 </div>
-                <a asp-page="/Admin/ToggleMode" asp-route-mode="View" asp-route-returnUrl="/" class="sidebar-toggle-mode">
+                <a asp-page="/Admin/ToggleMode" asp-route-mode="Control" asp-route-returnUrl="/" class="sidebar-toggle-mode">
                     <i class="fas fa-eye me-2"></i> Xem giao diện
+                </a>
+                <a asp-page="/Admin/ToggleMode" asp-route-mode="View" asp-route-returnUrl="/" class="sidebar-toggle-mode" style="margin-top: 0.25rem;">
+                    <i class="fas fa-wrench me-2"></i> Sửa giao diện
                 </a>
                 <a asp-page="/Account/Logout" class="sidebar-logout">
                     <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
@@ -88,8 +92,11 @@
                 </a>
                 <div class="admin-topbar-title">@ViewData["Title"]</div>
                 <div class="admin-topbar-right">
-                    <a asp-page="/Admin/ToggleMode" asp-route-mode="View" asp-route-returnUrl="/" class="btn-topbar" title="Xem giao diện người dùng">
+                    <a asp-page="/Admin/ToggleMode" asp-route-mode="Control" asp-route-returnUrl="/" class="btn-topbar" title="Xem giao diện người dùng">
                         <i class="fas fa-eye"></i>
+                    </a>
+                    <a asp-page="/Admin/ToggleMode" asp-route-mode="View" asp-route-returnUrl="/" class="btn-topbar" title="Sửa giao diện (quản trị)">
+                        <i class="fas fa-wrench"></i>
                     </a>
                 </div>
             </header>

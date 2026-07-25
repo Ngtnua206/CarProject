@@ -76,6 +76,7 @@ public class LoginModel : PageModel
         }
 
         SetJwtCookie(user);
+        Response.Cookies.Append("AdminMode", "Control", new CookieOptions { HttpOnly = false, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(30), Path = "/" });
         await _log.LogAsync("Đăng nhập thành công", $"Tài khoản \"{user.TenDangNhap}\" vai trò {user.VaiTro}");
 
         if (user.VaiTro == "Admin")
@@ -172,6 +173,7 @@ public class LoginModel : PageModel
         }
 
         SetJwtCookie(user);
+        Response.Cookies.Append("AdminMode", "Control", new CookieOptions { HttpOnly = false, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(30), Path = "/" });
         await _log.LogAsync("Đăng nhập Google", $"Tài khoản \"{email}\"");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
