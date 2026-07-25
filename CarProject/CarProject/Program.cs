@@ -570,6 +570,22 @@ try
         return Results.Ok(new { success = true });
     });
 
+    app.MapGet("/api/image-proxy", async (string url, HttpContext ctx) =>
+    {
+        if (string.IsNullOrWhiteSpace(url)) return Results.BadRequest();
+        try
+        {
+            using var http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true });
+            http.Timeout = TimeSpan.FromSeconds(15);
+            var resp = await http.GetAsync(url);
+            if (!resp.IsSuccessStatusCode) return Results.StatusCode((int)resp.StatusCode);
+            var contentType = resp.Content.Headers.ContentType?.ToString() ?? "image/jpeg";
+            var stream = await resp.Content.ReadAsStreamAsync();
+            return Results.Stream(stream, contentType);
+        }
+        catch { return Results.StatusCode(502); }
+    });
+
     app.MapRazorPages();
     app.MapControllerRoute(
         name: "default",

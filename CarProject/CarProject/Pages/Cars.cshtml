@@ -265,6 +265,10 @@ let _carsVersions = [];
 let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };
 let _croppedBlobs = {};
 
+const _urlInputMap = {
+    carsEditBrandFile:'carsEditBrandLogo', carsEditModelFile:'carsEditModelImage', carsEditVerFile:'carsEditVerImage'
+};
+
 function openCropModal(inputId, aspectRatio) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -287,18 +291,36 @@ function openCropModal(inputId, aspectRatio) {
         src = URL.createObjectURL(input.files[0]);
     } else {
         src = input.value.trim();
+        if (!src) {
+            const urlId = _urlInputMap[inputId];
+            if (urlId) {
+                const urlInput = document.getElementById(urlId);
+                if (urlInput) src = urlInput.value.trim();
+            }
+        }
     }
     if (!src) { alert('Vui lòng chọn ảnh hoặc nhập URL trước.'); return; }
 
-    img.onload = function() {
-        _cropState.imgW = img.naturalWidth;
-        _cropState.imgH = img.naturalHeight;
-        _cropState.drag = { x: 0, y: 0 };
-        _cropState.zoom = 1;
-        fitCropImage();
-    };
-    img.src = src;
-    overlay.classList.add('active');
+    function setCropSrc(url) {
+        img.onload = function() {
+            _cropState.imgW = img.naturalWidth;
+            _cropState.imgH = img.naturalHeight;
+            _cropState.drag = { x: 0, y: 0 };
+            _cropState.zoom = 1;
+            fitCropImage();
+            updateCropFrame();
+        };
+        img.src = url;
+        overlay.classList.add('active');
+    }
+
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+        fetch('/api/image-proxy?url=' + encodeURIComponent(src)).then(r => r.blob()).then(blob => {
+            setCropSrc(URL.createObjectURL(blob));
+        }).catch(() => setCropSrc(src));
+    } else {
+        setCropSrc(src);
+    }
 }
 
 function fitCropImage() {
@@ -325,6 +347,29 @@ function setCropRatio(ratio, btn) {
     _cropState.ratio = ratio;
     document.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    updateCropFrame();
+}
+
+function updateCropFrame() {
+    const viewport = document.getElementById('cropViewport');
+    const frame = viewport.querySelector('.crop-frame');
+    const vw = viewport.clientWidth, vh = viewport.clientHeight;
+    if (_cropState.ratio === 'free') {
+        frame.style.inset = '0';
+    } else {
+        const p = _cropState.ratio.split(':');
+        const rW = parseInt(p[0]), rH = parseInt(p[1]);
+        let fw, fh;
+        if (vw / vh > rW / rH) { fh = vh * 0.85; fw = fh * rW / rH; }
+        else { fw = vw * 0.85; fh = fw * rH / rW; }
+        const top = (vh - fh) / 2, left = (vw - fw) / 2;
+        frame.style.top = top + 'px';
+        frame.style.left = left + 'px';
+        frame.style.right = 'auto';
+        frame.style.bottom = 'auto';
+        frame.style.width = fw + 'px';
+        frame.style.height = fh + 'px';
+    }
 }
 
 function closeCropModal() {
@@ -361,6 +406,7 @@ function applyCrop() {
             _croppedBlobs[_cropState.targetInputId] = blob;
         }
         closeCropModal();
+        showToast('Đã áp dụng crop! Tiếp tục bấm Lưu.','success');
     }, 'image/jpeg', 0.92);
 }
 
@@ -394,6 +440,12 @@ async function carsUploadFile(file, inputId) {
         if (inputId) delete _croppedBlobs[inputId];
         return data.url;
     } catch (e) { showToast('Upload thất bại. Thử dán URL ảnh thay thế.', 'error'); return null; }
+}
+
+function carsFileOrCrop(fileInput, inputId) {
+    if (fileInput.files.length > 0) return fileInput.files[0];
+    const b = _croppedBlobs[inputId];
+    return b ? new File([b], 'cropped.jpg', { type: 'image/jpeg' }) : null;
 }
 
 function showToast(msg, type) {
@@ -471,7 +523,7 @@ async function carsSaveBrandFull() {
         const urlInput = document.getElementById('carsEditBrandLogo');
         const fileInput = document.getElementById('carsEditBrandFile');
         let url = urlInput.value.trim();
-        if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0], 'carsEditBrandFile');
+        { const f = carsFileOrCrop(fileInput, 'carsEditBrandFile'); if (f) url = await carsUploadFile(f, 'carsEditBrandFile'); }
         const payload = {
             maHang: parseInt(id),
             tenHang: document.getElementById('carsEditBrandName').value.trim(),
@@ -492,7 +544,7 @@ async function carsSaveModelFull() {
         const urlInput = document.getElementById('carsEditModelImage');
         const fileInput = document.getElementById('carsEditModelFile');
         let url = urlInput.value.trim();
-        if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0], 'carsEditModelFile');
+        { const f = carsFileOrCrop(fileInput, 'carsEditModelFile'); if (f) url = await carsUploadFile(f, 'carsEditModelFile'); }
         const payload = {
             maDong: parseInt(id),
             tenDong: document.getElementById('carsEditModelName').value.trim(),
@@ -514,7 +566,7 @@ async function carsSaveVersionFull() {
         const urlInput = document.getElementById('carsEditVerImage');
         const fileInput = document.getElementById('carsEditVerFile');
         let url = urlInput.value.trim();
-        if (fileInput.files.length > 0) url = await carsUploadFile(fileInput.files[0], 'carsEditVerFile');
+        { const f = carsFileOrCrop(fileInput, 'carsEditVerFile'); if (f) url = await carsUploadFile(f, 'carsEditVerFile'); }
         const payload = {
             maPhienBan: parseInt(id),
             tenPhienBan: document.getElementById('carsEditVerName').value.trim(),
@@ -541,17 +593,17 @@ async function carsSaveAllFull() {
         const brandUrlInput = document.getElementById('carsEditBrandLogo');
         const brandFileInput = document.getElementById('carsEditBrandFile');
         let brandUrl = brandUrlInput.value.trim();
-        if (brandFileInput.files.length > 0) brandUrl = await carsUploadFile(brandFileInput.files[0], 'carsEditBrandFile');
+        { const f = carsFileOrCrop(brandFileInput, 'carsEditBrandFile'); if (f) brandUrl = await carsUploadFile(f, 'carsEditBrandFile'); }
 
         const modelUrlInput = document.getElementById('carsEditModelImage');
         const modelFileInput = document.getElementById('carsEditModelFile');
         let modelUrl = modelUrlInput.value.trim();
-        if (modelFileInput.files.length > 0) modelUrl = await carsUploadFile(modelFileInput.files[0], 'carsEditModelFile');
+        { const f = carsFileOrCrop(modelFileInput, 'carsEditModelFile'); if (f) modelUrl = await carsUploadFile(f, 'carsEditModelFile'); }
 
         const verUrlInput = document.getElementById('carsEditVerImage');
         const verFileInput = document.getElementById('carsEditVerFile');
         let verUrl = verUrlInput.value.trim();
-        if (verFileInput.files.length > 0) verUrl = await carsUploadFile(verFileInput.files[0], 'carsEditVerFile');
+        { const f = carsFileOrCrop(verFileInput, 'carsEditVerFile'); if (f) verUrl = await carsUploadFile(f, 'carsEditVerFile'); }
 
         const brandPayload = {
             maHang: parseInt(document.getElementById('carsEditBrandId').value),
