@@ -3368,6 +3368,7 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
     background: #0a0a14;
     cursor: grab;
     user-select: none;
+    border-radius: 0;
 }
 .crop-viewport:active { cursor: grabbing; }
 .crop-viewport img {
@@ -3512,6 +3513,22 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
     transition: all 0.2s;
 }
 .crop-btn-cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.crop-btn-reset {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.45);
+    font-size: 0.68rem;
+    font-weight: 500;
+    padding: 0.55rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+.crop-btn-reset:hover {
     background: rgba(255,255,255,0.1);
     color: #fff;
 }

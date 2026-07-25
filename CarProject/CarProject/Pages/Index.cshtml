@@ -372,6 +372,7 @@
         </div>
         <div class="crop-actions">
             <button class="crop-btn-cancel" onclick="closeCropModal()">Hủy</button>
+            <button class="crop-btn-reset" onclick="resetCropPosition()"><i class="fas fa-arrows-alt me-1"></i> Đặt lại</button>
             <button class="crop-btn-apply" onclick="applyCrop()"><i class="fas fa-check me-1"></i> Áp dụng</button>
         </div>
     </div>
@@ -426,8 +427,8 @@ function openCropModal(inputId, aspectRatio) {
         img.onload = function() {
             _cropState.imgW = img.naturalWidth;
             _cropState.imgH = img.naturalHeight;
-            _cropState.drag = { x: 0, y: 0 };
             _cropState.zoom = 1;
+            centerCropDrag();
             fitCropImage();
             updateCropFrame();
         };
@@ -442,6 +443,16 @@ function openCropModal(inputId, aspectRatio) {
     } else {
         setCropSrc(src);
     }
+}
+
+function centerCropDrag() {
+    const vp = document.getElementById('cropViewport');
+    const vw = vp.clientWidth, vh = vp.clientHeight;
+    const iw = _cropState.imgW, ih = _cropState.imgH;
+    if (!iw || !ih) return;
+    const s = Math.min(vw / iw, vh / ih) * 0.9 * _cropState.zoom;
+    _cropState.drag.x = (vw - iw * s) / 2;
+    _cropState.drag.y = (vh - ih * s) / 2;
 }
 
 function fitCropImage() {
@@ -462,6 +473,14 @@ function onCropZoom() {
     const val = parseInt(document.getElementById('cropZoom').value);
     _cropState.zoom = val / 100;
     document.getElementById('cropZoomVal').textContent = val + '%';
+    fitCropImage();
+}
+
+function resetCropPosition() {
+    _cropState.zoom = 1;
+    centerCropDrag();
+    document.getElementById('cropZoom').value = 100;
+    document.getElementById('cropZoomVal').textContent = '100%';
     fitCropImage();
 }
 
@@ -552,6 +571,16 @@ document.addEventListener('DOMContentLoaded', function() {
         fitCropImage();
     });
     document.addEventListener('mouseup', () => { _cropState.isDragging = false; });
+    vp.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -10 : 10;
+        let val = parseInt(document.getElementById('cropZoom').value) + delta;
+        val = Math.max(10, Math.min(300, val));
+        document.getElementById('cropZoom').value = val;
+        _cropState.zoom = val / 100;
+        document.getElementById('cropZoomVal').textContent = val + '%';
+        fitCropImage();
+    }, { passive: false });
 });
 
 /* Upload: use cropped blob if available, else original file */
