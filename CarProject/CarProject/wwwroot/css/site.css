@@ -1776,13 +1776,16 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     color: var(--brand-white) !important;
     letter-spacing: 3px;
-    text-transform: uppercase;
     display: flex;
-    flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
     margin-bottom: 1rem;
     text-decoration: none;
+}
+.footer-premium .footer-brand .footer-brand-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 .footer-premium .footer-brand .icon {
