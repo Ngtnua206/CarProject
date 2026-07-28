@@ -118,11 +118,23 @@ public class AppDbContext : DbContext
             .HasForeignKey(d => d.MaQuanLyDuyet)
             .OnDelete(DeleteBehavior.NoAction);
 
+        modelBuilder.Entity<DonDatCoc>()
+            .HasOne(d => d.ChiNhanh)
+            .WithMany()
+            .HasForeignKey(d => d.MaChiNhanh)
+            .OnDelete(DeleteBehavior.NoAction);
+
         modelBuilder.Entity<HoaDonMuaXe>()
             .HasOne(h => h.DonDatCoc)
             .WithMany()
             .HasForeignKey(h => h.MaDonCoc)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HoaDonMuaXe>()
+            .HasOne(h => h.ChiNhanh)
+            .WithMany()
+            .HasForeignKey(h => h.MaChiNhanh)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ChiNhanhShowroom>()
             .HasOne(c => c.QuanLy)

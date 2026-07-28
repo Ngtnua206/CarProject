@@ -46,27 +46,19 @@ public class DoanhThuModel : PageModel
             .Where(c => c.TrangThai == "Hoạt động")
             .ToListAsync();
 
-        // Base query: DonDatCoc trong khoảng ngày
-        IQueryable<DonDatCoc> query = _db.DonDatCoc
-            .Where(d => d.NgayTaoDon >= TuNgay.Value && d.NgayTaoDon <= DenNgay.Value.AddDays(1));
+        // Base query: HoaDonMuaXe da thanh toan trong khoang ngay
+        IQueryable<HoaDonMuaXe> query = _db.HoaDonMuaXe
+            .Where(h => h.NgayXuatHoaDon >= TuNgay.Value && h.NgayXuatHoaDon <= DenNgay.Value.AddDays(1)
+                && h.TrangThaiHoaDon == "Đã thanh toán");
 
         // Filter by showroom if specified
         if (!string.IsNullOrEmpty(MaChiNhanh))
-        {
-            // Filter by manager of that showroom
-            var managerOfShowroom = await _db.ChiNhanhShowroom
-                .Where(c => c.MaChiNhanh == MaChiNhanh)
-                .Select(c => c.MaQuanLy)
-                .FirstOrDefaultAsync();
-
-            if (!string.IsNullOrEmpty(managerOfShowroom))
-                query = query.Where(d => d.MaQuanLyDuyet == managerOfShowroom);
-        }
+            query = query.Where(h => h.MaChiNhanh == MaChiNhanh);
 
         // Daily revenue
         var dailyData = await query
-            .GroupBy(d => d.NgayTaoDon.Date)
-            .Select(g => new { Ngay = g.Key, Tong = g.Sum(d => (long?)d.SoTienCoc) ?? 0 })
+            .GroupBy(h => h.NgayXuatHoaDon.Date)
+            .Select(g => new { Ngay = g.Key, Tong = g.Sum(h => h.TongTienPhaiTra) })
             .OrderBy(g => g.Ngay)
             .ToListAsync();
 
@@ -85,23 +77,22 @@ public class DoanhThuModel : PageModel
         JsonData = JsonSerializer.Serialize(values);
 
         // Totals
-        TongDoanhThu = await query.SumAsync(d => (long?)d.SoTienCoc) ?? 0;
+        TongDoanhThu = await query.SumAsync(h => (long?)h.TongTienPhaiTra) ?? 0;
         TongDon = await query.CountAsync();
 
         // Revenue by showroom
         var chiNhanhList = await _db.ChiNhanhShowroom
-            .Where(c => c.TrangThai == "Hoạt động" && c.MaQuanLy != null)
+            .Where(c => c.TrangThai == "Hoạt động")
             .ToListAsync();
 
-        var showroomRevenueDict = new Dictionary<string, long>();
         foreach (var cn in chiNhanhList)
         {
-            var dt = await _db.DonDatCoc
-                .Where(d => d.MaQuanLyDuyet == cn.MaQuanLy
-                    && d.NgayTaoDon >= TuNgay.Value
-                    && d.NgayTaoDon <= DenNgay.Value.AddDays(1))
-                .SumAsync(d => (long?)d.SoTienCoc) ?? 0;
-            showroomRevenueDict[cn.TenChiNhanh] = dt;
+            var dt = await _db.HoaDonMuaXe
+                .Where(h => h.MaChiNhanh == cn.MaChiNhanh
+                    && h.NgayXuatHoaDon >= TuNgay.Value
+                    && h.NgayXuatHoaDon <= DenNgay.Value.AddDays(1)
+                    && h.TrangThaiHoaDon == "Đã thanh toán")
+                .SumAsync(h => (long?)h.TongTienPhaiTra) ?? 0;
             DoanhThuChiNhanh.Add(new DoanhThuTheoChiNhanh
             {
                 TenChiNhanh = cn.TenChiNhanh,

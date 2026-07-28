@@ -20,6 +20,7 @@ public class CreateModel : PageModel
     public SelectList KhachHangList { get; set; }
     public SelectList PhienBanList { get; set; }
     public SelectList QuanLyXuatList { get; set; }
+    public SelectList ChiNhanhList { get; set; }
 
     public CreateModel(AppDbContext db, IActivityLogService log)
     {
@@ -59,5 +60,8 @@ public class CreateModel : PageModel
 
         var ql = await _db.TaiKhoan.Where(t => t.VaiTro == "Admin" || t.VaiTro == "Quản Lý").ToListAsync();
         QuanLyXuatList = new SelectList(ql, "TenDangNhap", "TenDangNhap");
+
+        var chiNhanh = await _db.ChiNhanhShowroom.Where(c => c.TrangThai == "Hoạt động").ToListAsync();
+        ChiNhanhList = new SelectList(chiNhanh, "MaChiNhanh", "TenChiNhanh");
     }
 }

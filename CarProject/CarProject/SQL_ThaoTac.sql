@@ -4,6 +4,16 @@
 -- Thứ tự từ trên xuống dưới, chạy phát ok luôn
 -- ===================================================
 
+-- ==================== 0. CẬP NHẬT SCHEMA ====================
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('DonDatCoc') AND name = 'MaChiNhanh')
+    ALTER TABLE DonDatCoc ADD MaChiNhanh NVARCHAR(20) NULL;
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('HoaDonMuaXe') AND name = 'MaChiNhanh')
+    ALTER TABLE HoaDonMuaXe ADD MaChiNhanh NVARCHAR(20) NULL;
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_DonDatCoc_ChiNhanhShowroom')
+    ALTER TABLE DonDatCoc ADD CONSTRAINT FK_DonDatCoc_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HoaDonMuaXe_ChiNhanhShowroom')
+    ALTER TABLE HoaDonMuaXe ADD CONSTRAINT FK_HoaDonMuaXe_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
+
 -- ==================== 1. XÓA DỮ LIỆU CŨ ====================
 DELETE FROM ThongKeTongHop_Boss;
 DELETE FROM HoaDonMuaXe;
@@ -360,135 +370,128 @@ SET IDENTITY_INSERT KenhTuVan OFF;
 -- ==================== 10. THÊM ĐƠN CỌC MẪU ====================
 SET IDENTITY_INSERT DonDatCoc ON;
 -- Đã giao xe (MaDonCoc 1-6)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (1, 'user1', 31, 'quanly1', 200000000, N'Chuyển khoản', N'Đã thanh toán', '2026-01-15 09:30:00', '2026-02-20', N'Đã giao xe', N'Giao tại showroom Quận 7', N'Nguyễn Văn A', '0901000001', N'123 Lê Lợi, Quận 1', 'MGC250701-1');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (2, 'user2', 3,  'quanly2', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-02-10 14:00:00', '2026-03-05', N'Đã giao xe', N'Xe màu bạc', N'Trần Văn B', '0901000002', N'456 Nguyễn Huệ, Quận 1', 'MGC250702-2');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (3, 'user3', 59, 'quanly3', 150000000, N'Tiền mặt', N'Đã thanh toán', '2026-03-05 10:00:00', '2026-03-28', N'Đã giao xe', N'Giao tại showroom Cầu Giấy', N'Lê Thị C', '0901000003', N'789 Trần Hưng Đạo, Hoàn Kiếm', 'MGC250703-3');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (4, 'user4', 24, 'quanly4', 450000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-20 15:30:00', '2026-04-15', N'Đã giao xe', N'Khách VIP - gói phụ kiện', N'Phạm Văn D', '0901000004', N'123 Nguyễn Văn Linh, Quận 7', 'MGC250704-4');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (5, 'user5', 41, 'quanly5', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-25 08:00:00', '2026-04-20', N'Đã giao xe', N'Mercedes C200 màu bạc', N'Đỗ Thúy Hằng', '0901000011', N'456 Nguyễn Văn Linh, Đà Nẵng', 'MGC250711-11');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (6, 'user1', 37, 'quanly6', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-05 11:00:00', '2026-05-10', N'Đã giao xe', N'VF 8 màu xanh', N'Nguyễn Văn G', '0901000012', N'789 Văn Cao, Hải Phòng', 'MGC250712-12');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (1, 'user1', 31, 'quanly1', 'CN01', 200000000, N'Chuyển khoản', N'Đã thanh toán', '2026-01-15 09:30:00', '2026-02-20', N'Đã giao xe', N'Giao tại showroom Quận 7', N'Nguyễn Văn A', '0901000001', N'123 Lê Lợi, Quận 1', 'MGC250701-1');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (2, 'user2', 3,  'quanly2', 'CN02', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-02-10 14:00:00', '2026-03-05', N'Đã giao xe', N'Xe màu bạc', N'Trần Văn B', '0901000002', N'456 Nguyễn Huệ, Quận 1', 'MGC250702-2');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (3, 'user3', 59, 'quanly3', 'CN03', 150000000, N'Tiền mặt', N'Đã thanh toán', '2026-03-05 10:00:00', '2026-03-28', N'Đã giao xe', N'Giao tại showroom Cầu Giấy', N'Lê Thị C', '0901000003', N'789 Trần Hưng Đạo, Hoàn Kiếm', 'MGC250703-3');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (4, 'user4', 24, 'quanly4', 'CN04', 450000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-20 15:30:00', '2026-04-15', N'Đã giao xe', N'Khách VIP - gói phụ kiện', N'Phạm Văn D', '0901000004', N'123 Nguyễn Văn Linh, Quận 7', 'MGC250704-4');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (5, 'user5', 41, 'quanly5', 'CN05', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-25 08:00:00', '2026-04-20', N'Đã giao xe', N'Mercedes C200 màu bạc', N'Đỗ Thúy Hằng', '0901000011', N'456 Nguyễn Văn Linh, Đà Nẵng', 'MGC250711-11');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (6, 'user1', 37, 'quanly6', 'CN06', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-05 11:00:00', '2026-05-10', N'Đã giao xe', N'VF 8 màu xanh', N'Nguyễn Văn G', '0901000012', N'789 Văn Cao, Hải Phòng', 'MGC250712-12');
 -- Đã xác nhận (MaDonCoc 7-9)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (7, 'user2', 2,  'quanly1', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-10 09:00:00', '2026-05-20', N'Đã xác nhận', N'Camry Hybrid màu đen', N'Hoàng Thị E', '0901000005', N'456 Hải Phòng, Đà Nẵng', 'MGC250705-5');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (8, 'user3', 11, 'quanly2', 180000000, N'Tiền mặt', N'Đã thanh toán', '2026-05-05 11:30:00', '2026-06-10', N'Đã xác nhận', N'Civic Turbo màu đỏ', N'Đặng Văn F', '0901000006', N'789 Văn Cao, Hải Phòng', 'MGC250706-6');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (9, 'user4', 75, 'quanly3', 100000000, N'Chuyển khoản', N'Đã thanh toán', '2026-06-20 14:00:00', '2026-07-25', N'Đã xác nhận', N'CX-5 Deluxe màu đỏ', N'Vũ Thị M', '0901000013', N'123 Hoàng Quốc Việt, Cầu Giấy', 'MGC250713-13');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (7, 'user2', 2,  'quanly1', 'CN01', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-10 09:00:00', '2026-05-20', N'Đã xác nhận', N'Camry Hybrid màu đen', N'Hoàng Thị E', '0901000005', N'456 Hải Phòng, Đà Nẵng', 'MGC250705-5');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (8, 'user3', 11, 'quanly2', 'CN02', 180000000, N'Tiền mặt', N'Đã thanh toán', '2026-05-05 11:30:00', '2026-06-10', N'Đã xác nhận', N'Civic Turbo màu đỏ', N'Đặng Văn F', '0901000006', N'789 Văn Cao, Hải Phòng', 'MGC250706-6');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (9, 'user4', 75, 'quanly3', 'CN03', 100000000, N'Chuyển khoản', N'Đã thanh toán', '2026-06-20 14:00:00', '2026-07-25', N'Đã xác nhận', N'CX-5 Deluxe màu đỏ', N'Vũ Thị M', '0901000013', N'123 Hoàng Quốc Việt, Cầu Giấy', 'MGC250713-13');
 -- Chờ xác nhận (MaDonCoc 10-12)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (10, 'user5', 17, 'quanly1', 200000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-01 08:00:00', N'Chờ xác nhận', N'Khách đang chờ vay ngân hàng', N'Nguyễn Văn H', '0901000007', N'123 Quận 7, TP.HCM', 'MGC250707-7');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (11, 'user1', 46, 'quanly2', 350000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-15 14:00:00', N'Chờ xác nhận', N'Khách muốn lái thử trước', N'Trần Thị K', '0901000008', N'456 Thủ Đức, TP.HCM', 'MGC250708-8');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (12, 'user2', 67, 'quanly3', 150000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-07-01 09:00:00', N'Chờ xác nhận', N'Đang thương lượng giá', N'Lê Văn P', '0901000014', N'789 Cầu Giấy, Hà Nội', 'MGC250714-14');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (10, 'user5', 17, 'quanly1', 'CN01', 200000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-01 08:00:00', N'Chờ xác nhận', N'Khách đang chờ vay ngân hàng', N'Nguyễn Văn H', '0901000007', N'123 Quận 7, TP.HCM', 'MGC250707-7');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (11, 'user1', 46, 'quanly2', 'CN02', 350000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-15 14:00:00', N'Chờ xác nhận', N'Khách muốn lái thử trước', N'Trần Thị K', '0901000008', N'456 Thủ Đức, TP.HCM', 'MGC250708-8');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (12, 'user2', 67, 'quanly3', 'CN03', 150000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-07-01 09:00:00', N'Chờ xác nhận', N'Đang thương lượng giá', N'Lê Văn P', '0901000014', N'789 Cầu Giấy, Hà Nội', 'MGC250714-14');
 -- Đã hủy (MaDonCoc 13-15)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (13, 'user3', 33, 'quanly4', 100000000, N'Tiền mặt', N'Đã hoàn tiền', '2026-04-20 16:00:00', N'Đã hủy', N'Khách đổi ý không mua nữa', N'Lê Văn I', '0901000009', N'789 Cầu Giấy, Hà Nội', 'MGC250709-9');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (14, 'user4', 9,  'quanly5', 150000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-05-10 10:30:00', N'Đã hủy', N'Không đủ khả năng tài chính', N'Phạm Thị K', '0901000010', N'321 Hoàng Mai, Hà Nội', 'MGC250710-10');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (15, 'user5', 61, 'quanly6', 80000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-06-25 15:00:00', N'Đã hủy', N'Chọn mua dòng xe khác', N'Ngô Văn Q', '0901000015', N'456 Lê Lợi, Hải Phòng', 'MGC250715-15');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (13, 'user3', 33, 'quanly4', 'CN04', 100000000, N'Tiền mặt', N'Đã hoàn tiền', '2026-04-20 16:00:00', N'Đã hủy', N'Khách đổi ý không mua nữa', N'Lê Văn I', '0901000009', N'789 Cầu Giấy, Hà Nội', 'MGC250709-9');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (14, 'user4', 9,  'quanly5', 'CN05', 150000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-05-10 10:30:00', N'Đã hủy', N'Không đủ khả năng tài chính', N'Phạm Thị K', '0901000010', N'321 Hoàng Mai, Hà Nội', 'MGC250710-10');
+INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
+VALUES (15, 'user5', 61, 'quanly6', 'CN06', 80000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-06-25 15:00:00', N'Đã hủy', N'Chọn mua dòng xe khác', N'Ngô Văn Q', '0901000015', N'456 Lê Lợi, Hải Phòng', 'MGC250715-15');
 SET IDENTITY_INSERT DonDatCoc OFF;
 
 -- ==================== 11. THÊM HÓA ĐƠN MẪU ====================
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000001', 1, 'user1', 31, 'quanly1', 1100000000, 110000000, 50000000, 1160000000, 1160000000, N'Chuyển khoản + Tiền mặt', '2026-02-20', 'WDB1111111A000001', 'M274000001', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000002', 2, 'user2', 3,  'quanly2', 950000000, 95000000, 30000000, 1015000000, 1015000000, N'Chuyển khoản', '2026-03-05', 'WDB2222222A000002', 'M274000002', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000003', 3, 'user3', 59, 'quanly3', 1150000000, 115000000, 80000000, 1170000000, 1170000000, N'Chuyển khoản', '2026-03-28', 'WDB3333333A000003', 'M274000003', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000004', 4, 'user4', 24, 'quanly4', 1600000000, 160000000, 120000000, 1640000000, 1640000000, N'Chuyển khoản', '2026-04-15', 'WDB4444444A000004', 'M274000004', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000005', 5, 'user5', 41, 'quanly5', 1500000000, 150000000, 100000000, 1550000000, 1550000000, N'Chuyển khoản', '2026-04-20', 'WDB5555555A000005', 'M274000005', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000006', 6, 'user1', 37, 'quanly6', 1050000000, 105000000, 105000000, 1050000000, 1050000000, N'Chuyển khoản', '2026-05-10', 'WDB6666666A000006', 'M274000006', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000001', 1, 'user1', 31, 'quanly1', 'CN01', 1100000000, 110000000, 50000000, 1160000000, 1160000000, N'Chuyển khoản + Tiền mặt', '2026-02-20', 'WDB1111111A000001', 'M274000001', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000002', 2, 'user2', 3,  'quanly2', 'CN02', 950000000, 95000000, 30000000, 1015000000, 1015000000, N'Chuyển khoản', '2026-03-05', 'WDB2222222A000002', 'M274000002', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000003', 3, 'user3', 59, 'quanly3', 'CN03', 1150000000, 115000000, 80000000, 1170000000, 1170000000, N'Chuyển khoản', '2026-03-28', 'WDB3333333A000003', 'M274000003', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000004', 4, 'user4', 24, 'quanly4', 'CN04', 1600000000, 160000000, 120000000, 1640000000, 1640000000, N'Chuyển khoản', '2026-04-15', 'WDB4444444A000004', 'M274000004', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000005', 5, 'user5', 41, 'quanly5', 'CN05', 1500000000, 150000000, 100000000, 1550000000, 1550000000, N'Chuyển khoản', '2026-04-20', 'WDB5555555A000005', 'M274000005', N'Đã thanh toán');
+INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
+VALUES ('HD000006', 6, 'user1', 37, 'quanly6', 'CN06', 1050000000, 105000000, 105000000, 1050000000, 1050000000, N'Chuyển khoản', '2026-05-10', 'WDB6666666A000006', 'M274000006', N'Đã thanh toán');
 
--- ==================== 12. THÊM THỐNG KÊ DOANH THU ====================
--- Tháng 1
+-- ==================== 12. THỐNG KÊ DOANH THU (TÍNH TỪ DỮ LIỆU THỰC TẾ) ====================
+-- Tháng 1: Don 1 (CN01, 200M), chưa có hóa đơn
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN01', 1160000000, 200000000, 1, 0, 15000, 45, 31);
+VALUES (N'2026-01', 'CN01', 0, 200000000, 0, 0, 15000, 45, 18);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN02', 500000000, 80000000, 0, 1, 12000, 30, 3);
+VALUES (N'2026-01', 'CN02', 0, 0, 0, 0, 12000, 30, 2);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN03', 850000000, 150000000, 0, 0, 9000, 25, 59);
+VALUES (N'2026-01', 'CN03', 0, 0, 0, 0, 9000, 25, 35);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN04', 300000000, 50000000, 0, 0, 8000, 20, 24);
+VALUES (N'2026-01', 'CN04', 0, 0, 0, 0, 8000, 20, 14);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN05', 200000000, 30000000, 0, 0, 5000, 12, 17);
--- Tháng 2
+VALUES (N'2026-01', 'CN05', 0, 0, 0, 0, 5000, 12, 23);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN01', 2100000000, 300000000, 2, 0, 18000, 55, 31);
+VALUES (N'2026-01', 'CN06', 0, 0, 0, 0, 4000, 8, 21);
+-- Tháng 2: HD000001 (CN01, 1160M), Don 2 (CN02, 300M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN02', 1015000000, 300000000, 1, 0, 14000, 35, 3);
+VALUES (N'2026-02', 'CN01', 1160000000, 0, 1, 0, 18000, 55, 18);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN03', 600000000, 100000000, 0, 0, 10000, 28, 59);
+VALUES (N'2026-02', 'CN02', 0, 300000000, 0, 0, 14000, 35, 2);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN06', 450000000, 80000000, 0, 0, 6000, 15, 9);
--- Tháng 3
+VALUES (N'2026-02', 'CN03', 0, 0, 0, 0, 10000, 28, 35);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN01', 2800000000, 400000000, 2, 0, 22000, 65, 31);
+VALUES (N'2026-02', 'CN04', 0, 0, 0, 0, 8500, 22, 14);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN02', 1800000000, 250000000, 1, 1, 16000, 40, 3);
+VALUES (N'2026-02', 'CN06', 0, 0, 0, 0, 6000, 15, 21);
+-- Tháng 3: HD000002 (CN02, 1015M), HD000003 (CN03, 1170M), Don 3 (CN03, 150M), Don 4 (CN04, 450M), Don 5 (CN05, 300M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN03', 1170000000, 150000000, 1, 0, 12000, 32, 59);
+VALUES (N'2026-03', 'CN02', 1015000000, 0, 1, 0, 16000, 40, 2);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN04', 1640000000, 450000000, 1, 0, 11000, 30, 24);
+VALUES (N'2026-03', 'CN03', 1170000000, 150000000, 1, 0, 12000, 32, 35);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN05', 800000000, 250000000, 0, 0, 7000, 18, 17);
--- Tháng 4
+VALUES (N'2026-03', 'CN04', 0, 450000000, 0, 0, 11000, 30, 14);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN01', 2800000000, 400000000, 2, 0, 20000, 60, 31);
+VALUES (N'2026-03', 'CN05', 0, 300000000, 0, 0, 7000, 18, 23);
+-- Tháng 4: HD000004 (CN04, 1640M), HD000005 (CN05, 1550M), Don 7 (CN01, 250M), Don 6 (CN06, 250M), Don 13 hủy (CN04, 100M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN02', 1400000000, 200000000, 1, 0, 15000, 38, 3);
+VALUES (N'2026-04', 'CN01', 0, 250000000, 0, 0, 20000, 60, 18);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN03', 1500000000, 200000000, 1, 0, 13000, 35, 59);
+VALUES (N'2026-04', 'CN04', 1640000000, 0, 1, 1, 12000, 32, 14);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN04', 1750000000, 300000000, 1, 0, 12000, 32, 24);
+VALUES (N'2026-04', 'CN05', 1550000000, 0, 1, 0, 9000, 24, 23);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN05', 1550000000, 300000000, 1, 0, 9000, 24, 41);
+VALUES (N'2026-04', 'CN06', 0, 250000000, 0, 0, 7000, 16, 21);
+-- Tháng 5: HD000006 (CN06, 1050M), Don 8 (CN02, 180M), Don 14 hủy (CN05, 150M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN06', 700000000, 100000000, 0, 0, 7000, 16, 9);
--- Tháng 5
+VALUES (N'2026-05', 'CN02', 0, 180000000, 0, 0, 15000, 38, 2);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN01', 3200000000, 500000000, 3, 1, 24000, 70, 31);
+VALUES (N'2026-05', 'CN05', 0, 0, 0, 1, 8000, 20, 23);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN02', 2000000000, 350000000, 1, 0, 18000, 45, 3);
+VALUES (N'2026-05', 'CN06', 1050000000, 0, 1, 0, 8000, 20, 21);
+-- Tháng 6: Don 9 (CN03, 100M), Don 10 (CN01, 200M), Don 11 (CN02, 350M), Don 15 hủy (CN06, 80M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN03', 1600000000, 200000000, 1, 1, 14000, 35, 59);
+VALUES (N'2026-06', 'CN01', 0, 200000000, 0, 0, 18000, 50, 18);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN04', 1900000000, 350000000, 1, 0, 14000, 36, 24);
+VALUES (N'2026-06', 'CN02', 0, 350000000, 0, 0, 16000, 42, 2);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN05', 1050000000, 250000000, 1, 0, 10000, 28, 37);
+VALUES (N'2026-06', 'CN03', 0, 100000000, 0, 0, 10000, 26, 35);
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN06', 900000000, 180000000, 0, 0, 8000, 20, 9);
--- Tháng 6
+VALUES (N'2026-06', 'CN06', 0, 0, 0, 1, 7000, 18, 21);
+-- Tháng 7: Don 12 (CN03, 150M)
 INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN01', 3800000000, 600000000, 3, 0, 26000, 75, 31);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN02', 2200000000, 350000000, 2, 0, 20000, 50, 3);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN03', 1800000000, 250000000, 1, 0, 16000, 40, 59);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN04', 2100000000, 350000000, 1, 0, 14000, 35, 24);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN05', 1500000000, 280000000, 1, 0, 10000, 28, 37);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN06', 1000000000, 200000000, 0, 0, 9000, 22, 9);
--- Tháng 7
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-07', 'CN01', 1500000000, 200000000, 1, 0, 12000, 35, 31);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-07', 'CN02', 800000000, 100000000, 0, 0, 8000, 20, 3);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-07', 'CN03', 600000000, 80000000, 0, 0, 6000, 15, 59);
+VALUES (N'2026-07', 'CN03', 0, 150000000, 0, 0, 6000, 15, 35);
 
--- ==================== 13. CẬP NHẬT MẬT KHẨU (PBKDF2 hash) ====================
+-- ==================== 13. CẬP NHẬT TỒN KHO ====================
+-- Trừ tồn kho cho từng xe đã bán (hóa đơn đã thanh toán)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 31; -- Lux SA 2.0T (HD000001)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 3;  -- Hilux 2.4G (HD000002)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 59; -- Santa Fe 2.5 Premium (HD000003)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 24; -- 320i Sport Line (HD000004)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 41; -- C200 Avantgarde (HD000005)
+UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 37; -- VF 8 Eco (HD000006)
+
+-- ==================== 14. CẬP NHẬT MẬT KHẨU (PBKDF2 hash) ====================
 UPDATE TaiKhoan SET MatKhau = N'wNqykWOAM5hGb8+mPUYvaw==.JpcQKcXxRJl31glDE1nu6/PUQsZAxLvS5j1YHAwxLT4=' WHERE TenDangNhap = N'fntzzs682@gmail.com';
 UPDATE TaiKhoan SET MatKhau = N'0OUCfE9U3HuDS2VghvJd3g==.FNV/tRowCFfYXFBgTlPgmDYep6OCLtZyQEArjrxE4Vg=' WHERE TenDangNhap = N'minhquanmkp123@gmail.com';
 UPDATE TaiKhoan SET MatKhau = N'jfj5pQ4ZwoZuOVn4pZCu1Q==.aDRo1vo42rnvA2i/E+B4kqvHddiwNog1Ztj/3tY7S1k=' WHERE TenDangNhap = N'Ngttu2006@gmail.com';
@@ -506,7 +509,7 @@ UPDATE TaiKhoan SET MatKhau = N'n2zN5/JWq7EppQ1RgTIZ4g==.HeZXQln7bNEKqIg6tC+U5w2
 UPDATE TaiKhoan SET MatKhau = N'n2zN5/JWq7EppQ1RgTIZ4g==.HeZXQln7bNEKqIg6tC+U5w2z6N2SZiQ+wJI41bpdvYg=' WHERE TenDangNhap = N'user5';
 UPDATE TaiKhoan SET MatKhau = N'NErALrnWhGZIsGdyZMHueg==.qC0xjUR/NjlOtz8ZdBImkgq8qxDt9elxyC7hIyF2p/E=' WHERE TenDangNhap = N'Vanh280306@gmail.com';
 
--- ==================== 14. XEM LẠI DỮ LIỆU ====================
+-- ==================== 15. XEM LẠI DỮ LIỆU ====================
 PRINT N'=== HÃNG XE ==='; SELECT * FROM HangXe ORDER BY MaHang;
 PRINT N'=== DÒNG XE ==='; SELECT d.MaDong, d.TenDong, h.TenHang, d.KieuDang FROM DongXe d JOIN HangXe h ON d.MaHang = h.MaHang ORDER BY d.MaDong;
 PRINT N'=== PHIÊN BẢN ==='; SELECT p.MaPhienBan, p.TenPhienBan, d.TenDong, h.TenHang, p.GiaNiemYet, p.SoLuongTrongKho, p.TrangThai FROM PhienBanXe_SanPham p JOIN DongXe d ON p.MaDong = d.MaDong JOIN HangXe h ON d.MaHang = h.MaHang ORDER BY p.MaPhienBan;

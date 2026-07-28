@@ -10,6 +10,7 @@ public class DonDatCoc
     public string? MaKhachHang { get; set; }
     public int MaPhienBan { get; set; }
     public string? MaQuanLyDuyet { get; set; }
+    public string? MaChiNhanh { get; set; }
     public decimal SoTienCoc { get; set; }
     public string? PhuongThucThanhToan { get; set; }
     public string? TrangThaiThanhToan { get; set; }
@@ -31,6 +32,9 @@ public class DonDatCoc
 
     [ForeignKey("MaQuanLyDuyet")]
     public TaiKhoan? QuanLyDuyet { get; set; }
+
+    [ForeignKey("MaChiNhanh")]
+    public ChiNhanhShowroom? ChiNhanh { get; set; }
 }
 
 public class HoaDonMuaXe
@@ -41,6 +45,7 @@ public class HoaDonMuaXe
     public string? MaKhachHang { get; set; }
     public int MaPhienBan { get; set; }
     public string? MaQuanLyXuat { get; set; }
+    public string? MaChiNhanh { get; set; }
     public long GiaXeThucTe { get; set; }
     public long ThueTruocBaVaPhiLanBanh { get; set; }
     public long SoTienDuocGiam { get; set; }
@@ -54,6 +59,9 @@ public class HoaDonMuaXe
 
     [ForeignKey("MaDonCoc")]
     public DonDatCoc? DonDatCoc { get; set; }
+
+    [ForeignKey("MaChiNhanh")]
+    public ChiNhanhShowroom? ChiNhanh { get; set; }
 }
 
 public class LichHenLaiThu

@@ -22,6 +22,7 @@
                             <th>Đơn cọc</th>
                             <th>Khách hàng</th>
                             <th>Phiên bản</th>
+                            <th>Chi nhánh</th>
                             <th>Giá xe</th>
                             <th>Tổng tiền</th>
                             <th>Ngày xuất</th>
@@ -37,6 +38,7 @@
                                 <td>@hd.MaDonCoc</td>
                                 <td>@(hd.DonDatCoc?.MaKhachHang)</td>
                                 <td>@hd.MaPhienBan</td>
+                                <td>@(hd.ChiNhanh?.TenChiNhanh ?? "—")</td>
                                 <td>@hd.GiaXeThucTe.ToString("N0")</td>
                                 <td>@hd.TongTienPhaiTra.ToString("N0")</td>
                                 <td>@hd.NgayXuatHoaDon.ToString("dd/MM/yyyy")</td>

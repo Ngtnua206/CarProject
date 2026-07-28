@@ -20,6 +20,7 @@ public class EditModel : PageModel
     public SelectList KhachHangList { get; set; }
     public SelectList PhienBanList { get; set; }
     public SelectList QuanLyXuatList { get; set; }
+    public SelectList ChiNhanhList { get; set; }
 
     public EditModel(AppDbContext db, IActivityLogService log)
     {
@@ -53,6 +54,7 @@ public class EditModel : PageModel
         existing.MaKhachHang = HoaDon.MaKhachHang;
         existing.MaPhienBan = HoaDon.MaPhienBan;
         existing.MaQuanLyXuat = HoaDon.MaQuanLyXuat;
+        existing.MaChiNhanh = HoaDon.MaChiNhanh;
         existing.GiaXeThucTe = HoaDon.GiaXeThucTe;
         existing.ThueTruocBaVaPhiLanBanh = HoaDon.ThueTruocBaVaPhiLanBanh;
         existing.SoTienDuocGiam = HoaDon.SoTienDuocGiam;
@@ -82,5 +84,8 @@ public class EditModel : PageModel
 
         var ql = await _db.TaiKhoan.Where(t => t.VaiTro == "Admin" || t.VaiTro == "Quản Lý").ToListAsync();
         QuanLyXuatList = new SelectList(ql, "TenDangNhap", "TenDangNhap", HoaDon?.MaQuanLyXuat);
+
+        var chiNhanh = await _db.ChiNhanhShowroom.Where(c => c.TrangThai == "Hoạt động").ToListAsync();
+        ChiNhanhList = new SelectList(chiNhanh, "MaChiNhanh", "TenChiNhanh", HoaDon?.MaChiNhanh);
     }
 }

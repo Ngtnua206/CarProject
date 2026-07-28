@@ -20,7 +20,7 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        HoaDonList = await _db.HoaDonMuaXe.Include(h => h.DonDatCoc).ToListAsync();
+        HoaDonList = await _db.HoaDonMuaXe.Include(h => h.DonDatCoc).Include(h => h.ChiNhanh).ToListAsync();
         await _log.LogAsync("Admin Xem danh sách hóa đơn");
     }
 }

@@ -23,7 +23,7 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(string id)
     {
-        HoaDon = await _db.HoaDonMuaXe.FindAsync(id);
+        HoaDon = await _db.HoaDonMuaXe.Include(h => h.ChiNhanh).FirstOrDefaultAsync(h => h.MaHoaDon == id);
         if (HoaDon == null)
             return NotFound();
         return Page();

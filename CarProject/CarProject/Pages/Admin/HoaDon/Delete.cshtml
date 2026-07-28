@@ -14,6 +14,7 @@
                 <div class="alert alert-warning">
                     <p>Bạn có chắc muốn xóa hóa đơn <strong>@Model.HoaDon.MaHoaDon</strong>?</p>
                     <ul>
+                        <li>Chi nhánh: <strong>@(Model.HoaDon.ChiNhanh?.TenChiNhanh ?? "—")</strong></li>
                         <li>Tổng tiền: <strong>@Model.HoaDon.TongTienPhaiTra.ToString("N0")</strong></li>
                         <li>Trạng thái: <strong>@Model.HoaDon.TrangThaiHoaDon</strong></li>
                     </ul>

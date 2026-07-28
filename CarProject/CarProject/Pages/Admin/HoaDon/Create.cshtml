@@ -29,6 +29,12 @@
                             <select asp-for="HoaDon.MaQuanLyXuat" asp-items="Model.QuanLyXuatList" class="form-control" required></select>
                         </div>
                         <div class="mb-3">
+                            <label asp-for="HoaDon.MaChiNhanh" class="form-label">Chi Nhánh</label>
+                            <select asp-for="HoaDon.MaChiNhanh" asp-items="Model.ChiNhanhList" class="form-control" required>
+                                <option value="">-- Chọn chi nhánh --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label asp-for="HoaDon.GiaXeThucTe" class="form-label">Giá Xe Thực Tế</label>
                             <input asp-for="HoaDon.GiaXeThucTe" class="form-control" type="number" required />
                         </div>
