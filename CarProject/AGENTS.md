@@ -70,6 +70,9 @@
 - Commit + push clean code to GitHub
 
 ## Critical Context
+- **Sepay webhook**: Endpoint `POST /api/sepay-webhook` in Program.cs. Cập nhật `DonDatCoc.SepayTransactionId`, `TrangThaiThanhToan = "Đã thanh toán"`, gửi notification. Verify HMAC-SHA256 signature từ header `X-SePay-Signature`.
+- **Sepay config**: `appsettings.json → Sepay` section: ApiKey, WebhookBaseUrl=`https://mylxcar.online`, WebhookSecret (trống — cần copy từ SePay dashboard).
+- **Trên form SePay**: Tên="Web ô tô", URL=`https://mylxcar.online/api/sepay-webhook`, Loại="Tất cả", Định dạng=JSON, Bật "Tự động gửi lại".
 - Build: 0 errors, CS8618 nullable warnings (same pattern, no functional impact)
 - DB: `CarShopDb`; server `localhost,1433`; SA password `Iumaioanhh@2024`
 - **WDAC/Smart App Control fix**: Self-signed code signing cert created, CarProject.dll signed automatically after each build via post-build event in `.csproj`. Cert installed in LocalMachine\Root + LocalMachine\TrustedPublisher, CurrentUser\My, CurrentUser\TrustedPublisher. Post-build script: `build/sign-after-build.ps1`.

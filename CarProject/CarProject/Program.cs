@@ -68,6 +68,9 @@ try
     builder.Services.Configure<CarProject.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
     builder.Services.AddScoped<CarProject.Services.IEmailService, CarProject.Services.EmailService>();
     builder.Services.AddScoped<CarProject.Services.INotificationService, CarProject.Services.NotificationService>();
+    builder.Services.Configure<CarProject.Services.SepaySettings>(builder.Configuration.GetSection("Sepay"));
+    builder.Services.AddScoped<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
+    builder.Services.AddHttpClient<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
 
     // JWT config
     var jwtKey = builder.Configuration["Jwt:Key"] ?? "CarProjectSuperSecretKey2024@MustBe32CharsLong!";
@@ -584,6 +587,56 @@ try
             return Results.Stream(stream, contentType);
         }
         catch { return Results.StatusCode(502); }
+    });
+
+    app.MapPost("/api/sepay-webhook", async (HttpContext ctx, CarProject.Services.ISepayService sepay, CarProject.Data.AppDbContext db, CarProject.Services.IActivityLogService log) =>
+    {
+        try
+        {
+            using var reader = new StreamReader(ctx.Request.Body);
+            var body = await reader.ReadToEndAsync();
+
+            var signature = ctx.Request.Headers["X-SePay-Signature"].FirstOrDefault() ?? "";
+            if (!sepay.VerifyWebhook(body, signature))
+                return Results.Json(new { success = false, message = "Invalid signature" }, statusCode: 400);
+
+            var payload = System.Text.Json.JsonSerializer.Deserialize<CarProject.Services.SepayWebhookResponse>(body);
+            if (payload == null || !payload.success)
+                return Results.Ok(new { success = true });
+
+            var data = payload.data;
+            if (data == null)
+                return Results.Ok(new { success = true });
+
+            var maGiaoDich = sepay.ExtractTransactionCode(data.content ?? "");
+            if (string.IsNullOrEmpty(maGiaoDich))
+                return Results.Ok(new { success = true });
+
+            var donCoc = await db.DonDatCoc.FirstOrDefaultAsync(d => d.MaGiaoDich == maGiaoDich);
+            if (donCoc == null)
+                return Results.Ok(new { success = true });
+
+            donCoc.SepayTransactionId = data.id.ToString();
+            donCoc.TrangThaiThanhToan = "Đã thanh toán";
+            donCoc.TrangThaiDonHang = "Chờ xác nhận";
+            await db.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(donCoc.MaKhachHang))
+            {
+                var notifService = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
+                await notifService.SendAsync(donCoc.MaKhachHang, "Thanh toán thành công",
+                    $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
+            }
+
+            await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");
+            return Results.Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            var logger = ctx.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "Sepay webhook error");
+            return Results.Json(new { success = false, message = "Internal error" }, statusCode: 500);
+        }
     });
 
     app.MapRazorPages();
