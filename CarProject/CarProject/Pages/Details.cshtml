@@ -107,9 +107,18 @@
                         </div>
 
                         <div class="cta-group">
-                            <button class="btn-cta btn-cart" onclick="addToCart(@p.item.MaPhienBan, '@p.item.TenPhienBan', '@(p.item.DongXe?.TenDong ?? "")', @p.item.GiaNiemYet, '@(p.item.MauSac ?? "")', '@(p.item.DongCo ?? "")', '@(p.item.HopSo ?? "")', '@(p.item.DuongDanAnh ?? "")')">
-                                <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
-                            </button>
+                            <button class="btn-cta btn-cart" 
+    data-maphienban="@p.item.MaPhienBan"
+    data-tenphienban="@p.item.TenPhienBan"
+    data-tendong="@(p.item.DongXe?.TenDong ?? "")"
+    data-gianiemyet="@p.item.GiaNiemYet"
+    data-mausac="@(p.item.MauSac ?? "")"
+    data-dongco="@(p.item.DongCo ?? "")"
+    data-hopso="@(p.item.HopSo ?? "")"
+    data-duongdananh="@(p.item.DuongDanAnh ?? "")"
+    onclick="addToCartFromData(this)">
+    <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
+</button>
                             <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
                                 <i class="fas fa-credit-card"></i> Đặt cọc ngay
                             </a>

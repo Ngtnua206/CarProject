@@ -358,7 +358,20 @@
                     }),
                     success: function(data) {
                         if (data.success) {
-                            updateCartCount();
+window.addToCartFromData = function(btn) {
+                var data = $(btn).data();
+                window.addToCart(
+                    data.maphienban,
+                    data.tenphienban || '',
+                    data.tendong || '',
+                    data.gianiemyet || 0,
+                    data.mausac || '',
+                    data.dongco || '',
+                    data.hopso || '',
+                    data.duongdananh || ''
+                );
+            };
+            updateCartCount();
                             showToast('Đã thêm <strong>' + tenPhienBan + '</strong> vào giỏ hàng.');
                         }
                     },
