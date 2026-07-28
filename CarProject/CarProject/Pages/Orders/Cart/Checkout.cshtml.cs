@@ -73,7 +73,7 @@ public class CheckoutModel : PageModel
         }
 
         var userName = User.GetJwtUserName();
-        var groupCode = $"MGC{DateTime.Now:yyMMddHHmmss}";
+        var groupCode = $"DH{DateTime.Now:yyMMddHHmmss}";
 
         var createdDeposits = new List<int>();
         var totalXe = CartItems.Sum(c => c.SoLuong);

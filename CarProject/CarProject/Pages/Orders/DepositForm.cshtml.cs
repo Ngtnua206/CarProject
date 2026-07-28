@@ -78,7 +78,7 @@ public class DepositFormModel : PageModel
             SoDienThoai = DepositData.SoDienThoai,
             DiaChi = DepositData.DiaChi ?? "",
             GhiChu = DepositData.GhiChu ?? "",
-            MaGiaoDich = $"MGC{DateTime.Now:yyMMddHHmmss}-{DepositData.MaPhienBan}"
+            MaGiaoDich = $"DH{DateTime.Now:yyMMddHHmmss}-{DepositData.MaPhienBan}"
         };
 
         _db.DonDatCoc.Add(deposit);

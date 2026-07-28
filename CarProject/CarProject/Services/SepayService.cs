@@ -71,7 +71,7 @@ public class SepayService : ISepayService
 
     public async Task<string> GenerateTransactionCodeAsync(int maDonCoc)
     {
-        var code = $"MGC{maDonCoc:D6}{DateTime.Now:yyMMddHHmm}";
+        var code = $"DH{maDonCoc:D6}{DateTime.Now:yyMMddHHmm}";
         return await Task.FromResult(code);
     }
 
@@ -140,11 +140,11 @@ public class SepayService : ISepayService
     {
         if (string.IsNullOrEmpty(content)) return "";
 
-        var match = System.Text.RegularExpressions.Regex.Match(content, @"MGC(\d{6})");
+        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH)(\d{6})");
         if (match.Success)
             return match.Value;
 
-        match = System.Text.RegularExpressions.Regex.Match(content, @"MGC\d{6}\d{12}");
+        match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH)\d{6}\d{12}");
         if (match.Success)
             return match.Value;
 
