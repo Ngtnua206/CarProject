@@ -75,7 +75,7 @@
             <!-- Main Content -->
             <div class="col-lg-9">
                 <div class="listing-header reveal">
-                    <span class="result-count"><strong>@Model.TotalCount</strong> xe được tìm thấy</span>
+                    <span class="result-count"><strong id="carsTotalCount">@Model.TotalCount</strong> xe được tìm thấy</span>
                     <div class="sort-group">
                         <label>Sắp xếp:</label>
                         <select onchange="window.location.href='?sort='+this.value+((new URLSearchParams(window.location.search).get('brand'))?'&brand='+new URLSearchParams(window.location.search).get('brand'):'')">
@@ -95,7 +95,7 @@
                     </div>
                 }
 
-                <div class="car-grid">
+                <div class="car-grid" id="carsGrid">
                     @foreach (var d in Model.DongXeList.Select((item, idx) => new { item, idx }))
                     {
                         var delay = (d.idx % 4) * 0.08;
@@ -145,6 +145,16 @@
                         </div>
                     }
                 </div>
+
+                <!-- Client-side Pagination -->
+                @if (Model.DongXeList.Any())
+                {
+                    <div class="cars-pagination" id="carsPagination">
+                        <button class="cars-page-btn" id="carsPrevBtn" onclick="carsChangePage(-1)"><i class="fas fa-chevron-left"></i> Trước</button>
+                        <div class="cars-page-info" id="carsPageInfo"></div>
+                        <button class="cars-page-btn" id="carsNextBtn" onclick="carsChangePage(1)">Sau <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -261,6 +271,38 @@
 @section Scripts {
 <script>
 let _carsVersions = [];
+let _carsPage = 1;
+const _carsPerPage = 8;
+
+function carsInitPagination() {
+    const grid = document.getElementById('carsGrid');
+    if (!grid) return;
+    const cards = grid.querySelectorAll('.car-card-premium');
+    const total = cards.length;
+    const totalPages = Math.ceil(total / _carsPerPage);
+    if (totalPages <= 1) {
+        const pag = document.getElementById('carsPagination');
+        if (pag) pag.style.display = 'none';
+        return;
+    }
+    function showPage(page) {
+        _carsPage = Math.max(1, Math.min(page, totalPages));
+        cards.forEach((c, i) => {
+            const inPage = i >= (_carsPage - 1) * _carsPerPage && i < _carsPage * _carsPerPage;
+            c.style.display = inPage ? '' : 'none';
+        });
+        document.getElementById('carsPageInfo').textContent = 'Trang ' + _carsPage + ' / ' + totalPages;
+        document.getElementById('carsPrevBtn').style.opacity = _carsPage <= 1 ? '0.3' : '1';
+        document.getElementById('carsPrevBtn').disabled = _carsPage <= 1;
+        document.getElementById('carsNextBtn').style.opacity = _carsPage >= totalPages ? '0.3' : '1';
+        document.getElementById('carsNextBtn').disabled = _carsPage >= totalPages;
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.carsChangePage = function(dir) { showPage(_carsPage + dir); };
+    showPage(1);
+}
+
+document.addEventListener('DOMContentLoaded', carsInitPagination);
 
 /* ========== IMAGE CROP SYSTEM ========== */
 let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };

@@ -28,7 +28,9 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         HangXeList = await _db.HangXe.ToListAsync();
-        DongXeList = await _db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes).ToListAsync();
+        DongXeList = await _db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes)
+            .Where(d => d.NoiBat)
+            .ToListAsync();
         BannerList = await _db.QuangCaoBanner.OrderBy(b => b.ThuTuHienThi).ToListAsync();
         var firstBanner = BannerList.FirstOrDefault();
         BannerUrl = firstBanner?.DuongDanAnh;

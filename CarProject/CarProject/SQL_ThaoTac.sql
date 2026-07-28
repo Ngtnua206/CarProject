@@ -6,13 +6,20 @@
 
 -- ==================== 0. CẬP NHẬT SCHEMA ====================
 IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('DonDatCoc') AND name = 'MaChiNhanh')
-    ALTER TABLE DonDatCoc ADD MaChiNhanh NVARCHAR(20) NULL;
+    ALTER TABLE DonDatCoc ADD MaChiNhanh NVARCHAR(450) NULL;
+ELSE IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('DonDatCoc') AND name = 'MaChiNhanh' AND max_length = 40)
+    ALTER TABLE DonDatCoc ALTER COLUMN MaChiNhanh NVARCHAR(450) NULL;
 IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('HoaDonMuaXe') AND name = 'MaChiNhanh')
-    ALTER TABLE HoaDonMuaXe ADD MaChiNhanh NVARCHAR(20) NULL;
+    ALTER TABLE HoaDonMuaXe ADD MaChiNhanh NVARCHAR(450) NULL;
+ELSE IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('HoaDonMuaXe') AND name = 'MaChiNhanh' AND max_length = 40)
+    ALTER TABLE HoaDonMuaXe ALTER COLUMN MaChiNhanh NVARCHAR(450) NULL;
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('DongXe') AND name = 'NoiBat')
+    ALTER TABLE DongXe ADD NoiBat BIT NOT NULL DEFAULT 0;
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_DonDatCoc_ChiNhanhShowroom')
     ALTER TABLE DonDatCoc ADD CONSTRAINT FK_DonDatCoc_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HoaDonMuaXe_ChiNhanhShowroom')
     ALTER TABLE HoaDonMuaXe ADD CONSTRAINT FK_HoaDonMuaXe_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
+GO
 
 -- ==================== 1. XÓA DỮ LIỆU CŨ ====================
 DELETE FROM ThongKeTongHop_Boss;
@@ -92,80 +99,80 @@ SET IDENTITY_INSERT HangXe OFF;
 
 -- ==================== 4. THÊM DÒNG XE ====================
 SET IDENTITY_INSERT DongXe ON;
-INSERT INTO DongXe (MaDong, MaHang, TenDong, KieuDang) VALUES
+INSERT INTO DongXe (MaDong, MaHang, TenDong, KieuDang, NoiBat) VALUES
 -- Toyota (1)
-(1,  1,  N'Toyota Camry',          N'Sedan'),
-(2,  1,  N'Toyota Hilux',          N'Bán tải'),
-(3,  1,  N'Toyota Corolla Altis',  N'Sedan'),
-(4,  1,  N'Toyota Fortuner',       N'SUV'),
-(5,  1,  N'Toyota Vios',           N'Sedan'),
+(1,  1,  N'Toyota Camry',          N'Sedan',     1),
+(2,  1,  N'Toyota Hilux',          N'Bán tải',   0),
+(3,  1,  N'Toyota Corolla Altis',  N'Sedan',     0),
+(4,  1,  N'Toyota Fortuner',       N'SUV',       1),
+(5,  1,  N'Toyota Vios',           N'Sedan',     0),
 -- Honda (2)
-(6,  2,  N'Honda Civic',           N'Sedan'),
-(7,  2,  N'Honda CR-V',            N'SUV'),
-(8,  2,  N'Honda HR-V',            N'SUV'),
-(9,  2,  N'Honda Accord',          N'Sedan'),
+(6,  2,  N'Honda Civic',           N'Sedan',     1),
+(7,  2,  N'Honda CR-V',            N'SUV',       1),
+(8,  2,  N'Honda HR-V',            N'SUV',       0),
+(9,  2,  N'Honda Accord',          N'Sedan',     0),
 -- Ford (3)
-(10, 3,  N'Ford Explorer',         N'SUV'),
-(11, 3,  N'Ford Everest',          N'SUV'),
-(12, 3,  N'Ford Ranger',           N'Bán tải'),
-(13, 3,  N'Ford Territory',        N'SUV'),
+(10, 3,  N'Ford Explorer',         N'SUV',       0),
+(11, 3,  N'Ford Everest',          N'SUV',       1),
+(12, 3,  N'Ford Ranger',           N'Bán tải',   1),
+(13, 3,  N'Ford Territory',        N'SUV',       1),
 -- BMW (4)
-(14, 4,  N'BMW 3 Series',          N'Sedan'),
-(15, 4,  N'BMW 5 Series',          N'Sedan'),
-(16, 4,  N'BMW X3',                N'SUV'),
-(17, 4,  N'BMW X5',                N'SUV'),
+(14, 4,  N'BMW 3 Series',          N'Sedan',     1),
+(15, 4,  N'BMW 5 Series',          N'Sedan',     1),
+(16, 4,  N'BMW X3',                N'SUV',       1),
+(17, 4,  N'BMW X5',                N'SUV',       1),
 -- VinFast (5)
-(18, 5,  N'VinFast Lux SA',        N'SUV'),
-(19, 5,  N'VinFast Fadil',         N'Hatchback'),
-(20, 5,  N'VinFast VF e34',        N'SUV (Điện)'),
-(21, 5,  N'VinFast VF 8',          N'SUV (Điện)'),
-(22, 5,  N'VinFast VF 9',          N'SUV (Điện)'),
+(18, 5,  N'VinFast Lux SA',        N'SUV',       1),
+(19, 5,  N'VinFast Fadil',         N'Hatchback', 0),
+(20, 5,  N'VinFast VF e34',        N'SUV (Điện)',0),
+(21, 5,  N'VinFast VF 8',          N'SUV (Điện)',1),
+(22, 5,  N'VinFast VF 9',          N'SUV (Điện)',1),
 -- Mercedes-Benz (6)
-(23, 6,  N'Mercedes C-Class',      N'Sedan'),
-(24, 6,  N'Mercedes E-Class',      N'Sedan'),
-(25, 6,  N'Mercedes S-Class',      N'Sedan'),
-(26, 6,  N'Mercedes GLC',          N'SUV'),
-(27, 6,  N'Mercedes GLE',          N'SUV'),
+(23, 6,  N'Mercedes C-Class',      N'Sedan',     1),
+(24, 6,  N'Mercedes E-Class',      N'Sedan',     1),
+(25, 6,  N'Mercedes S-Class',      N'Sedan',     1),
+(26, 6,  N'Mercedes GLC',          N'SUV',       0),
+(27, 6,  N'Mercedes GLE',          N'SUV',       0),
 -- Audi (7)
-(28, 7,  N'Audi A3',               N'Sedan'),
-(29, 7,  N'Audi A4',               N'Sedan'),
-(30, 7,  N'Audi Q5',               N'SUV'),
-(31, 7,  N'Audi Q7',               N'SUV'),
+(28, 7,  N'Audi A3',               N'Sedan',     0),
+(29, 7,  N'Audi A4',               N'Sedan',     1),
+(30, 7,  N'Audi Q5',               N'SUV',       1),
+(31, 7,  N'Audi Q7',               N'SUV',       0),
 -- Lexus (8)
-(32, 8,  N'Lexus ES',              N'Sedan'),
-(33, 8,  N'Lexus RX',              N'SUV'),
-(34, 8,  N'Lexus NX',              N'SUV'),
+(32, 8,  N'Lexus ES',              N'Sedan',     1),
+(33, 8,  N'Lexus RX',              N'SUV',       1),
+(34, 8,  N'Lexus NX',              N'SUV',       0),
 -- Hyundai (9)
-(35, 9,  N'Hyundai Santa Fe',      N'SUV'),
-(36, 9,  N'Hyundai Tucson',        N'SUV'),
-(37, 9,  N'Hyundai Accent',        N'Sedan'),
-(38, 9,  N'Hyundai Creta',         N'SUV'),
+(35, 9,  N'Hyundai Santa Fe',      N'SUV',       1),
+(36, 9,  N'Hyundai Tucson',        N'SUV',       0),
+(37, 9,  N'Hyundai Accent',        N'Sedan',     0),
+(38, 9,  N'Hyundai Creta',         N'SUV',       0),
 -- Kia (10)
-(39, 10, N'Kia Sorento',           N'SUV'),
-(40, 10, N'Kia Sportage',          N'SUV'),
-(41, 10, N'Kia Cerato',            N'Sedan'),
-(42, 10, N'Kia Morning',           N'Hatchback'),
+(39, 10, N'Kia Sorento',           N'SUV',       1),
+(40, 10, N'Kia Sportage',          N'SUV',       0),
+(41, 10, N'Kia Cerato',            N'Sedan',     0),
+(42, 10, N'Kia Morning',           N'Hatchback', 0),
 -- Mazda (11)
-(43, 11, N'Mazda CX-5',            N'SUV'),
-(44, 11, N'Mazda CX-8',            N'SUV'),
-(45, 11, N'Mazda3',                N'Sedan'),
-(46, 11, N'Mazda6',                N'Sedan'),
+(43, 11, N'Mazda CX-5',            N'SUV',       1),
+(44, 11, N'Mazda CX-8',            N'SUV',       0),
+(45, 11, N'Mazda3',                N'Sedan',     0),
+(46, 11, N'Mazda6',                N'Sedan',     0),
 -- Suzuki (12)
-(47, 12, N'Suzuki Swift',          N'Hatchback'),
-(48, 12, N'Suzuki Vitara',         N'SUV'),
-(49, 12, N'Suzuki Ertiga',         N'MPV'),
+(47, 12, N'Suzuki Swift',          N'Hatchback', 0),
+(48, 12, N'Suzuki Vitara',         N'SUV',       0),
+(49, 12, N'Suzuki Ertiga',         N'MPV',       0),
 -- Mitsubishi (13)
-(50, 13, N'Mitsubishi Xpander',    N'MPV'),
-(51, 13, N'Mitsubishi Outlander',  N'SUV'),
-(52, 13, N'Mitsubishi Triton',     N'Bán tải'),
+(50, 13, N'Mitsubishi Xpander',    N'MPV',       1),
+(51, 13, N'Mitsubishi Outlander',  N'SUV',       0),
+(52, 13, N'Mitsubishi Triton',     N'Bán tải',   0),
 -- Nissan (14)
-(53, 14, N'Nissan Navara',         N'Bán tải'),
-(54, 14, N'Nissan Kicks',          N'SUV'),
-(55, 14, N'Nissan Almera',         N'Sedan'),
+(53, 14, N'Nissan Navara',         N'Bán tải',   0),
+(54, 14, N'Nissan Kicks',          N'SUV',       0),
+(55, 14, N'Nissan Almera',         N'Sedan',     0),
 -- Subaru (15)
-(56, 15, N'Subaru Forester',       N'SUV'),
-(57, 15, N'Subaru Outback',        N'SUV'),
-(58, 15, N'Subaru XV',             N'SUV');
+(56, 15, N'Subaru Forester',       N'SUV',       0),
+(57, 15, N'Subaru Outback',        N'SUV',       0),
+(58, 15, N'Subaru XV',             N'SUV',       0);
 SET IDENTITY_INSERT DongXe OFF;
 
 -- ==================== 5. THÊM PHIÊN BẢN XE ====================
@@ -345,9 +352,9 @@ VALUES ('CN06', N'Showroom Hải Phòng', N'987 Võ Nguyên Giáp, P. Vĩnh Ni�
 INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
 VALUES ('KM01', N'Giảm 50% lệ phí trước bạ', N'Áp dụng cho tất cả dòng xe', N'Phần trăm', 50, 50000000, '2024-01-01', '2024-03-31', N'Hoạt động');
 INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM02', N'Giảm ngay 20 triệu', N'Cho dòng xe Toyota Vios và Hyundai Accent', N'Số tiền', 20000000, NULL, '2026-07-01', '2026-09-30', N'Hoạt động');
+VALUES ('KM02', N'Giảm ngay 20 triệu', N'Cho dòng xe Toyota Vios và Hyundai Accent', N'Số tiền', 20000000, 20000000, '2026-07-01', '2026-09-30', N'Hoạt động');
 INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM03', N'Tặng gói phụ kiện 15 triệu', N'Cho khách đặt cọc xe Mercedes trước 30/09', N'Số tiền', 15000000, NULL, '2026-07-01', '2026-09-30', N'Hoạt động');
+VALUES ('KM03', N'Tặng gói phụ kiện 15 triệu', N'Cho khách đặt cọc xe Mercedes trước 30/09', N'Số tiền', 15000000, 15000000, '2026-07-01', '2026-09-30', N'Hoạt động');
 INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
 VALUES ('KM04', N'Giảm 10% cho xe điện VinFast', N'Áp dụng cho VF e34, VF 8, VF 9', N'Phần trăm', 10, 150000000, '2026-08-01', '2026-12-31', N'Hoạt động');
 
@@ -531,3 +538,21 @@ UNION ALL SELECT 'HoaDonMuaXe', COUNT(*) FROM HoaDonMuaXe
 UNION ALL SELECT 'ChiNhanhShowroom', COUNT(*) FROM ChiNhanhShowroom
 UNION ALL SELECT 'ThongKeTongHop_Boss', COUNT(*) FROM ThongKeTongHop_Boss
 ORDER BY Bang;
+
+
+-- ============================================
+-- PHẦN 3: VÍ DỤ CẬP NHẬT TRẠNG THÁI (CHẠY RIÊNG)
+-- ============================================
+-- Chạy 3 lệnh UPDATE này để test Quản Lý flow nhanh:
+
+-- 1. Đặt 3 lịch hẹn thành "Chờ xác nhận" để QL có thể duyệt/từ chối
+UPDATE LichHenLaiThu SET TrangThai = N'Chờ xác nhận' WHERE TrangThai IS NULL OR TrangThai = N'';
+UPDATE LichHenLaiThu SET MaChiNhanh = 'MB001' WHERE MaChiNhanh IS NULL;
+
+-- 2. Đặt 3 đơn cọc thành "Chờ xác nhận" để QL có thể duyệt/hủy
+UPDATE DonDatCoc SET TrangThaiDonHang = N'Chờ xác nhận' WHERE TrangThaiDonHang IS NULL OR TrangThaiDonHang = N'';
+UPDATE DonDatCoc SET MaChiNhanh = 'MB001' WHERE MaChiNhanh IS NULL;
+
+-- 3. Kiểm tra kết quả
+SELECT MaLichHen, MaChiNhanh, TrangThai FROM LichHenLaiThu ORDER BY MaLichHen;
+SELECT MaDonCoc, MaChiNhanh, TrangThaiDonHang FROM DonDatCoc ORDER BY MaDonCoc;

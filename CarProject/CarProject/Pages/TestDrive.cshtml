@@ -26,6 +26,13 @@
                         </div>
                     }
 
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 0.75rem 1rem; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-exclamation-circle me-1"></i> @Model.ErrorMessage
+                        </div>
+                    }
+
                     <form method="post">
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -41,12 +48,26 @@
                                 <input asp-for="Email" type="email" class="form-control" placeholder="Nhập email" />
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label">Số bằng lái xe</label>
+                                <input asp-for="SoBangLaiXe" class="form-control" required placeholder="Nhập số bằng lái" />
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label">Chọn dòng xe</label>
                                 <select asp-for="MaDong" class="form-control" required>
                                     <option value="">-- Chọn dòng xe --</option>
                                     @foreach (var d in Model.DanhSachXe)
                                     {
                                         <option value="@d.MaDong">@d.TenDong</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Chọn showroom</label>
+                                <select asp-for="MaChiNhanh" class="form-control" required>
+                                    <option value="">-- Chọn chi nhánh --</option>
+                                    @foreach (var cn in Model.DanhSachChiNhanh)
+                                    {
+                                        <option value="@cn.MaChiNhanh">@cn.TenChiNhanh</option>
                                     }
                                 </select>
                             </div>

@@ -138,7 +138,9 @@
                                 @if (userRole == "Quản Lý")
                                 {
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item admin-link" asp-page="/QuanLy/Dashboard"><i class="fas fa-chart-line me-2"></i> Dashboard quản lý</a></li>
+                                    <li><a class="dropdown-item admin-link" asp-page="/QuanLy/Dashboard"><i class="fas fa-chart-line me-2"></i> Dashboard</a></li>
+                                    <li><a class="dropdown-item admin-link" asp-page="/QuanLy/LichHen"><i class="fas fa-calendar-alt me-2"></i> Lịch hẹn</a></li>
+                                    <li><a class="dropdown-item admin-link" asp-page="/QuanLy/DonCoc"><i class="fas fa-file-invoice me-2"></i> Đơn cọc</a></li>
                                 }
                                 @if (userRole == "Admin" && adminMode != "View")
                                 {

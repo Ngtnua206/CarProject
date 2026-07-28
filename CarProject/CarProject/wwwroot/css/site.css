@@ -831,7 +831,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ============= SCROLL REVEAL ============= */
 .reveal {
-    opacity: 0;
+    opacity: 1;
     transform: translateY(35px);
     transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                 transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1001,13 +1001,47 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============= BRANDS ============= */
-.brand-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+.brand-scroll-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.brand-scroll {
+    display: flex;
     gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0.5rem 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.brand-scroll::-webkit-scrollbar { display: none; }
+
+.brand-scroll-btn {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--brand-gray);
+    color: var(--brand-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+.brand-scroll-btn:hover {
+    background: var(--brand-light-gray);
+    border-color: rgba(255,255,255,0.3);
 }
 
 .brand-item {
+    flex: 0 0 auto;
+    width: 150px;
     background: var(--brand-gray);
     border: 1px solid rgba(255,255,255,0.05);
     padding: 2rem 1rem;
@@ -1056,6 +1090,44 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 1.5rem;
+}
+
+.cars-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.cars-page-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--brand-white);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-title);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.cars-page-btn:hover:not(:disabled) {
+    border-color: var(--brand-white);
+    background: rgba(255,255,255,0.05);
+}
+.cars-page-btn:disabled { cursor: default; }
+
+.cars-page-info {
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
 }
 
 .car-card-premium {

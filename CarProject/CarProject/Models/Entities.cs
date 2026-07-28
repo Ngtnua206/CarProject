@@ -20,6 +20,7 @@ public class DongXe
     public string TenDong { get; set; }
     public string KieuDang { get; set; }
     public string? DuongDanAnh { get; set; }
+    public bool NoiBat { get; set; }
 
     [ForeignKey("MaHang")]
     public HangXe HangXe { get; set; } = null!;

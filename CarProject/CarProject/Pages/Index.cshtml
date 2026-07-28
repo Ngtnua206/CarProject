@@ -84,32 +84,36 @@
             <h2 class="section-heading text-center">Thương hiệu danh tiếng</h2>
             <p class="section-desc mx-auto text-center">Hợp tác với những nhà sản xuất ô tô hàng đầu thế giới</p>
         </div>
-        <div class="brand-grid">
-            @foreach (var brand in Model.HangXeList)
-            {
-                var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
-                <div class="brand-item reveal admin-edit-trigger" style="position:relative;">
-                    @if (isAdminView)
-                    {
-                        <div class="admin-edit-overlay start-0-override">
-                            <a href="javascript:void(0)" onclick="openBrandEditor(@brand.MaHang,'@brand.TenHang','@brand.QuocGia','@(brand.DuongDanLogo ?? "")')" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
-                            <a asp-page="/Admin/HangXe/Delete" asp-route-id="@brand.MaHang" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
+        <div class="brand-scroll-wrap">
+            <button class="brand-scroll-btn brand-scroll-left" onclick="scrollBrands(-1)"><i class="fas fa-chevron-left"></i></button>
+            <div class="brand-scroll" id="brandScroll">
+                @foreach (var brand in Model.HangXeList)
+                {
+                    var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
+                    <div class="brand-item reveal admin-edit-trigger" style="position:relative;flex:0 0 auto;">
+                        @if (isAdminView)
+                        {
+                            <div class="admin-edit-overlay start-0-override">
+                                <a href="javascript:void(0)" onclick="openBrandEditor(@brand.MaHang,'@brand.TenHang','@brand.QuocGia','@(brand.DuongDanLogo ?? "")')" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
+                                <a asp-page="/Admin/HangXe/Delete" asp-route-id="@brand.MaHang" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
+                            </div>
+                        }
+                        <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
+                            @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
+                            {
+                                <img src="@brand.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
+                            }
+                            else
+                            {
+                                @brand.TenHang[0]
+                            }
                         </div>
-                    }
-                    <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
-                        @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
-                        {
-                            <img src="@brand.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
-                        }
-                        else
-                        {
-                            @brand.TenHang[0]
-                        }
+                        <h6>@brand.TenHang</h6>
+                        <p>@brand.QuocGia</p>
                     </div>
-                    <h6>@brand.TenHang</h6>
-                    <p>@brand.QuocGia</p>
-                </div>
-            }
+                }
+            </div>
+            <button class="brand-scroll-btn brand-scroll-right" onclick="scrollBrands(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 </section>
@@ -381,6 +385,14 @@
 @section Scripts {
 <script>
 let _carVersions = [];
+let _brandScrollInterval;
+
+function scrollBrands(dir) {
+    const el = document.getElementById('brandScroll');
+    if (!el) return;
+    const amount = el.clientWidth * 0.6;
+    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+}
 
 /* ========== IMAGE CROP SYSTEM ========== */
 let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };
