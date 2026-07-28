@@ -356,22 +356,9 @@
                         hopSo: hopSo || '',
                         duongDanAnh: duongDanAnh || ''
                     }),
-                    success: function(data) {
+success: function(data) {
                         if (data.success) {
-window.addToCartFromData = function(btn) {
-                var data = $(btn).data();
-                window.addToCart(
-                    data.maphienban,
-                    data.tenphienban || '',
-                    data.tendong || '',
-                    data.gianiemyet || 0,
-                    data.mausac || '',
-                    data.dongco || '',
-                    data.hopso || '',
-                    data.duongdananh || ''
-                );
-            };
-            updateCartCount();
+                            updateCartCount();
                             showToast('Đã thêm <strong>' + tenPhienBan + '</strong> vào giỏ hàng.');
                         }
                     },
@@ -379,6 +366,19 @@ window.addToCartFromData = function(btn) {
                         showToast('Vui lòng đăng nhập để sử dụng giỏ hàng.', true);
                     }
                 });
+            };
+            window.addToCartFromData = function(btn) {
+                var $btn = $(btn);
+                window.addToCart(
+                    $btn.data('maphienban'),
+                    $btn.data('tenphienban') || '',
+                    $btn.data('tendong') || '',
+                    $btn.data('gianiemyet') || 0,
+                    $btn.data('mausac') || '',
+                    $btn.data('dongco') || '',
+                    $btn.data('hopso') || '',
+                    $btn.data('duongdananh') || ''
+                );
             };
             updateCartCount();
         });
