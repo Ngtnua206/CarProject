@@ -367,19 +367,6 @@ success: function(data) {
                     }
                 });
             };
-            window.addToCartFromData = function(btn) {
-                var $btn = $(btn);
-                window.addToCart(
-                    $btn.data('maphienban'),
-                    $btn.data('tenphienban') || '',
-                    $btn.data('tendong') || '',
-                    $btn.data('gianiemyet') || 0,
-                    $btn.data('mausac') || '',
-                    $btn.data('dongco') || '',
-                    $btn.data('hopso') || '',
-                    $btn.data('duongdananh') || ''
-                );
-            };
             updateCartCount();
         });
     </script>

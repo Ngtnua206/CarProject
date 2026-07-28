@@ -116,7 +116,7 @@
     data-dongco="@(p.item.DongCo ?? "")"
     data-hopso="@(p.item.HopSo ?? "")"
     data-duongdananh="@(p.item.DuongDanAnh ?? "")"
-    onclick="addToCartFromData(this)">
+    onclick="addToCart(parseInt(this.dataset.maphienban), this.dataset.tenphienban, this.dataset.tendong, parseInt(this.dataset.gianiemyet), this.dataset.mausac, this.dataset.dongco, this.dataset.hopso, this.dataset.duongdananh)">
     <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
 </button>
                             <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
