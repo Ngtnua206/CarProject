@@ -9,45 +9,156 @@
                 <a asp-page="Create" class="btn btn-primary">+ Thêm Đơn Cọc</a>
             </div>
 
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
             @if (Model.DonCocList.Count == 0)
             {
                 <div class="alert alert-info">Không có đơn cọc nào.</div>
             }
             else
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mã Đơn</th>
-                            <th>Khách Hàng</th>
-                            <th>Phiên Bản</th>
-                            <th>Số Tiền Cọc</th>
-                            <th>Phương Thức</th>
-                            <th>Trạng Thái ĐH</th>
-                            <th>Ngày Tạo</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var d in Model.DonCocList)
-                        {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@d.MaDonCoc</td>
-                                <td>@d.KhachHang?.TenDangNhap</td>
-                                <td>@d.PhienBan?.TenPhienBan</td>
-                                <td>@d.SoTienCoc.ToString("N0")</td>
-                                <td>@d.PhuongThucThanhToan</td>
-                                <td>@d.TrangThaiDonHang</td>
-                                <td>@d.NgayTaoDon.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
-                                </td>
+                                <th>Mã</th>
+                                <th>Khách Hàng</th>
+                                <th>Xe</th>
+                                <th>Showroom</th>
+                                <th>Tiền Cọc</th>
+                                <th>Thanh Toán</th>
+                                <th>Trạng Thái</th>
+                                <th>Ngày Tạo</th>
+                                <th>Hành động</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.DonCocList)
+                            {
+                                <tr>
+                                    <td>#@d.MaDonCoc</td>
+                                    <td>
+                                        <strong>@d.HoTen</strong><br>
+                                        <small>@d.SoDienThoai</small>
+                                    </td>
+                                    <td>@d.PhienBan?.TenPhienBan <br><small>@d.PhienBan?.DongXe?.TenDong</small></td>
+                                    <td>@d.ChiNhanh?.TenChiNhanh ?? "—"</td>
+                                    <td>@d.SoTienCoc.ToString("N0")đ</td>
+                                    <td>
+                                        <span class="badge @(d.TrangThaiThanhToan == "Đã thanh toán" ? "bg-success" : "bg-warning")">
+                                            @d.TrangThaiThanhToan
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @switch (d.TrangThaiDonHang)
+                                        {
+                                            case "Chờ xử lý":
+                                                <span class="badge bg-info">Chờ xử lý</span>
+                                                break;
+                                            case "Đã duyệt":
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                                break;
+                                            case "Đã hủy":
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                                break;
+                                            case "Đã xác nhận":
+                                                <span class="badge bg-primary">Đã xác nhận</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@d.TrangThaiDonHang</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@d.NgayTaoDon.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (d.TrangThaiDonHang == "Chờ xử lý" && d.TrangThaiThanhToan == "Đã thanh toán")
+                                        {
+                                            <button class="btn btn-success btn-sm" onclick="openApproveModal(@d.MaDonCoc, '@d.HoTen', '@d.PhienBan?.TenPhienBan')">
+                                                <i class="fas fa-check"></i> Duyệt
+                                            </button>
+                                            <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc?');">
+                                                <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Từ chối</button>
+                                            </form>
+                                        }
+                                        <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
+                                        <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>
 </div>
+
+<!-- Modal duyệt đơn: chuyển showroom + gửi lịch hẹn -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Approve">
+                <div class="modal-header">
+                    <h5 class="modal-title">Duyệt đơn cọc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="maDonCoc" id="approveMaDonCoc" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Khách hàng</label>
+                        <input type="text" class="form-control" id="approveHoTen" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Xe</label>
+                        <input type="text" class="form-control" id="approveXe" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chuyển đến showroom</label>
+                        <select name="maChiNhanhMoi" class="form-control">
+                            <option value="">Giữ nguyên showroom</option>
+                            @foreach (var cn in Model.ChiNhanhList)
+                            {
+                                <option value="@cn.MaChiNhanh">@cn.TenChiNhanh</option>
+                            }
+                        </select>
+                        <small class="text-muted">Có thể chuyển xe sang showroom khác</small>
+                    </div>
+                    <hr>
+                    <h6>Tạo lịch hẹn (tùy chọn)</h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày hẹn</label>
+                            <input type="date" name="lichHenNgay" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giờ hẹn</label>
+                            <input type="time" name="lichHenGio" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Xác nhận duyệt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openApproveModal(maDonCoc, hoTen, tenXe) {
+        document.getElementById('approveMaDonCoc').value = maDonCoc;
+        document.getElementById('approveHoTen').value = hoTen;
+        document.getElementById('approveXe').value = tenXe;
+        new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+</script>

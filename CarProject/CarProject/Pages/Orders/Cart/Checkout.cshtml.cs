@@ -25,8 +25,11 @@ public class CheckoutModel : PageModel
     public string PhuongThucThanhToan { get; set; } = "";
     [BindProperty]
     public string? GhiChu { get; set; }
+    [BindProperty]
+    public string MaChiNhanh { get; set; } = "";
 
     public List<CartItem> CartItems { get; set; } = new();
+    public List<ChiNhanhShowroom> DanhSachChiNhanh { get; set; } = new();
     public decimal TotalDeposit { get; set; }
     public string? ErrorMessage { get; set; }
 
@@ -50,6 +53,7 @@ public class CheckoutModel : PageModel
             return RedirectToPage("/Orders/Cart/Index");
         }
 
+        await LoadShowrooms();
         TotalDeposit = await _cart.GetTotalDepositAsync();
         return Page();
     }
@@ -69,6 +73,14 @@ public class CheckoutModel : PageModel
         if (string.IsNullOrEmpty(HoTen) || string.IsNullOrEmpty(SoDienThoai) || string.IsNullOrEmpty(DiaChi))
         {
             ErrorMessage = "Vui lòng điền đầy đủ thông tin.";
+            await LoadShowrooms();
+            return Page();
+        }
+
+        if (string.IsNullOrEmpty(MaChiNhanh))
+        {
+            ErrorMessage = "Vui lòng chọn showroom nhận xe.";
+            await LoadShowrooms();
             return Page();
         }
 
@@ -87,6 +99,7 @@ public class CheckoutModel : PageModel
                 {
                     MaKhachHang = userName ?? "",
                     MaPhienBan = item.MaPhienBan,
+                    MaChiNhanh = MaChiNhanh,
                     SoTienCoc = item.SoTienCoc,
                     PhuongThucThanhToan = PhuongThucThanhToan,
                     TrangThaiThanhToan = "Chưa thanh toán",
@@ -116,22 +129,23 @@ public class CheckoutModel : PageModel
         }
 
         await _notif.SendToRoleAsync("Admin", "Đơn cọc giỏ hàng mới",
-            $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ",
+            $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ tại showroom",
             $"/Admin/DonCoc/Index");
 
-        var showroom = await _db.ChiNhanhShowroom
-            .Where(c => c.MaQuanLy != null && c.TrangThai == "Active")
+        var showroomManager = await _db.ChiNhanhShowroom
+            .Where(c => c.MaChiNhanh == MaChiNhanh && c.MaQuanLy != null)
+            .Select(c => c.MaQuanLy)
             .FirstOrDefaultAsync();
 
-        if (showroom != null)
+        if (showroomManager != null)
         {
-            await _notif.SendAsync(showroom.MaQuanLy, "Đơn cọc giỏ hàng mới",
-                $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ",
-                $"/QuanLy/Dashboard");
+            await _notif.SendAsync(showroomManager, "Đơn cọc giỏ hàng mới",
+                $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ tại chi nhánh của bạn",
+                $"/QuanLy/DonCoc");
         }
 
         await _log.LogAsync("Đặt cọc giỏ hàng",
-            $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ");
+            $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Showroom: {MaChiNhanh}");
 
         await _cart.ClearCartAsync();
 
@@ -142,9 +156,17 @@ public class CheckoutModel : PageModel
             soLuongXe = totalXe,
             totalDeposit = TotalDeposit,
             maDonCocs = createdDeposits,
-            phuongThucThanhToan = PhuongThucThanhToan
+            phuongThucThanhToan = PhuongThucThanhToan,
+            maChiNhanh = MaChiNhanh
         });
 
         return RedirectToPage("/Orders/Cart/CheckoutResult");
+    }
+
+    private async Task LoadShowrooms()
+    {
+        DanhSachChiNhanh = await _db.ChiNhanhShowroom
+            .Where(c => c.TrangThai == "Active")
+            .ToListAsync();
     }
 }

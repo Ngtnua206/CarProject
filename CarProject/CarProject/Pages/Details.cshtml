@@ -107,14 +107,14 @@
                         </div>
 
                         <div class="cta-group">
+                            <button class="btn-cta btn-cart" onclick="addToCart(@p.item.MaPhienBan, '@p.item.TenPhienBan', '@(p.item.DongXe?.TenDong ?? "")', @p.item.GiaNiemYet, '@(p.item.MauSac ?? "")', '@(p.item.DongCo ?? "")', '@(p.item.HopSo ?? "")', '@(p.item.DuongDanAnh ?? "")')">
+                                <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
+                            </button>
                             <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
                                 <i class="fas fa-credit-card"></i> Đặt cọc ngay
                             </a>
                             <a asp-page="/TestDrive" class="btn-cta btn-testdrive">
                                 <i class="fas fa-calendar-check"></i> Đăng ký lái thử
-                            </a>
-                            <a href="#" class="btn-cta btn-zalo-cta">
-                                <i class="fas fa-comment-dots"></i> Tư vấn Zalo
                             </a>
                         </div>
                     </div>
