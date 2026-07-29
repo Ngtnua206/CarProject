@@ -600,6 +600,12 @@ try
         catch { return Results.StatusCode(502); }
     });
 
+    app.MapGet("/api/check-payment", async (CarProject.Data.AppDbContext db, int maDonCoc) =>
+    {
+        var don = await db.DonDatCoc.FindAsync(maDonCoc);
+        return Results.Json(new { paid = don?.TrangThaiThanhToan == "Đã thanh toán" });
+    });
+
     app.MapPost("/api/sepay-webhook", async (HttpContext ctx, CarProject.Services.ISepayService sepay, CarProject.Data.AppDbContext db, CarProject.Services.IActivityLogService log) =>
     {
         try
@@ -637,6 +643,23 @@ try
                 var notifService = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
                 await notifService.SendAsync(donCoc.MaKhachHang, "Thanh toán thành công",
                     $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
+            }
+
+            // Gửi thông báo cho Admin và Quản Lý sau khi thanh toán thành công
+            var notifSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
+            await notifSvc.SendToRoleAsync("Admin", "Thanh toán đơn cọc",
+                $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán thành công.",
+                $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
+
+            if (!string.IsNullOrEmpty(donCoc.MaChiNhanh))
+            {
+                var chiNhanh = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == donCoc.MaChiNhanh);
+                if (chiNhanh?.MaQuanLy != null)
+                {
+                    await notifSvc.SendAsync(chiNhanh.MaQuanLy, "Thanh toán đơn cọc",
+                        $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán tại chi nhánh của bạn.",
+                        $"/QuanLy/DonCoc");
+                }
             }
 
             await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");

@@ -157,14 +157,57 @@ else
                         }
                         @foreach (var d in Model.DonDatCocList)
                         {
+                            var tenXe = $"{d.PhienBan?.DongXe?.TenDong ?? ""} {d.PhienBan?.TenPhienBan ?? ""}".Trim();
+                            var giaNiemYet = d.PhienBan?.GiaNiemYet ?? 0;
+                            var giaNiemYetStr = giaNiemYet >= 1_000_000_000
+                                ? $"{giaNiemYet / 1_000_000_000:N1} tỷ VNĐ"
+                                : $"{giaNiemYet / 1_000_000:N0} triệu VNĐ";
+                            var soTienCocStr = d.SoTienCoc >= 1_000_000_000
+                                ? $"{d.SoTienCoc / 1_000_000_000:N1} tỷ VNĐ"
+                                : $"{d.SoTienCoc / 1_000_000:N0} triệu VNĐ";
                             <div style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white);">@d.PhienBan?.TenPhienBan</span>
-                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@d.NgayTaoDon.ToString("dd/MM/yyyy")</span>
+                                    <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white); font-size:0.82rem;">@tenXe</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@d.NgayTaoDon.ToString("dd/MM/yyyy HH:mm")</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.82rem;">
-                                    <span style="color: var(--text-muted);">@d.SoTienCoc.ToString("N0") VNĐ</span>
-                                    <span style="color: var(--brand-silver);">@d.TrangThaiDonHang</span>
+                                <div style="display: flex; justify-content: space-between; margin-top: 0.3rem; font-size: 0.75rem;">
+                                    <span style="color: var(--text-muted);">Tiền cọc: <strong style="color: var(--brand-gold);">@soTienCocStr</strong></span>
+                                    <span style="color: var(--text-muted);">Giá gốc: <strong style="color: var(--brand-white);">@giaNiemYetStr</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; font-size: 0.75rem;">
+                                    <span style="color: var(--text-faint);">
+                                        <i class="fas fa-map-marker-alt me-1" style="color: var(--brand-gold);"></i> @(d.ChiNhanh?.TenChiNhanh ?? "Chưa xác định")
+                                    </span>
+                                    <span>
+                                        @switch (d.TrangThaiDonHang)
+                                        {
+                                            case "Chờ xử lý":
+                                            case "Chờ xác nhận":
+                                                <span class="badge bg-warning text-dark">@d.TrangThaiDonHang</span>
+                                                break;
+                                            case "Đã duyệt":
+                                            case "Đã xác nhận":
+                                                <span class="badge bg-info">@d.TrangThaiDonHang</span>
+                                                break;
+                                            case "Đã thanh toán":
+                                                <span class="badge bg-success">@d.TrangThaiDonHang</span>
+                                                break;
+                                            case "Hoàn tất":
+                                                <span class="badge bg-primary">@d.TrangThaiDonHang</span>
+                                                break;
+                                            case "Đã từ chối":
+                                                <span class="badge bg-danger">@d.TrangThaiDonHang</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@d.TrangThaiDonHang</span>
+                                                break;
+                                        }
+                                    </span>
+                                </div>
+                                <div style="margin-top: 0.5rem; text-align: right;">
+                                    <a asp-page="/Orders/DepositResult" asp-route-maDonCoc="@d.MaDonCoc" class="btn-premium btn-premium-outline" style="padding: 0.25rem 0.8rem; font-size: 0.65rem; display: inline-flex;">
+                                        <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                    </a>
                                 </div>
                             </div>
                         }

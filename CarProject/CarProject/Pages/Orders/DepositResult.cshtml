@@ -134,22 +134,6 @@
             </div>
         </div>
 
-        @if (Model.ShowQr)
-        {
-            <button class="btn-premium btn-premium-solid" style="justify-content: center; padding: 0.7rem; margin-top: 0.5rem;" onclick="showQrModal()">
-                <i class="fas fa-qrcode"></i> Quét QR thanh toán 10.000đ test
-            </button>
-        }
-        else
-        {
-            <div style="background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.85rem;">
-                <i class="fas fa-exclamation-triangle me-1" style="color: var(--brand-gold);"></i>
-                <span style="color: var(--text-soft);">
-                    Chuyển khoản theo thông tin bên trên. Hệ thống sẽ tự động xác nhận sau khi nhận được tiền.
-                </span>
-            </div>
-        }
-
         <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
             <a asp-page="/Profile" class="btn-premium btn-premium-solid" style="justify-content: center; padding: 0.7rem;">
                 <i class="fas fa-user"></i> Xem đơn của tôi
@@ -160,35 +144,3 @@
         </div>
     </div>
 </div>
-
-@if (Model.ShowQr)
-{
-    <div class="modal fade" id="qrModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content" style="background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title" style="color: var(--brand-white);"><i class="fas fa-qrcode me-2" style="color: var(--brand-gold);"></i> QR thanh toán 10.000đ</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center pb-4">
-                    <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1rem;">
-                        Quét mã QR bên dưới để thanh toán <strong>10.000đ</strong> (test)
-                    </p>
-                    <img src="@Model.QrImageUrl" alt="QR thanh toán" style="max-width: 100%; border-radius: 12px; border: 2px solid rgba(255,255,255,0.08);" />
-                    <p style="color: var(--text-faint); font-size: 0.75rem; margin-top: 0.8rem;">
-                        Nội dung CK: <strong style="font-family: monospace; color: var(--brand-gold);">@Model.TransferContent</strong>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            new bootstrap.Modal(document.getElementById('qrModal')).show();
-        });
-        function showQrModal() {
-            new bootstrap.Modal(document.getElementById('qrModal')).show();
-        }
-    </script>
-}

@@ -30,6 +30,12 @@ public class CheckoutModel : PageModel
     [BindProperty]
     public string MaChiNhanh { get; set; } = "";
 
+    [BindProperty]
+    public Dictionary<int, int> QuantityInput { get; set; } = new();
+
+    [BindProperty(Name = "_ajax")]
+    public bool IsAjaxSubmit { get; set; }
+
     public List<CartItem> CartItems { get; set; } = new();
     public List<ChiNhanhShowroom> DanhSachChiNhanh { get; set; } = new();
     public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
@@ -59,6 +65,7 @@ public class CheckoutModel : PageModel
         await LoadShowrooms();
         await LoadTonKhoAsync();
         TotalDeposit = await _cart.GetTotalDepositAsync();
+        QuantityInput = CartItems.ToDictionary(c => c.MaPhienBan, c => c.SoLuong);
         return Page();
     }
 
@@ -92,7 +99,17 @@ public class CheckoutModel : PageModel
         var userName = User.GetJwtUserName();
         var groupCode = $"MLC{DateTime.Now:yyMMddHHmmss}";
 
+        // Áp dụng số lượng người dùng đã chọn
+        foreach (var item in CartItems)
+        {
+            if (QuantityInput.TryGetValue(item.MaPhienBan, out var qty) && qty > 0 && qty <= item.SoLuong)
+            {
+                item.SoLuong = qty;
+            }
+        }
+
         // Kiểm tra tồn kho trước khi đặt cọc
+        var reservedStatuses = new[] { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
         foreach (var item in CartItems)
         {
             var phienBan = await _db.PhienBanXe.FindAsync(item.MaPhienBan);
@@ -102,11 +119,25 @@ public class CheckoutModel : PageModel
                 await LoadShowrooms();
                 return Page();
             }
-            // Chỉ tính xe đã đặt cọc thành công (đã thanh toán) là đã giữ
+
+            // Tính số xe đã đặt cọc (mọi trạng thái trừ Đã từ chối)
             var reservedQty = await _db.DonDatCoc
                 .CountAsync(d => d.MaPhienBan == item.MaPhienBan
-                    && (d.TrangThaiDonHang == "Chờ xác nhận" || d.TrangThaiDonHang == "Đã xác nhận"));
-            var available = phienBan.SoLuongTrongKho - reservedQty;
+                    && reservedStatuses.Contains(d.TrangThaiDonHang ?? ""));
+
+            // Kiểm tra theo showroom nếu có chọn
+            int available;
+            if (!string.IsNullOrEmpty(MaChiNhanh))
+            {
+                var tonKho = await _db.TonKhoTheoChiNhanh
+                    .FirstOrDefaultAsync(t => t.MaPhienBan == item.MaPhienBan && t.MaChiNhanh == MaChiNhanh);
+                available = (tonKho?.SoLuong ?? 0) - reservedQty;
+            }
+            else
+            {
+                available = phienBan.SoLuongTrongKho - reservedQty;
+            }
+
             if (item.SoLuong > available)
             {
                 ErrorMessage = $"Số lượng xe \"{item.TenPhienBan}\" trong kho không đủ. Hiện chỉ còn {available} xe.";
@@ -149,48 +180,32 @@ public class CheckoutModel : PageModel
 
         var tenXeStr = string.Join(", ", tenXeList.Distinct());
 
-        if (userName != null)
-        {
-            var firstMaDonCoc = createdDeposits.FirstOrDefault();
-            await _notif.SendAsync(userName, "Đặt cọc giỏ hàng thành công",
-                $"{totalXe} xe - Tổng cọc: {TotalDeposit:N0} VNĐ. Mã đơn: #{string.Join(", #", createdDeposits)}",
-                $"/Orders/DepositResult?maDonCoc={firstMaDonCoc}");
-        }
-
-        await _notif.SendToRoleAsync("Admin", "Đơn cọc giỏ hàng mới",
-            $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ tại showroom",
-            $"/Admin/DonCoc/Index");
-
-        var showroomManager = await _db.ChiNhanhShowroom
-            .Where(c => c.MaChiNhanh == MaChiNhanh && c.MaQuanLy != null)
-            .Select(c => c.MaQuanLy)
-            .FirstOrDefaultAsync();
-
-        if (showroomManager != null)
-        {
-            await _notif.SendAsync(showroomManager, "Đơn cọc giỏ hàng mới",
-                $"{HoTen} đặt cọc {totalXe} xe - {TotalDeposit:N0} VNĐ tại chi nhánh của bạn",
-                $"/QuanLy/DonCoc");
-        }
-
         await _log.LogAsync("Đặt cọc giỏ hàng",
             $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Showroom: {MaChiNhanh}");
 
         await _cart.ClearCartAsync();
 
-        TempData["CartCheckoutResult"] = JsonSerializer.Serialize(new
+        if (IsAjaxSubmit)
         {
-            hoTen = HoTen,
-            soDienThoai = SoDienThoai,
-            soLuongXe = totalXe,
-            totalDeposit = TotalDeposit,
-            maDonCocs = createdDeposits,
-            phuongThucThanhToan = PhuongThucThanhToan,
-            maChiNhanh = MaChiNhanh,
-            maGiaoDich = groupCode
-        });
+            var first = createdDeposits.FirstOrDefault();
+            var sepay = HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<CarProject.Services.SepaySettings>>();
+            var s = sepay.Value;
+            var bin = "970436";
+            var qrUrl = $"https://img.vietqr.io/image/{bin}-{s.BankNumber}-compact2.jpg?amount=10000&addInfo={Uri.EscapeDataString(groupCode)}&accountName={Uri.EscapeDataString(s.AccountName)}";
+            return new JsonResult(new
+            {
+                success = true,
+                maDonCoc = first,
+                maGiaoDich = groupCode,
+                soTienCoc = TotalDeposit,
+                bankName = $"{s.BankAccount} ({s.BankName})",
+                bankNumber = s.BankNumber,
+                accountName = s.AccountName,
+                qrUrl
+            });
+        }
 
-        return RedirectToPage("/Orders/Cart/CheckoutResult");
+        return RedirectToPage("/Orders/Payment", new { maDonCoc = createdDeposits.FirstOrDefault() });
     }
 
     private async Task LoadShowrooms()

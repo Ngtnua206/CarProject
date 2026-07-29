@@ -24,6 +24,9 @@ public class DepositFormModel : PageModel
     [BindProperty]
     public DepositRequest DepositData { get; set; }
 
+    [BindProperty(Name = "_ajax")]
+    public bool IsAjaxSubmit { get; set; }
+
     public DepositFormModel(AppDbContext db, IActivityLogService log, INotificationService notif,
         IOptions<SepaySettings> sepay)
     {
@@ -72,6 +75,18 @@ public class DepositFormModel : PageModel
         if (PhienBan == null)
             return NotFound();
 
+        // Kiểm tra tồn kho
+        var reservedStatuses = new[] { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
+        var reservedQty = await _db.DonDatCoc
+            .CountAsync(d => d.MaPhienBan == DepositData.MaPhienBan
+                && reservedStatuses.Contains(d.TrangThaiDonHang ?? ""));
+        var available = PhienBan.SoLuongTrongKho - reservedQty;
+        if (available <= 0)
+        {
+            ModelState.AddModelError("", "Xe này đã hết hàng. Vui lòng chọn xe khác.");
+            return Page();
+        }
+
         var deposit = new DonDatCoc
         {
             MaKhachHang = User.GetJwtUserName() ?? "",
@@ -92,25 +107,6 @@ public class DepositFormModel : PageModel
         await _db.SaveChangesAsync();
 
         var tenXe = $"{PhienBan.DongXe?.TenDong ?? ""} {PhienBan.TenPhienBan}".Trim();
-
-        await _notif.SendAsync(deposit.MaKhachHang, "Đặt cọc thành công",
-            $"Xe {tenXe} - {DepositData.SoTienCoc:N0} VNĐ. Mã đơn: #{deposit.MaDonCoc}",
-            $"/Orders/DepositResult?maDonCoc={deposit.MaDonCoc}");
-
-        await _notif.SendToRoleAsync("Admin", "Đơn cọc mới",
-            $"{DepositData.HoTen} đặt cọc {tenXe} - {DepositData.SoTienCoc:N0} VNĐ",
-            $"/Admin/DonCoc/Edit?maDonCoc={deposit.MaDonCoc}");
-
-        var showroom = await _db.ChiNhanhShowroom
-            .Where(c => c.MaQuanLy != null && c.TrangThai == "Active")
-            .FirstOrDefaultAsync();
-
-        if (showroom != null)
-        {
-            await _notif.SendAsync(showroom.MaQuanLy, "Đơn cọc mới",
-                $"{DepositData.HoTen} đặt cọc {tenXe} - {DepositData.SoTienCoc:N0} VNĐ",
-                $"/QuanLy/Dashboard");
-        }
 
         await _log.LogAsync("Gửi đơn đặt cọc",
             $"{DepositData.HoTen} - {DepositData.SoDienThoai} - {tenXe} - {DepositData.SoTienCoc:N0} VNĐ");
@@ -136,7 +132,25 @@ public class DepositFormModel : PageModel
         };
 
         TempData["DepositResult"] = JsonSerializer.Serialize(result);
-        return RedirectToPage("/Orders/DepositResult");
+
+        if (IsAjaxSubmit)
+        {
+            var bin = "970436";
+            var qrUrl = $"https://img.vietqr.io/image/{bin}-{_sepay.BankNumber}-compact2.jpg?amount=10000&addInfo={Uri.EscapeDataString(deposit.MaGiaoDich ?? "")}&accountName={Uri.EscapeDataString(_sepay.AccountName)}";
+            return new JsonResult(new
+            {
+                success = true,
+                maDonCoc = deposit.MaDonCoc,
+                maGiaoDich = deposit.MaGiaoDich,
+                soTienCoc = deposit.SoTienCoc,
+                bankName = $"{_sepay.BankAccount} ({_sepay.BankName})",
+                bankNumber = _sepay.BankNumber,
+                accountName = _sepay.AccountName,
+                qrUrl
+            });
+        }
+
+        return RedirectToPage("/Orders/Payment", new { maDonCoc = deposit.MaDonCoc });
     }
 
     public class DepositRequest
