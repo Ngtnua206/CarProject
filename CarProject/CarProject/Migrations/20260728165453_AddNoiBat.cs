@@ -170,11 +170,7 @@ namespace CarProject.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AddColumn<string>(
-                name: "MaChiNhanh",
-                table: "HoaDonMuaXe",
-                type: "nvarchar(450)",
-                nullable: true);
+            // MaChiNhanh columns already exist in HoaDonMuaXe and DonDatCoc (added via SQL script)
 
             migrationBuilder.AddColumn<bool>(
                 name: "NoiBat",
@@ -271,11 +267,7 @@ namespace CarProject.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AddColumn<string>(
-                name: "MaChiNhanh",
-                table: "DonDatCoc",
-                type: "nvarchar(450)",
-                nullable: true);
+            // MaChiNhanh column already exists in DonDatCoc (added via SQL script)
 
             migrationBuilder.AlterColumn<string>(
                 name: "MaQuanLy",
@@ -329,17 +321,13 @@ namespace CarProject.Migrations
                 name: "IX_DonDatCoc_MaChiNhanh",
                 table: "DonDatCoc");
 
-            migrationBuilder.DropColumn(
-                name: "MaChiNhanh",
-                table: "HoaDonMuaXe");
+            // MaChiNhanh columns not dropped (existed before migration)
 
             migrationBuilder.DropColumn(
                 name: "NoiBat",
                 table: "DongXe");
 
-            migrationBuilder.DropColumn(
-                name: "MaChiNhanh",
-                table: "DonDatCoc");
+            // MaChiNhanh column not dropped (existed before migration)
 
             migrationBuilder.AlterColumn<string>(
                 name: "DuongDan",
