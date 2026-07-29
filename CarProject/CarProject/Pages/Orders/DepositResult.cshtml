@@ -45,18 +45,74 @@
             Cảm ơn <strong>@Model.HoTen</strong>! Vui lòng chuyển khoản để hoàn tất đặt cọc.
         </p>
 
-        <div class="bank-card">
-            <div class="row-line">
-                <span class="label">Đơn cọc</span>
-                <span class="value">#@Model.MaDonCoc</span>
-            </div>
+        <div class="bank-card" style="text-align: left;">
+            <h6 style="color: var(--brand-gold); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.5rem;">
+                <i class="fas fa-car me-1"></i> Thông tin xe
+            </h6>
             <div class="row-line">
                 <span class="label">Phiên bản</span>
                 <span class="value">@Model.TenPhienBan</span>
             </div>
             <div class="row-line">
-                <span class="label">Số tiền</span>
+                <span class="label">Giá niêm yết</span>
+                <span class="value" style="color: var(--brand-gold);">@Model.GiaNiemYetStr</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Động cơ</span>
+                <span class="value">@Model.DongCo</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Hộp số</span>
+                <span class="value">@Model.HopSo</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Màu sắc</span>
+                <span class="value">@Model.MauSac</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Nhiên liệu</span>
+                <span class="value">@Model.LoaiNhietLieu</span>
+            </div>
+
+            <h6 style="color: var(--brand-gold); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin: 1rem 0 0.5rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.5rem;">
+                <i class="fas fa-credit-card me-1"></i> Thông tin đặt cọc
+            </h6>
+            <div class="row-line">
+                <span class="label">Đơn cọc</span>
+                <span class="value">#@Model.MaDonCoc</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Số tiền đặt cọc</span>
                 <span class="value" style="color: var(--brand-gold); font-size: 1.1rem;">@Model.SoTienCocStr</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Trạng thái</span>
+                <span class="value">
+                    @if (Model.TrangThaiDonHang == "Chờ xác nhận")
+                    {
+                        <span class="badge bg-warning text-dark">@Model.TrangThaiDonHang</span>
+                    }
+                    else if (Model.TrangThaiDonHang == "Đã duyệt")
+                    {
+                        <span class="badge bg-info">@Model.TrangThaiDonHang</span>
+                    }
+                    else if (Model.TrangThaiDonHang == "Đã thanh toán")
+                    {
+                        <span class="badge bg-success">@Model.TrangThaiDonHang</span>
+                    }
+                    else if (Model.TrangThaiDonHang == "Đã từ chối")
+                    {
+                        <span class="badge bg-danger">@Model.TrangThaiDonHang</span>
+                    }
+                    else if (Model.TrangThaiDonHang == "Hoàn tất")
+                    {
+                        <span class="badge bg-primary">@Model.TrangThaiDonHang</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@Model.TrangThaiDonHang</span>
+                    }
+                </span>
             </div>
             <div class="row-line">
                 <span class="label">Ngân hàng</span>

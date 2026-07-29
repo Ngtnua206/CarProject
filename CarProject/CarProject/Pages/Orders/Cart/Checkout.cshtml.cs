@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.Text.Json;
 
 namespace CarProject.Pages.Orders.Cart;
 
+[Authorize]
 public class CheckoutModel : PageModel
 {
     private readonly AppDbContext _db;
@@ -149,9 +151,10 @@ public class CheckoutModel : PageModel
 
         if (userName != null)
         {
+            var firstMaDonCoc = createdDeposits.FirstOrDefault();
             await _notif.SendAsync(userName, "Đặt cọc giỏ hàng thành công",
                 $"{totalXe} xe - Tổng cọc: {TotalDeposit:N0} VNĐ. Mã đơn: #{string.Join(", #", createdDeposits)}",
-                $"/Orders/Cart/CheckoutResult");
+                $"/Orders/DepositResult?maDonCoc={firstMaDonCoc}");
         }
 
         await _notif.SendToRoleAsync("Admin", "Đơn cọc giỏ hàng mới",
@@ -192,8 +195,17 @@ public class CheckoutModel : PageModel
 
     private async Task LoadShowrooms()
     {
+        var maPhienBans = CartItems.Select(c => c.MaPhienBan).ToList();
+
+        var showroomCoTonKho = await _db.TonKhoTheoChiNhanh
+            .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
+            .Select(t => t.MaChiNhanh)
+            .Distinct()
+            .ToListAsync();
+
         DanhSachChiNhanh = await _db.ChiNhanhShowroom
-            .Where(c => c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
+            .Where(c => (c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
+                && showroomCoTonKho.Contains(c.MaChiNhanh))
             .ToListAsync();
     }
 
@@ -202,7 +214,7 @@ public class CheckoutModel : PageModel
         var maPhienBans = CartItems.Select(c => c.MaPhienBan).ToList();
         var tonKhoList = await _db.TonKhoTheoChiNhanh
             .Include(t => t.ChiNhanh)
-            .Where(t => maPhienBans.Contains(t.MaPhienBan))
+            .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
             .ToListAsync();
         TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
             .ToDictionary(g => g.Key, g => g.ToList());

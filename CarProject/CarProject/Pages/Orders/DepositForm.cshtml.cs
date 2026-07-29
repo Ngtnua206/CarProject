@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using System.Text.Json;
 
 namespace CarProject.Pages.Orders;
 
+[Authorize]
 public class DepositFormModel : PageModel
 {
     private readonly AppDbContext _db;
@@ -124,7 +126,13 @@ public class DepositFormModel : PageModel
             accountName = _sepay.AccountName,
             transferContent = deposit.MaGiaoDich,
             tenPhienBan = tenXe,
-            hoTen = DepositData.HoTen
+            hoTen = DepositData.HoTen,
+            soDienThoai = DepositData.SoDienThoai ?? "",
+            dongCo = PhienBan?.DongCo ?? "",
+            hopSo = PhienBan?.HopSo ?? "",
+            mauSac = PhienBan?.MauSac ?? "",
+            loaiNhietLieu = PhienBan?.LoaiNhietLieu ?? "",
+            giaNiemYet = PhienBan?.GiaNiemYet ?? 0
         };
 
         TempData["DepositResult"] = JsonSerializer.Serialize(result);

@@ -15,42 +15,44 @@
             }
             else
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mã HĐ</th>
-                            <th>Đơn cọc</th>
-                            <th>Khách hàng</th>
-                            <th>Phiên bản</th>
-                            <th>Chi nhánh</th>
-                            <th>Giá xe</th>
-                            <th>Tổng tiền</th>
-                            <th>Ngày xuất</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var hd in Model.HoaDonList)
-                        {
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@hd.MaHoaDon</td>
-                                <td>@hd.MaDonCoc</td>
-                                <td>@(hd.DonDatCoc?.MaKhachHang)</td>
-                                <td>@hd.MaPhienBan</td>
-                                <td>@(hd.ChiNhanh?.TenChiNhanh ?? "—")</td>
-                                <td>@hd.GiaXeThucTe.ToString("N0")</td>
-                                <td>@hd.TongTienPhaiTra.ToString("N0")</td>
-                                <td>@hd.NgayXuatHoaDon.ToString("dd/MM/yyyy")</td>
-                                <td>@hd.TrangThaiHoaDon</td>
-                                <td>
-                                    <a asp-page="Edit" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-page="Delete" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
-                                </td>
+                                <th>Mã HĐ</th>
+                                <th>Đơn cọc</th>
+                                <th>Khách hàng</th>
+                                <th>Phiên bản</th>
+                                <th>Chi nhánh</th>
+                                <th>Giá xe</th>
+                                <th>Tổng tiền</th>
+                                <th>Ngày xuất</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var hd in Model.HoaDonList)
+                            {
+                                <tr>
+                                    <td>@hd.MaHoaDon</td>
+                                    <td>@hd.MaDonCoc</td>
+                                    <td>@(hd.DonDatCoc?.MaKhachHang)</td>
+                                    <td>@hd.MaPhienBan</td>
+                                    <td>@(hd.ChiNhanh?.TenChiNhanh ?? "—")</td>
+                                    <td>@hd.GiaXeThucTe.ToString("N0")</td>
+                                    <td>@hd.TongTienPhaiTra.ToString("N0")</td>
+                                    <td>@hd.NgayXuatHoaDon.ToString("dd/MM/yyyy")</td>
+                                    <td>@hd.TrangThaiHoaDon</td>
+                                    <td>
+                                        <a asp-page="Edit" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-warning">Sửa</a>
+                                        <a asp-page="Delete" asp-route-id="@hd.MaHoaDon" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>

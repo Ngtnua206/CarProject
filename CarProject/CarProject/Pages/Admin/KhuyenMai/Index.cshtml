@@ -15,36 +15,38 @@
             }
             else
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mã KM</th>
-                            <th>Tiêu Đề</th>
-                            <th>Loại Giảm</th>
-                            <th>Giá Trị</th>
-                            <th>Thời Gian</th>
-                            <th>Trạng Thái</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var km in Model.KhuyenMaiList)
-                        {
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@km.MaKhuyenMai</td>
-                                <td>@km.TieuDe</td>
-                                <td>@km.LoaiGiamGia</td>
-                                <td>@km.GiaTriGiam</td>
-                                <td>@km.NgayBatDau.ToString("dd/MM/yyyy") - @km.NgayKetThuc.ToString("dd/MM/yyyy")</td>
-                                <td>@km.TrangThai</td>
-                                <td>
-                                    <a asp-page="Edit" asp-route-id="@km.MaKhuyenMai" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-page="Delete" asp-route-id="@km.MaKhuyenMai" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
-                                </td>
+                                <th>Mã KM</th>
+                                <th>Tiêu Đề</th>
+                                <th>Loại Giảm</th>
+                                <th>Giá Trị</th>
+                                <th>Thời Gian</th>
+                                <th>Trạng Thái</th>
+                                <th>Hành động</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var km in Model.KhuyenMaiList)
+                            {
+                                <tr>
+                                    <td>@km.MaKhuyenMai</td>
+                                    <td>@km.TieuDe</td>
+                                    <td>@km.LoaiGiamGia</td>
+                                    <td>@km.GiaTriGiam</td>
+                                    <td>@km.NgayBatDau.ToString("dd/MM/yyyy") - @km.NgayKetThuc.ToString("dd/MM/yyyy")</td>
+                                    <td>@km.TrangThai</td>
+                                    <td>
+                                        <a asp-page="Edit" asp-route-id="@km.MaKhuyenMai" class="btn btn-sm btn-warning">Sửa</a>
+                                        <a asp-page="Delete" asp-route-id="@km.MaKhuyenMai" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>

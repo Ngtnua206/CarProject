@@ -25,6 +25,14 @@ public class DepositResultModel : PageModel
     public string TenPhienBan { get; set; } = "";
     public string HoTen { get; set; } = "";
     public bool ShowQr { get; set; }
+    public string DongCo { get; set; } = "";
+    public string HopSo { get; set; } = "";
+    public string MauSac { get; set; } = "";
+    public string LoaiNhietLieu { get; set; } = "";
+    public long GiaNiemYet { get; set; }
+    public string GiaNiemYetStr { get; set; } = "";
+    public string TrangThaiDonHang { get; set; } = "";
+    public string SoDienThoai { get; set; } = "";
 
     public DepositResultModel(AppDbContext db, IOptions<SepaySettings> sepay)
     {
@@ -49,6 +57,12 @@ public class DepositResultModel : PageModel
             TransferContent = root.GetProperty("transferContent").GetString() ?? "";
             TenPhienBan = root.GetProperty("tenPhienBan").GetString() ?? "";
             HoTen = root.GetProperty("hoTen").GetString() ?? "";
+            SoDienThoai = root.TryGetProperty("soDienThoai", out var sdt) ? sdt.GetString() ?? "" : "";
+            DongCo = root.TryGetProperty("dongCo", out var dc) ? dc.GetString() ?? "" : "";
+            HopSo = root.TryGetProperty("hopSo", out var hs) ? hs.GetString() ?? "" : "";
+            MauSac = root.TryGetProperty("mauSac", out var ms) ? ms.GetString() ?? "" : "";
+            LoaiNhietLieu = root.TryGetProperty("loaiNhietLieu", out var lnl) ? lnl.GetString() ?? "" : "";
+            GiaNiemYet = root.TryGetProperty("giaNiemYet", out var gny) ? gny.GetInt64() : 0;
         }
         else if (maDonCoc.HasValue)
         {
@@ -67,6 +81,16 @@ public class DepositResultModel : PageModel
             TransferContent = don.MaGiaoDich ?? "";
             TenPhienBan = $"{don.PhienBan?.DongXe?.TenDong ?? ""} {don.PhienBan?.TenPhienBan ?? ""}".Trim();
             HoTen = don.HoTen ?? "";
+            SoDienThoai = don.SoDienThoai ?? "";
+            TrangThaiDonHang = don.TrangThaiDonHang ?? "";
+            if (don.PhienBan != null)
+            {
+                DongCo = don.PhienBan.DongCo ?? "";
+                HopSo = don.PhienBan.HopSo ?? "";
+                MauSac = don.PhienBan.MauSac ?? "";
+                LoaiNhietLieu = don.PhienBan.LoaiNhietLieu ?? "";
+                GiaNiemYet = don.PhienBan.GiaNiemYet;
+            }
         }
         else
         {
@@ -76,6 +100,9 @@ public class DepositResultModel : PageModel
         SoTienCocStr = SoTienCoc >= 1_000_000_000
             ? $"{SoTienCoc / 1_000_000_000:N1} tỷ VNĐ"
             : $"{SoTienCoc / 1_000_000:N0} triệu VNĐ";
+        GiaNiemYetStr = GiaNiemYet >= 1_000_000_000
+            ? $"{GiaNiemYet / 1_000_000_000:N1} tỷ VNĐ"
+            : $"{GiaNiemYet / 1_000_000:N0} triệu VNĐ";
 
         if (!string.IsNullOrEmpty(MaGiaoDich))
         {

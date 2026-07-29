@@ -15,32 +15,34 @@
             }
             else
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mã Hãng</th>
-                            <th>Tên Hãng</th>
-                            <th>Quốc Gia</th>
-                            <th>Logo</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var hang in Model.HangXeList)
-                        {
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@hang.MaHang</td>
-                                <td>@hang.TenHang</td>
-                                <td>@hang.QuocGia</td>
-                                <td>@hang.DuongDanLogo</td>
-                                <td>
-                                    <a asp-page="Edit" asp-route-id="@hang.MaHang" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a asp-page="Delete" asp-route-id="@hang.MaHang" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
-                                </td>
+                                <th>Mã Hãng</th>
+                                <th>Tên Hãng</th>
+                                <th>Quốc Gia</th>
+                                <th>Logo</th>
+                                <th>Hành động</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var hang in Model.HangXeList)
+                            {
+                                <tr>
+                                    <td>@hang.MaHang</td>
+                                    <td>@hang.TenHang</td>
+                                    <td>@hang.QuocGia</td>
+                                    <td>@hang.DuongDanLogo</td>
+                                    <td>
+                                        <a asp-page="Edit" asp-route-id="@hang.MaHang" class="btn btn-sm btn-warning">Sửa</a>
+                                        <a asp-page="Delete" asp-route-id="@hang.MaHang" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>
