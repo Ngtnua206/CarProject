@@ -104,17 +104,6 @@
                                             <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Không chấp nhận</button>
                                         </form>
                                     }
-                                    @if (d.TrangThaiDonHang == "Đã xác nhận")
-                                    {
-                                        <form method="post" asp-page-handler="Sold" style="display:inline" onsubmit="return confirm('Xác nhận bán thành công xe này?');">
-                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Bán thành công</button>
-                                        </form>
-                                        <form method="post" asp-page-handler="CancelSale" style="display:inline" onsubmit="return confirm('Hủy bán đơn cọc #@d.MaDonCoc? Tiền cọc sẽ được hoàn lại.');">
-                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-ban"></i> Hủy bán</button>
-                                        </form>
-                                    }
                                 </td>
                             </tr>
                         }

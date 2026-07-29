@@ -21,25 +21,38 @@
                     <div style="max-height: 400px; overflow-y: auto; margin-top: 1rem;">
                         @foreach (var item in Model.CartItems)
                         {
-                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-weight: 600; color: var(--brand-white); font-size: 0.9rem;">
-                                        @item.TenPhienBan
-                                        <span style="font-weight:400;color: var(--text-faint);font-size:0.78rem;"> x @item.SoLuong</span>
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-weight: 600; color: var(--brand-white); font-size: 0.9rem;">
+                                            @item.TenPhienBan
+                                            <span style="font-weight:400;color: var(--text-faint);font-size:0.78rem;"> x @item.SoLuong</span>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-faint);">@item.TenDong - @item.MauSac</div>
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-faint);">@item.TenDong - @item.MauSac</div>
+                                    <div style="text-align:right;flex-shrink:0;">
+                                        <div style="font-weight: 700; color: var(--brand-gold); font-size: 0.9rem;">
+                                            @{
+                                                var lineTotal = item.SoTienCoc * item.SoLuong;
+                                            }
+                                            @(lineTotal >= 1_000_000_000
+                                                ? $"{lineTotal / 1_000_000_000:N1} tỷ"
+                                                : $"{lineTotal / 1_000_000:N0} triệu")
+                                        </div>
+                                        <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ x @item.SoLuong</div>
+                                    </div>
                                 </div>
-                                <div style="text-align:right;flex-shrink:0;">
-                                    <div style="font-weight: 700; color: var(--brand-gold); font-size: 0.9rem;">
-                                        @{
-                                            var lineTotal = item.SoTienCoc * item.SoLuong;
+                                @if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
+                                {
+                                    <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.04); font-size: 0.72rem; color: var(--text-faint); display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                        @foreach (var tk in tonKhoList)
+                                        {
+                                            <span style="background: rgba(255,255,255,0.04); padding: 0.15rem 0.5rem; border-radius: 4px;">
+                                                @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@tk.SoLuong</strong>
+                                            </span>
                                         }
-                                        @(lineTotal >= 1_000_000_000
-                                            ? $"{lineTotal / 1_000_000_000:N1} tỷ"
-                                            : $"{lineTotal / 1_000_000:N0} triệu")
                                     </div>
-                                    <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ x @item.SoLuong</div>
-                                </div>
+                                }
                             </div>
                         }
                     </div>

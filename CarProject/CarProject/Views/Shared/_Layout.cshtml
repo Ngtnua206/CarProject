@@ -360,6 +360,8 @@ success: function(data) {
                         if (data.success) {
                             updateCartCount();
                             showToast('Đã thêm <strong>' + tenPhienBan + '</strong> vào giỏ hàng.');
+                        } else if (data.error) {
+                            showToast(data.error, true);
                         }
                     },
                     error: function() {

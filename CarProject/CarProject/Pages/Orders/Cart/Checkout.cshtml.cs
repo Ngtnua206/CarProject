@@ -30,6 +30,7 @@ public class CheckoutModel : PageModel
 
     public List<CartItem> CartItems { get; set; } = new();
     public List<ChiNhanhShowroom> DanhSachChiNhanh { get; set; } = new();
+    public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
     public decimal TotalDeposit { get; set; }
     public string? ErrorMessage { get; set; }
 
@@ -54,6 +55,7 @@ public class CheckoutModel : PageModel
         }
 
         await LoadShowrooms();
+        await LoadTonKhoAsync();
         TotalDeposit = await _cart.GetTotalDepositAsync();
         return Page();
     }
@@ -81,6 +83,7 @@ public class CheckoutModel : PageModel
         {
             ErrorMessage = "Vui lòng chọn showroom nhận xe.";
             await LoadShowrooms();
+            await LoadTonKhoAsync();
             return Page();
         }
 
@@ -190,7 +193,18 @@ public class CheckoutModel : PageModel
     private async Task LoadShowrooms()
     {
         DanhSachChiNhanh = await _db.ChiNhanhShowroom
-            .Where(c => c.TrangThai == "Active")
+            .Where(c => c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
             .ToListAsync();
+    }
+
+    private async Task LoadTonKhoAsync()
+    {
+        var maPhienBans = CartItems.Select(c => c.MaPhienBan).ToList();
+        var tonKhoList = await _db.TonKhoTheoChiNhanh
+            .Include(t => t.ChiNhanh)
+            .Where(t => maPhienBans.Contains(t.MaPhienBan))
+            .ToListAsync();
+        TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
+            .ToDictionary(g => g.Key, g => g.ToList());
     }
 }

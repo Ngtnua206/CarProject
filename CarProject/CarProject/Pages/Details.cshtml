@@ -126,6 +126,21 @@
                                 <i class="fas fa-calendar-check"></i> Đăng ký lái thử
                             </a>
                         </div>
+
+                        @if (Model.TonKhoTheoPhienBan.TryGetValue(p.item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
+                        {
+                            <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Tồn kho theo showroom</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                    @foreach (var tk in tonKhoList)
+                                    {
+                                        <span style="background: rgba(255,255,255,0.04); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; color: var(--text-soft);">
+                                            @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@tk.SoLuong</strong>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -144,6 +159,19 @@
                             <tr><td>Nhiên liệu</td><td>@first.LoaiNhietLieu</td></tr>
                             <tr><td>Màu sắc</td><td>@first.MauSac</td></tr>
                             <tr><td>Tồn kho</td><td>@first.SoLuongTrongKho xe</td></tr>
+                            @if (Model.TonKhoTheoPhienBan.TryGetValue(first.MaPhienBan, out var sidebarTonKho) && sidebarTonKho.Any())
+                            {
+                                <tr><td colspan="2" style="padding:0.3rem 0;">
+                                    <div style="font-size:0.68rem;color:var(--text-faint);">Phân bổ:</div>
+                                    @foreach (var tk in sidebarTonKho)
+                                    {
+                                        <div style="font-size:0.68rem;display:flex;justify-content:space-between;padding:0.1rem 0;">
+                                            <span style="color:var(--text-muted);">@tk.ChiNhanh?.TenChiNhanh</span>
+                                            <span style="color:var(--brand-gold);">@tk.SoLuong</span>
+                                        </div>
+                                    }
+                                </td></tr>
+                            }
                         </table>
                     </div>
                 }

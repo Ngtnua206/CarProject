@@ -14,6 +14,7 @@ public class DetailsModel : PageModel
     public DongXe Dong { get; set; }
     public HangXe HangXe { get; set; }
     public List<PhienBanXe> PhienBans { get; set; }
+    public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
 
     public DetailsModel(AppDbContext db, IActivityLogService log)
     {
@@ -27,6 +28,15 @@ public class DetailsModel : PageModel
         if (Dong == null) return NotFound();
         HangXe = Dong.HangXe;
         PhienBans = await _db.PhienBanXe.Where(p => p.MaDong == id).ToListAsync();
+
+        var maPhienBans = PhienBans.Select(p => p.MaPhienBan).ToList();
+        var tonKhoList = await _db.TonKhoTheoChiNhanh
+            .Include(t => t.ChiNhanh)
+            .Where(t => maPhienBans.Contains(t.MaPhienBan))
+            .ToListAsync();
+        TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         await _log.LogAsync("Xem chi tiết xe", $"{HangXe?.TenHang} {Dong.TenDong} (ID={id})");
         return Page();
     }

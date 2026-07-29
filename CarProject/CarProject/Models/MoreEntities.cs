@@ -195,6 +195,22 @@ public class ThongBao
     public TaiKhoan? NguoiNhan { get; set; }
 }
 
+public class TonKhoTheoChiNhanh
+{
+    [Key]
+    public int MaTonKho { get; set; }
+    public int MaPhienBan { get; set; }
+    public string MaChiNhanh { get; set; }
+    public int SoLuong { get; set; }
+    public DateTime NgayCapNhat { get; set; }
+
+    [ForeignKey("MaPhienBan")]
+    public PhienBanXe PhienBan { get; set; }
+
+    [ForeignKey("MaChiNhanh")]
+    public ChiNhanhShowroom ChiNhanh { get; set; }
+}
+
 public class GioHang
 {
     [Key]

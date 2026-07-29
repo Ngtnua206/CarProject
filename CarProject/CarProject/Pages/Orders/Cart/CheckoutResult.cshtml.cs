@@ -21,6 +21,8 @@ public class CheckoutResultModel : PageModel
     public string BankName { get; set; } = "";
     public string BankNumber { get; set; } = "";
     public string AccountName { get; set; } = "";
+    public string QrImageUrl { get; set; } = "";
+    public bool ShowQr { get; set; }
 
     public CheckoutResultModel(IOptions<SepaySettings> sepay)
     {
@@ -54,6 +56,16 @@ public class CheckoutResultModel : PageModel
         BankName = $"{_sepay.BankAccount} ({_sepay.BankName})";
         BankNumber = _sepay.BankNumber;
         AccountName = _sepay.AccountName;
+
+        // Tạo QR 10k test qua VietQR.io (free, không cần auth)
+        if (PhuongThucThanhToan == "Chuyển khoản" && !string.IsNullOrEmpty(MaGiaoDich))
+        {
+            var bin = "970436"; // VQR bin
+            var encodedInfo = Uri.EscapeDataString(MaGiaoDich);
+            var encodedName = Uri.EscapeDataString(_sepay.AccountName);
+            QrImageUrl = $"https://img.vietqr.io/image/{bin}-{_sepay.BankNumber}-compact2.jpg?amount=10000&addInfo={encodedInfo}&accountName={encodedName}";
+            ShowQr = true;
+        }
 
         return Page();
     }

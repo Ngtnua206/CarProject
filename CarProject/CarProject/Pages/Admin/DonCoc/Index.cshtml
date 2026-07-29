@@ -71,6 +71,12 @@
                                             case "Đã xác nhận":
                                                 <span class="badge bg-primary">Đã xác nhận</span>
                                                 break;
+                                            case "Hoàn tất":
+                                                <span class="badge bg-success">Hoàn tất</span>
+                                                break;
+                                            case "Đã từ chối":
+                                                <span class="badge bg-danger">Đã từ chối</span>
+                                                break;
                                             default:
                                                 <span class="badge bg-secondary">@d.TrangThaiDonHang</span>
                                                 break;
@@ -90,6 +96,18 @@
                                         }
                                         <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
                                         <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
+                                        }
+                                        @if (d.TrangThaiDonHang == "Đã xác nhận")
+                                        {
+                                            <form method="post" asp-page-handler="Sold" style="display:inline" onsubmit="return confirm('Xác nhận bán thành công?');">
+                                                <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                                <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Bán thành công</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="CancelSale" style="display:inline" onsubmit="return confirm('Hủy bán đơn cọc #@d.MaDonCoc?');">
+                                                <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-ban"></i> Hủy bán</button>
+                                            </form>
+                                        }
                                     </td>
                                 </tr>
                             }

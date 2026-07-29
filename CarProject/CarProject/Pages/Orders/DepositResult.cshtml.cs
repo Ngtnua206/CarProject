@@ -24,6 +24,7 @@ public class DepositResultModel : PageModel
     public string QrImageUrl { get; set; } = "";
     public string TenPhienBan { get; set; } = "";
     public string HoTen { get; set; } = "";
+    public bool ShowQr { get; set; }
 
     public DepositResultModel(AppDbContext db, IOptions<SepaySettings> sepay)
     {
@@ -75,6 +76,15 @@ public class DepositResultModel : PageModel
         SoTienCocStr = SoTienCoc >= 1_000_000_000
             ? $"{SoTienCoc / 1_000_000_000:N1} tỷ VNĐ"
             : $"{SoTienCoc / 1_000_000:N0} triệu VNĐ";
+
+        if (!string.IsNullOrEmpty(MaGiaoDich))
+        {
+            var bin = "970436"; // VQR bin
+            var encodedInfo = Uri.EscapeDataString(MaGiaoDich);
+            var encodedName = Uri.EscapeDataString(_sepay.AccountName);
+            QrImageUrl = $"https://img.vietqr.io/image/{bin}-{_sepay.BankNumber}-compact2.jpg?amount=10000&addInfo={encodedInfo}&accountName={encodedName}";
+            ShowQr = true;
+        }
 
         return Page();
     }
