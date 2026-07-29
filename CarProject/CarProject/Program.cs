@@ -431,7 +431,7 @@ try
         return Results.Ok(new { count });
     });
 
-    app.MapPost("/api/cart/add", async (HttpContext ctx, ICartService cart, AppDbContext db) =>
+    app.MapPost("/api/cart/add", async (HttpContext ctx, ICartService cart) =>
     {
         var userName = ctx.User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName))
@@ -443,17 +443,6 @@ try
 
         var payload = JsonSerializer.Deserialize<JsonElement>(body);
         var item = JsonSerializer.Deserialize<CartItem>(body) ?? new CartItem();
-
-        var phienBan = await db.PhienBanXe.FindAsync(item.MaPhienBan);
-        if (phienBan == null)
-            return Results.Ok(new { success = false, error = "Xe không tồn tại" });
-        if (phienBan.SoLuongTrongKho <= 0)
-            return Results.Ok(new { success = false, error = "Xe đã hết hàng" });
-
-        var cartItems = await cart.GetCartAsync();
-        var existingQty = cartItems.Where(c => c.MaPhienBan == item.MaPhienBan).Sum(c => c.SoLuong);
-        if (existingQty + 1 > phienBan.SoLuongTrongKho)
-            return Results.Ok(new { success = false, error = $"Chỉ còn {phienBan.SoLuongTrongKho} xe trong kho" });
 
         await cart.AddToCartAsync(item);
         return Results.Ok(new { success = true });

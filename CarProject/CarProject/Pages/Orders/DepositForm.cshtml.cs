@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
 using CarProject.Models;
 using CarProject.Services;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace CarProject.Pages.Orders;
 
@@ -12,6 +14,7 @@ public class DepositFormModel : PageModel
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
     private readonly INotificationService _notif;
+    private readonly SepaySettings _sepay;
 
     public PhienBanXe PhienBan { get; set; }
     public string SuccessMessage { get; set; }
@@ -19,11 +22,13 @@ public class DepositFormModel : PageModel
     [BindProperty]
     public DepositRequest DepositData { get; set; }
 
-    public DepositFormModel(AppDbContext db, IActivityLogService log, INotificationService notif)
+    public DepositFormModel(AppDbContext db, IActivityLogService log, INotificationService notif,
+        IOptions<SepaySettings> sepay)
     {
         _db = db;
         _log = log;
         _notif = notif;
+        _sepay = sepay.Value;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -78,7 +83,7 @@ public class DepositFormModel : PageModel
             SoDienThoai = DepositData.SoDienThoai,
             DiaChi = DepositData.DiaChi ?? "",
             GhiChu = DepositData.GhiChu ?? "",
-            MaGiaoDich = $"DH{DateTime.Now:yyMMddHHmmss}-{DepositData.MaPhienBan}"
+            MaGiaoDich = $"MLC{DateTime.Now:yyMMddHHmmss}-{DepositData.MaPhienBan}"
         };
 
         _db.DonDatCoc.Add(deposit);
@@ -108,10 +113,22 @@ public class DepositFormModel : PageModel
         await _log.LogAsync("Gửi đơn đặt cọc",
             $"{DepositData.HoTen} - {DepositData.SoDienThoai} - {tenXe} - {DepositData.SoTienCoc:N0} VNĐ");
 
-        SuccessMessage = $"Cảm ơn {DepositData.HoTen}! Đơn đặt cọc của bạn đã được tiếp nhận. " +
-                        $"Mã đơn: #{deposit.MaDonCoc}. Chúng tôi sẽ liên hệ qua số {DepositData.SoDienThoai}.";
+        // Chuyển đến trang kết quả với thông tin chuyển khoản VA
+        var result = new
+        {
+            maDonCoc = deposit.MaDonCoc,
+            maGiaoDich = deposit.MaGiaoDich,
+            soTienCoc = deposit.SoTienCoc,
+            bankName = $"{_sepay.BankAccount} ({_sepay.BankName})",
+            bankNumber = _sepay.BankNumber,
+            accountName = _sepay.AccountName,
+            transferContent = deposit.MaGiaoDich,
+            tenPhienBan = tenXe,
+            hoTen = DepositData.HoTen
+        };
 
-        return Page();
+        TempData["DepositResult"] = JsonSerializer.Serialize(result);
+        return RedirectToPage("/Orders/DepositResult");
     }
 
     public class DepositRequest

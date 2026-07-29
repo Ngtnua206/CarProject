@@ -10,6 +10,7 @@ public class SepaySettings
     public string BankAccount { get; set; } = "";
     public string BankName { get; set; } = "";
     public string BankNumber { get; set; } = "";
+    public string AccountName { get; set; } = "";
     public string WebhookSecret { get; set; } = "";
     public string WebhookBaseUrl { get; set; } = "";
 }
@@ -140,11 +141,11 @@ public class SepayService : ISepayService
     {
         if (string.IsNullOrEmpty(content)) return "";
 
-        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH)(\d{6})");
+        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)(\d{6})");
         if (match.Success)
             return match.Value;
 
-        match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH)\d{6}\d{12}");
+        match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)\d{6}\d{12}");
         if (match.Success)
             return match.Value;
 

@@ -85,7 +85,30 @@ public class CheckoutModel : PageModel
         }
 
         var userName = User.GetJwtUserName();
-        var groupCode = $"DH{DateTime.Now:yyMMddHHmmss}";
+        var groupCode = $"MLC{DateTime.Now:yyMMddHHmmss}";
+
+        // Kiểm tra tồn kho trước khi đặt cọc
+        foreach (var item in CartItems)
+        {
+            var phienBan = await _db.PhienBanXe.FindAsync(item.MaPhienBan);
+            if (phienBan == null)
+            {
+                ErrorMessage = $"Xe \"{item.TenPhienBan}\" không tồn tại.";
+                await LoadShowrooms();
+                return Page();
+            }
+            // Chỉ tính xe đã đặt cọc thành công (đã thanh toán) là đã giữ
+            var reservedQty = await _db.DonDatCoc
+                .CountAsync(d => d.MaPhienBan == item.MaPhienBan
+                    && (d.TrangThaiDonHang == "Chờ xác nhận" || d.TrangThaiDonHang == "Đã xác nhận"));
+            var available = phienBan.SoLuongTrongKho - reservedQty;
+            if (item.SoLuong > available)
+            {
+                ErrorMessage = $"Số lượng xe \"{item.TenPhienBan}\" trong kho không đủ. Hiện chỉ còn {available} xe.";
+                await LoadShowrooms();
+                return Page();
+            }
+        }
 
         var createdDeposits = new List<int>();
         var totalXe = CartItems.Sum(c => c.SoLuong);
@@ -157,7 +180,8 @@ public class CheckoutModel : PageModel
             totalDeposit = TotalDeposit,
             maDonCocs = createdDeposits,
             phuongThucThanhToan = PhuongThucThanhToan,
-            maChiNhanh = MaChiNhanh
+            maChiNhanh = MaChiNhanh,
+            maGiaoDich = groupCode
         });
 
         return RedirectToPage("/Orders/Cart/CheckoutResult");

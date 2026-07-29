@@ -8,11 +8,11 @@
 <style>
     .ql-header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 2rem 0; margin-bottom: 2rem; }
     .ql-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 1.5rem; }
-    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-waiting { background: #fef3c7; color: #92400e; }
     .badge-confirmed { background: #d1fae5; color: #065f46; }
     .badge-rejected { background: #fee2e2; color: #991b1b; }
-    .badge-delivered { background: #e0e7ff; color: #3730a3; }
-    .badge-expired { background: #f3e8ff; color: #6b21a8; }
+    .badge-completed { background: #e0e7ff; color: #3730a3; }
+    .badge-cancelled { background: #f3e8ff; color: #6b21a8; }
 </style>
 
 <div class="ql-header">
@@ -73,16 +73,19 @@
                                     @switch (d.TrangThaiDonHang)
                                     {
                                         case "Chờ xác nhận":
-                                            <span class="badge badge-pending">Chờ xác nhận</span>
+                                            <span class="badge badge-waiting">Chờ xác nhận</span>
                                             break;
                                         case "Đã xác nhận":
                                             <span class="badge badge-confirmed">Đã xác nhận</span>
                                             break;
-                                        case "Đã hủy":
-                                            <span class="badge badge-rejected">Đã hủy</span>
+                                        case "Hoàn tất":
+                                            <span class="badge badge-completed">Hoàn tất</span>
                                             break;
-                                        case "Đã giao xe":
-                                            <span class="badge badge-delivered">Đã giao xe</span>
+                                        case "Đã từ chối":
+                                            <span class="badge badge-rejected">Đã từ chối</span>
+                                            break;
+                                        case "Đã hủy":
+                                            <span class="badge badge-cancelled">Đã hủy</span>
                                             break;
                                         default:
                                             <span class="badge bg-secondary">@d.TrangThaiDonHang</span>
@@ -92,13 +95,24 @@
                                 <td>
                                     @if (d.TrangThaiDonHang == "Chờ xác nhận")
                                     {
-                                        <form method="post" asp-page-handler="Approve" style="display:inline">
+                                        <form method="post" asp-page-handler="Approve" style="display:inline" onsubmit="return confirm('Chấp nhận đơn cọc #@d.MaDonCoc?');">
                                             <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Duyệt</button>
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Chấp nhận</button>
                                         </form>
-                                        <form method="post" asp-page-handler="Cancel" style="display:inline">
+                                        <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc? Tiền cọc sẽ được hoàn lại.');">
                                             <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Hủy</button>
+                                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Không chấp nhận</button>
+                                        </form>
+                                    }
+                                    @if (d.TrangThaiDonHang == "Đã xác nhận")
+                                    {
+                                        <form method="post" asp-page-handler="Sold" style="display:inline" onsubmit="return confirm('Xác nhận bán thành công xe này?');">
+                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Bán thành công</button>
+                                        </form>
+                                        <form method="post" asp-page-handler="CancelSale" style="display:inline" onsubmit="return confirm('Hủy bán đơn cọc #@d.MaDonCoc? Tiền cọc sẽ được hoàn lại.');">
+                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-ban"></i> Hủy bán</button>
                                         </form>
                                     }
                                 </td>

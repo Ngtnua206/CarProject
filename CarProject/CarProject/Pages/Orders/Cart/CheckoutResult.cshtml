@@ -13,6 +13,9 @@
         <p style="color: var(--text-muted); font-size: 0.9rem;">
             Cảm ơn <strong>@Model.HoTen</strong>! Đơn đặt cọc cho <strong>@Model.SoLuongXe xe</strong> đã được ghi nhận.
         </p>
+        <p style="color: var(--text-faint); font-size: 0.82rem; margin-bottom: 1.5rem;">
+            Vui lòng chuyển khoản theo thông tin bên dưới để hoàn tất đặt cọc.
+        </p>
 
         <div class="bank-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.5rem; text-align: left; margin: 1.5rem 0;">
             <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
@@ -33,10 +36,35 @@
                     @string.Join(", ", Model.MaDonCocs.Select(m => $"#{m}"))
                 </span>
             </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Mã đơn</span>
+                <span style="color: var(--brand-white); font-weight: 600; font-size: 0.8rem;">
+                    @string.Join(", ", Model.MaDonCocs.Select(m => $"#{m}"))
+                </span>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); margin: 0.5rem 0;"></div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Ngân hàng thụ hưởng</span>
+                <span style="color: var(--brand-white); font-weight: 600;">@Model.BankName</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Số tài khoản</span>
+                <span style="color: var(--brand-white); font-weight: 700; font-size: 1rem;">@Model.BankNumber</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Chủ tài khoản</span>
+                <span style="color: var(--brand-white); font-weight: 600;">@Model.AccountName</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Nội dung chuyển khoản</span>
+                <span style="color: var(--brand-white); font-weight: 600; font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                    @Model.MaGiaoDich
+                </span>
+            </div>
         </div>
 
         <p style="color: var(--text-faint); font-size: 0.82rem; margin-bottom: 1.5rem;">
-            Nhân viên MyLxCar sẽ liên hệ với bạn qua số <strong>@Model.SoDienThoai</strong> để xác nhận đơn hàng.
+            Chuyển khoản đúng nội dung để hệ thống tự động xác nhận. Nhân viên MyLxCar cũng sẽ liên hệ qua số <strong>@Model.SoDienThoai</strong>.
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 0.8rem;">
