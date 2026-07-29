@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CarProject.Data;
 using CarProject.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,15 +8,25 @@ namespace CarProject.Services;
 
 public class CartItem
 {
+    [JsonPropertyName("maPhienBan")]
     public int MaPhienBan { get; set; }
+    [JsonPropertyName("tenPhienBan")]
     public string TenPhienBan { get; set; } = "";
+    [JsonPropertyName("tenDong")]
     public string TenDong { get; set; } = "";
+    [JsonPropertyName("giaNiemYet")]
     public long GiaNiemYet { get; set; }
+    [JsonPropertyName("soTienCoc")]
     public decimal SoTienCoc { get; set; }
+    [JsonPropertyName("mauSac")]
     public string? MauSac { get; set; }
+    [JsonPropertyName("dongCo")]
     public string? DongCo { get; set; }
+    [JsonPropertyName("hopSo")]
     public string? HopSo { get; set; }
+    [JsonPropertyName("duongDanAnh")]
     public string? DuongDanAnh { get; set; }
+    [JsonPropertyName("soLuong")]
     public int SoLuong { get; set; } = 1;
 }
 
