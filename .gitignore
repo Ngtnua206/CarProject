@@ -17,3 +17,7 @@ CarProject/CarProject/wwwroot/uploads/avatars/*
 CarProject/Module/*.zip
 run/
 .vscode/
+
+publish/
+publish.zip
+*.zip
