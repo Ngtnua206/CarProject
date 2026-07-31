@@ -47,6 +47,16 @@ jobs:
           Write-Host "Prepared publish output"
           Get-ChildItem "$pub" -File | Select-Object Name, Length
 
+      - name: Put app offline
+        shell: pwsh
+        env:
+          FTP_HOST: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          Set-Content -Path app_offline.htm -Value "<html><body>Maintenance in progress, please wait...</body></html>" -Encoding ASCII
+          curl -sS -T app_offline.htm "ftp://$env:FTP_HOST/site1/app_offline.htm" --user "$env:FTP_USER:$env:FTP_PASS"
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -61,3 +71,12 @@ jobs:
             **/.git*/**
             **/Node*/**
             **/logs/**
+
+      - name: Bring app back online
+        shell: pwsh
+        env:
+          FTP_HOST: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          curl -sS -Q "DELE /site1/app_offline.htm" "ftp://$env:FTP_HOST/" --user "$env:FTP_USER:$env:FTP_PASS"**
