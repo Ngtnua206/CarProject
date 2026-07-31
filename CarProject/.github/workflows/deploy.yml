@@ -1,0 +1,63 @@
+name: Deploy to SmarterASP.NET
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish
+        run: |
+          dotnet publish CarProject/CarProject/CarProject.csproj -c Release -o publish --nologo
+        shell: pwsh
+
+      - name: Prepare publish output
+        shell: pwsh
+        run: |
+          $pub = "publish"
+          # Remove Development settings (would override the production connection string)
+          Remove-Item "$pub\appsettings.Development.json" -Force -ErrorAction SilentlyContinue
+
+          # Write production web.config with stdout logging enabled
+          $webConfig = @'
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <location path="." inheritInChildApplications="false">
+    <system.webServer>
+      <handlers>
+        <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+      </handlers>
+      <aspNetCore processPath="dotnet" arguments=".\CarProject.dll" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="inprocess" />
+    </system.webServer>
+  </location>
+</configuration>
+'@
+          Set-Content -Path "$pub\web.config" -Value $webConfig -Encoding UTF8
+          Write-Host "Prepared publish output"
+          Get-ChildItem "$pub" -File | Select-Object Name, Length
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./publish/
+          server-dir: /site1/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/Node*/**
+            **/logs/**
