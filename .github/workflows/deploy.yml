@@ -31,18 +31,18 @@ jobs:
 
           # Write production web.config with stdout logging enabled
           $webConfig = @'
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <location path="." inheritInChildApplications="false">
-    <system.webServer>
-      <handlers>
-        <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
-      </handlers>
-      <aspNetCore processPath="dotnet" arguments=".\CarProject.dll" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="inprocess" />
-    </system.webServer>
-  </location>
-</configuration>
-'@
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <location path="." inheritInChildApplications="false">
+              <system.webServer>
+                <handlers>
+                  <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+                </handlers>
+                <aspNetCore processPath="dotnet" arguments=".\CarProject.dll" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="inprocess" />
+              </system.webServer>
+            </location>
+          </configuration>
+          '@
           Set-Content -Path "$pub\web.config" -Value $webConfig -Encoding UTF8
           Write-Host "Prepared publish output"
           Get-ChildItem "$pub" -File | Select-Object Name, Length
