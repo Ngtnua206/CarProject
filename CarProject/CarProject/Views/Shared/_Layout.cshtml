@@ -179,26 +179,82 @@
                     }
                 </div>
             </div>
-
-            <!-- Mobile nav panel -->
-            <div class="mobile-nav-panel" id="mobileNavPanel">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link @ActivePage("/Index")" asp-page="/Index"><i class="nav-icon fas fa-home"></i>Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link @ActivePage("/Cars")" asp-page="/Cars"><i class="nav-icon fas fa-car"></i>Danh sách xe</a></li>
-                    <li class="nav-item"><a class="nav-link @ActivePage("/Showroom")" asp-page="/Showroom"><i class="nav-icon fas fa-store"></i>Showroom</a></li>
-                    <li class="nav-item"><a class="nav-link @ActivePage("/Compare")" asp-page="/Compare"><i class="nav-icon fas fa-balance-scale"></i>So sánh</a></li>
-                    <li class="nav-item"><a class="nav-link @ActivePage("/TestDrive")" asp-page="/TestDrive"><i class="nav-icon fas fa-calendar-check"></i>Lái thử</a></li>
-                    <li class="nav-item-dropdown" id="mobileAboutDropdown">
-                        <a class="nav-link dropdown-toggle @IsActiveDropdown()" href="javascript:void(0)" onclick="toggleMobileDropdown('mobileAboutDropdown')"><i class="nav-icon fas fa-info-circle"></i>Giới thiệu</a>
-                        <div class="nav-dropdown-menu">
-                            <a class="nav-dropdown-item" asp-page="/About"><i class="fas fa-building"></i> Về chúng tôi</a>
-                            <a class="nav-dropdown-item" asp-page="/Contact"><i class="fas fa-envelope"></i> Liên hệ</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
         </nav>
     </header>
+
+    <!-- Mobile nav backdrop (outside nav to avoid backdrop-filter containing block) -->
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+    <!-- Mobile nav drawer (right) - outside nav so fixed positioning spans viewport -->
+    <div class="mobile-nav-panel" id="mobileNavPanel">
+        <div class="mobile-nav-auth">
+            @if (isLoggedIn)
+            {
+                <div class="mobile-user-header">
+                    <div class="auth-avatar">
+                        @if (!string.IsNullOrEmpty(avatarUrl))
+                        {
+                            <img src="@avatarUrl?v=@DateTime.Now.Ticks" alt="" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-user"></i>
+                        }
+                    </div>
+                    <span class="user-name">@userName</span>
+                </div>
+                <a class="mobile-auth-link" asp-page="/Profile"><i class="fas fa-user-cog"></i> Tài khoản</a>
+                <a class="mobile-auth-link" asp-page="/Notifications/Index"><i class="fas fa-bell"></i> Thông báo @(notifCount > 0 ? $"(+{notifCount})" : "")</a>
+                <a class="mobile-auth-link" asp-page="/Orders/Cart/Index"><i class="fas fa-shopping-bag"></i> Giỏ hàng</a>
+                @if (userRole == "Quản Lý")
+                {
+                    <a class="mobile-auth-link" asp-page="/QuanLy/Dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+                    <a class="mobile-auth-link" asp-page="/QuanLy/LichHen"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a>
+                    <a class="mobile-auth-link" asp-page="/QuanLy/DonCoc"><i class="fas fa-file-invoice"></i> Đơn cọc</a>
+                }
+                @if (userRole == "Admin" && adminMode != "View")
+                {
+                    <a class="mobile-auth-link" asp-page="/Admin/Index"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/HangXe/Index"><i class="fas fa-car"></i> Hãng xe</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/DongXe/Index"><i class="fas fa-car-side"></i> Dòng xe</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/PhienBan/Index"><i class="fas fa-tag"></i> Phiên bản</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/Users/Index"><i class="fas fa-users"></i> Người dùng</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/DonCoc/Index"><i class="fas fa-file-invoice"></i> Đơn cọc</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/LichHen/Index"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/HoaDon/Index"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/ChiNhanh/Index"><i class="fas fa-building"></i> Chi nhánh</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/KhuyenMai/Index"><i class="fas fa-gift"></i> Khuyến mãi</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/Banner/Index"><i class="fas fa-image"></i> Banner</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/KenhTuVan/Index"><i class="fas fa-headset"></i> Kênh tư vấn</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/ThongKe/Index"><i class="fas fa-chart-bar"></i> Thống kê</a>
+                    <a class="mobile-auth-link" asp-page="/Admin/Logs/Index"><i class="fas fa-history"></i> Nhật ký</a>
+                }
+                <a class="mobile-auth-link logout-link" asp-page="/Account/Logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            }
+            else
+            {
+                <a class="btn-auth btn-register" asp-page="/Account/Register">
+                    <i class="fas fa-user-plus"></i> Đăng ký
+                </a>
+                <a class="btn-auth btn-login" asp-page="/Account/Login">
+                    <i class="far fa-user"></i> Đăng nhập
+                </a>
+            }
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link @ActivePage("/Index")" asp-page="/Index"><i class="nav-icon fas fa-home"></i>Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link @ActivePage("/Cars")" asp-page="/Cars"><i class="nav-icon fas fa-car"></i>Danh sách xe</a></li>
+            <li class="nav-item"><a class="nav-link @ActivePage("/Showroom")" asp-page="/Showroom"><i class="nav-icon fas fa-store"></i>Showroom</a></li>
+            <li class="nav-item"><a class="nav-link @ActivePage("/Compare")" asp-page="/Compare"><i class="nav-icon fas fa-balance-scale"></i>So sánh</a></li>
+            <li class="nav-item"><a class="nav-link @ActivePage("/TestDrive")" asp-page="/TestDrive"><i class="nav-icon fas fa-calendar-check"></i>Lái thử</a></li>
+            <li class="nav-item-dropdown" id="mobileAboutDropdown">
+                <a class="nav-link dropdown-toggle @IsActiveDropdown()" href="javascript:void(0)" onclick="toggleMobileDropdown('mobileAboutDropdown')"><i class="nav-icon fas fa-info-circle"></i>Giới thiệu</a>
+                <div class="nav-dropdown-menu">
+                    <a class="nav-dropdown-item" asp-page="/About"><i class="fas fa-building"></i> Về chúng tôi</a>
+                    <a class="nav-dropdown-item" asp-page="/Contact"><i class="fas fa-envelope"></i> Liên hệ</a>
+                </div>
+            </li>
+        </ul>
+    </div>
 
     <main class="page-transition @(isAdminView ? "has-admin-bar-offset" : "")">
         @RenderBody()

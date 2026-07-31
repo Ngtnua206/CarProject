@@ -51,31 +51,49 @@ document.addEventListener('DOMContentLoaded', function () {
 (function() {
     var toggle = document.getElementById('mobileMenuToggle');
     var panel = document.getElementById('mobileNavPanel');
+    var backdrop = document.getElementById('mobileNavBackdrop');
     if (!toggle || !panel) return;
 
-    toggle.addEventListener('click', function() {
-        panel.classList.toggle('open');
+    function closePanel() {
+        panel.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
+        toggle.querySelectorAll('.toggler-bar').forEach(function(bar) {
+            bar.style.transform = '';
+            bar.style.opacity = '';
+        });
+    }
+
+    function openPanel() {
+        panel.classList.add('open');
+        if (backdrop) backdrop.classList.add('open');
+        void panel.offsetHeight;
         var bars = toggle.querySelectorAll('.toggler-bar');
+        bars[0].style.transform = 'rotate(45deg) translate(4px, 4px)';
+        bars[1].style.opacity = '0';
+        bars[2].style.transform = 'rotate(-45deg) translate(4px, -4px)';
+    }
+    toggle.addEventListener('click', function() {
         if (panel.classList.contains('open')) {
-            bars[0].style.transform = 'rotate(45deg) translate(4px, 4px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(-45deg) translate(4px, -4px)';
+            closePanel();
         } else {
-            bars[0].style.transform = '';
-            bars[1].style.opacity = '';
-            bars[2].style.transform = '';
+            openPanel();
         }
     });
 
-    // Close panel when clicking a link inside
-    panel.querySelectorAll('.nav-link').forEach(function(link) {
+    if (backdrop) {
+        backdrop.addEventListener('click', closePanel);
+    }
+
+    // Close panel when clicking any link inside (except dropdown toggles)
+    panel.querySelectorAll('.nav-link, .mobile-auth-link, .nav-dropdown-item').forEach(function(link) {
+        if (link.closest('.nav-item-dropdown') && link.classList.contains('dropdown-toggle')) return;
         link.addEventListener('click', function() {
-            panel.classList.remove('open');
-            toggle.querySelectorAll('.toggler-bar').forEach(function(bar) {
-                bar.style.transform = '';
-                bar.style.opacity = '';
-            });
+            closePanel();
         });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePanel();
     });
 })();
 
@@ -124,20 +142,6 @@ function toggleMobileDropdown(id) {
     var el = document.getElementById(id);
     if (el) el.classList.toggle('open');
 }
-
-// Close mobile dropdown when clicking a link inside
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.mobile-nav-panel .nav-dropdown-item').forEach(function(item) {
-        item.addEventListener('click', function() {
-            var panel = document.getElementById('mobileNavPanel');
-            if (panel) panel.classList.remove('open');
-            document.querySelectorAll('#mobileMenuToggle .toggler-bar').forEach(function(bar) {
-                bar.style.transform = '';
-                bar.style.opacity = '';
-            });
-        });
-    });
-});
 
 // Scroll reveal animation (plays on every scroll-down, no reverse when scrolling up)
 (function() {
