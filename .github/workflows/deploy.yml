@@ -103,4 +103,4 @@ jobs:
           $resp = $req.GetResponse()
           Write-Host "app_offline.htm removed: $($resp.StatusDescription)"
           $resp.Close()
-          exit 0**
+          # end of bring-back-online step**
