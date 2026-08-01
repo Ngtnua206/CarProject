@@ -157,8 +157,13 @@ else
                         }
                         @foreach (var d in Model.DonDatCocList)
                         {
-                            var tenXe = $"{d.PhienBan?.DongXe?.TenDong ?? ""} {d.PhienBan?.TenPhienBan ?? ""}".Trim();
-                            var giaNiemYet = d.PhienBan?.GiaNiemYet ?? 0;
+                            var danhSachXe = d.ChiTiets.Any()
+                                ? string.Join(", ", d.ChiTiets.Select(c =>
+                                    $"{c.PhienBan?.DongXe?.TenDong ?? ""} {c.PhienBan?.TenPhienBan ?? ""}".Trim() + (c.SoLuong > 1 ? $" x{c.SoLuong}" : "")))
+                                : $"{d.PhienBan?.DongXe?.TenDong ?? ""} {d.PhienBan?.TenPhienBan ?? ""}".Trim();
+                            var giaNiemYet = d.ChiTiets.Sum(c => (c.PhienBan?.GiaNiemYet ?? 0) * c.SoLuong) > 0
+                                ? d.ChiTiets.Sum(c => (c.PhienBan?.GiaNiemYet ?? 0) * c.SoLuong)
+                                : (d.PhienBan?.GiaNiemYet ?? 0);
                             var giaNiemYetStr = giaNiemYet >= 1_000_000_000
                                 ? $"{giaNiemYet / 1_000_000_000:N1} tỷ VNĐ"
                                 : $"{giaNiemYet / 1_000_000:N0} triệu VNĐ";
@@ -167,7 +172,7 @@ else
                                 : $"{d.SoTienCoc / 1_000_000:N0} triệu VNĐ";
                             <div style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white); font-size:0.82rem;">@tenXe</span>
+                                    <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white); font-size:0.82rem;">@danhSachXe</span>
                                     <span style="font-size: 0.7rem; color: var(--text-muted);">@d.NgayTaoDon.ToString("dd/MM/yyyy HH:mm")</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 0.3rem; font-size: 0.75rem;">

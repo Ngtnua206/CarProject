@@ -13,6 +13,40 @@
             {
                 <form method="post">
                     <input type="hidden" asp-for="DonCoc.MaDonCoc" />
+                    <div class="mb-3">
+                        <label class="form-label">Chi tiết xe trong đơn</label>
+                        @if (Model.DonCoc.ChiTiets.Any())
+                        {
+                            <div style="border:1px solid #dee2e6;border-radius:6px;padding:0.75rem;">
+                                @foreach (var ct in Model.DonCoc.ChiTiets)
+                                {
+                                    var ctTen = $"{ct.PhienBan?.DongXe?.TenDong ?? ""} {ct.PhienBan?.TenPhienBan ?? ""}".Trim();
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #f0f0f0;">
+                                        <div>
+                                            <strong>@ctTen</strong> <small class="text-muted">x@(ct.SoLuong)</small><br>
+                                            <small class="text-muted">Showroom nguồn: @(ct.ChiNhanh?.TenChiNhanh ?? ct.MaChiNhanh ?? "—")</small>
+                                        </div>
+                                        @if (ct.TrangThaiTiepNhan == "Đã tiếp nhận")
+                                        {
+                                            <span class="badge bg-success">Đã tiếp nhận</span>
+                                        }
+                                        else if (ct.TrangThaiTiepNhan == "Từ chối")
+                                        {
+                                            <span class="badge bg-danger" title="@ct.LyDoTuChoi">Từ chối <small>@ct.LyDoTuChoi</small></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có chi tiết xe.</span>
+                        }
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="DonCoc.MaKhachHang" class="form-label">Khách Hàng</label>

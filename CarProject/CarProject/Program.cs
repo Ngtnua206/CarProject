@@ -447,13 +447,15 @@ try
         var phienBan = await db.PhienBanXe.FindAsync(item.MaPhienBan);
         if (phienBan == null)
             return Results.Ok(new { success = false, error = "Xe không tồn tại" });
-        if (phienBan.SoLuongTrongKho <= 0)
-            return Results.Ok(new { success = false, error = "Xe đã hết hàng" });
 
-        var cartItems = await cart.GetCartAsync();
-        var existingQty = cartItems.Where(c => c.MaPhienBan == item.MaPhienBan).Sum(c => c.SoLuong);
-        if (existingQty >= phienBan.SoLuongTrongKho)
-            return Results.Ok(new { success = false, error = $"Giỏ hàng đã đủ số lượng xe này (tồn kho: {phienBan.SoLuongTrongKho})" });
+        // Xe hết hàng vẫn được thêm vào giỏ dưới dạng đặt trước
+        if (phienBan.SoLuongTrongKho > 0)
+        {
+            var cartItems = await cart.GetCartAsync();
+            var existingQty = cartItems.Where(c => c.MaPhienBan == item.MaPhienBan).Sum(c => c.SoLuong);
+            if (existingQty >= phienBan.SoLuongTrongKho)
+                return Results.Ok(new { success = false, error = $"Giỏ hàng đã đủ số lượng xe này (tồn kho: {phienBan.SoLuongTrongKho})" });
+        }
 
         await cart.AddToCartAsync(item);
         return Results.Ok(new { success = true });
@@ -645,21 +647,40 @@ try
                     $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
             }
 
-            // Gửi thông báo cho Admin và Quản Lý sau khi thanh toán thành công
+            // Gửi thông báo cho Admin và các showroom có xe sau khi thanh toán thành công
             var notifSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
             await notifSvc.SendToRoleAsync("Admin", "Thanh toán đơn cọc",
                 $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán thành công.",
                 $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
 
-            if (!string.IsNullOrEmpty(donCoc.MaChiNhanh))
+            // Nạp chi tiết các xe + showroom nguồn
+            var chiTiets = await db.DonDatCocChiTiet
+                .Include(ct => ct.PhienBan).ThenInclude(p => p.DongXe)
+                .Where(ct => ct.MaDonCoc == donCoc.MaDonCoc)
+                .ToListAsync();
+
+            foreach (var group in chiTiets.GroupBy(ct => ct.MaChiNhanh))
             {
-                var chiNhanh = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == donCoc.MaChiNhanh);
-                if (chiNhanh?.MaQuanLy != null)
+                var chiNhanh = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == group.Key);
+                if (chiNhanh?.MaQuanLy == null) continue;
+
+                var soLuong = group.Sum(ct => ct.SoLuong);
+                var tenCacXe = string.Join(", ", group.Select(ct =>
+                    $"{ct.PhienBan?.DongXe?.TenDong ?? ""} {ct.PhienBan?.TenPhienBan ?? ""}".Trim() + $" x{ct.SoLuong}"));
+
+                string noiDung;
+                if (group.Key == donCoc.MaChiNhanh)
                 {
-                    await notifSvc.SendAsync(chiNhanh.MaQuanLy, "Thanh toán đơn cọc",
-                        $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán tại chi nhánh của bạn.",
-                        $"/QuanLy/DonCoc");
+                    noiDung = $"Khách {donCoc.HoTen} đã đặt cọc {soLuong} xe tại showroom {chiNhanh.TenChiNhanh} của bạn: {tenCacXe}. Vui lòng xác nhận tiếp nhận.";
                 }
+                else
+                {
+                    noiDung = $"Khách {donCoc.HoTen} đã đặt cọc {soLuong} xe tại showroom {chiNhanh.TenChiNhanh} của bạn: {tenCacXe}. Xe sẽ nhận tại {donCoc.MaChiNhanh}. Bạn có tiếp nhận vận chuyển tới showroom nhận không?";
+                }
+
+                await notifSvc.SendAsync(chiNhanh.MaQuanLy, "Đơn đặt cọc đã thanh toán - cần xác nhận",
+                    $"{noiDung} (Đơn cọc #{donCoc.MaDonCoc})",
+                    $"/QuanLy/DonCoc?highlight={donCoc.MaDonCoc}");
             }
 
             await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");

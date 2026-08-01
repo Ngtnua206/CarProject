@@ -69,6 +69,7 @@ public class DepositResultModel : PageModel
             // Load từ DB nếu vào từ notification link
             var don = await _db.DonDatCoc
                 .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
+                .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
                 .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc.Value);
             if (don == null) return RedirectToPage("/Index");
 
@@ -79,17 +80,21 @@ public class DepositResultModel : PageModel
             BankNumber = _sepay.BankNumber;
             AccountName = _sepay.AccountName;
             TransferContent = don.MaGiaoDich ?? "";
-            TenPhienBan = $"{don.PhienBan?.DongXe?.TenDong ?? ""} {don.PhienBan?.TenPhienBan ?? ""}".Trim();
+            TenPhienBan = string.Join(", ", don.ChiTiets.Select(c =>
+                $"{c.PhienBan?.DongXe?.TenDong ?? ""} {c.PhienBan?.TenPhienBan ?? ""}".Trim()).Where(s => s.Length > 0));
+            if (string.IsNullOrEmpty(TenPhienBan))
+                TenPhienBan = $"{don.PhienBan?.DongXe?.TenDong ?? ""} {don.PhienBan?.TenPhienBan ?? ""}".Trim();
             HoTen = don.HoTen ?? "";
             SoDienThoai = don.SoDienThoai ?? "";
             TrangThaiDonHang = don.TrangThaiDonHang ?? "";
-            if (don.PhienBan != null)
+            var firstPb = don.ChiTiets.Select(c => c.PhienBan).FirstOrDefault(p => p != null) ?? don.PhienBan;
+            if (firstPb != null)
             {
-                DongCo = don.PhienBan.DongCo ?? "";
-                HopSo = don.PhienBan.HopSo ?? "";
-                MauSac = don.PhienBan.MauSac ?? "";
-                LoaiNhietLieu = don.PhienBan.LoaiNhietLieu ?? "";
-                GiaNiemYet = don.PhienBan.GiaNiemYet;
+                DongCo = firstPb.DongCo ?? "";
+                HopSo = firstPb.HopSo ?? "";
+                MauSac = firstPb.MauSac ?? "";
+                LoaiNhietLieu = firstPb.LoaiNhietLieu ?? "";
+                GiaNiemYet = firstPb.GiaNiemYet;
             }
         }
         else

@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarProject.Models;
 
-public class DonDatCoc
+    public class DonDatCoc
 {
     [Key]
     public int MaDonCoc { get; set; }
     public string? MaKhachHang { get; set; }
-    public int MaPhienBan { get; set; }
+    public int? MaPhienBan { get; set; }
     public string? MaQuanLyDuyet { get; set; }
     public string? MaChiNhanh { get; set; }
     public decimal SoTienCoc { get; set; }
@@ -32,6 +32,31 @@ public class DonDatCoc
 
     [ForeignKey("MaQuanLyDuyet")]
     public TaiKhoan? QuanLyDuyet { get; set; }
+
+    [ForeignKey("MaChiNhanh")]
+    public ChiNhanhShowroom? ChiNhanh { get; set; }
+
+    public ICollection<DonDatCocChiTiet> ChiTiets { get; set; } = new List<DonDatCocChiTiet>();
+}
+
+public class DonDatCocChiTiet
+{
+    [Key]
+    public int MaChiTiet { get; set; }
+    public int MaDonCoc { get; set; }
+    public int MaPhienBan { get; set; }
+    public string? MaChiNhanh { get; set; }
+    public int SoLuong { get; set; } = 1;
+    public string TrangThaiTiepNhan { get; set; } = "Chờ xác nhận";
+    public string? LyDoTuChoi { get; set; }
+    public string? NguoiPhanHoi { get; set; }
+    public DateTime? NgayPhanHoi { get; set; }
+
+    [ForeignKey("MaDonCoc")]
+    public DonDatCoc? DonDatCoc { get; set; }
+
+    [ForeignKey("MaPhienBan")]
+    public PhienBanXe? PhienBan { get; set; }
 
     [ForeignKey("MaChiNhanh")]
     public ChiNhanhShowroom? ChiNhanh { get; set; }

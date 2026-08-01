@@ -21,11 +21,16 @@
                     <div style="max-height: 400px; overflow-y: auto; margin-top: 1rem;">
                         @foreach (var item in Model.CartItems)
                         {
+                            var isPreOrder = item.SoLuongTrongKho <= 0;
                             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.5rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div style="flex:1;min-width:0;">
                                         <div style="font-weight: 600; color: var(--brand-white); font-size: 0.9rem;">
                                             @item.TenPhienBan
+                                            @if (isPreOrder)
+                                            {
+                                                <span style="font-size:0.65rem;background:rgba(168,85,247,0.15);color:#a855f7;padding:0.15rem 0.5rem;border-radius:50px;margin-left:0.5rem;">Đặt trước</span>
+                                            }
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--text-faint);">@item.TenDong - @item.MauSac</div>
                                     </div>
@@ -38,15 +43,42 @@
                                                 ? $"{lineTotal / 1_000_000_000:N1} tỷ"
                                                 : $"{lineTotal / 1_000_000:N0} triệu")
                                         </div>
-                                        <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ / xe</div>
+                                        <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ / xe @(isPreOrder ? "(15% cọc)" : "(20% cọc)")</div>
                                     </div>
                                 </div>
                                 <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <label style="font-size: 0.72rem; color: var(--text-muted);">Số lượng:</label>
-                                    <input type="number" name="QuantityInput[@item.MaPhienBan]" value="@item.SoLuong" min="1" max="@item.SoLuong"
+                                    <input type="number" name="QuantityInput[@item.MaPhienBan]" value="@item.SoLuong" min="1" max="@(isPreOrder ? 10 : item.SoLuong)"
                                            class="form-control" style="width: 70px; font-size: 0.82rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" />
                                 </div>
-                                @if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
+                                <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <label style="font-size: 0.72rem; color: var(--text-muted); flex-shrink:0;">Showroom nguồn:</label>
+                                    <select name="SourceChiNhanh[@item.MaPhienBan]" class="form-control" style="font-size: 0.82rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);">
+                                        @if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tkList) && tkList.Any())
+                                        {
+                                            foreach (var tk in tkList)
+                                            {
+                                                <option value="@tk.MaChiNhanh" selected="@(Model.SourceChiNhanh.TryGetValue(item.MaPhienBan, out var v) && v == tk.MaChiNhanh)">
+                                                    @tk.ChiNhanh?.TenChiNhanh (@tk.SoLuong xe)
+                                                </option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var cn in Model.DanhSachChiNhanh)
+                                            {
+                                                <option value="@cn.MaChiNhanh">@cn.TenChiNhanh</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                @if (isPreOrder)
+                                {
+                                    <div style="margin-top: 0.4rem; font-size: 0.72rem; color: var(--text-faint);">
+                                        <i class="fas fa-truck me-1"></i> Xe đặt trước — showroom được chọn sẽ chuẩn bị xe cho bạn.
+                                    </div>
+                                }
+                                else if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
                                 {
                                     <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.04); font-size: 0.72rem; color: var(--text-faint); display: flex; flex-wrap: wrap; gap: 0.4rem;">
                                         @foreach (var tk in tonKhoList)
@@ -114,6 +146,19 @@
                                         <option value="@cn.MaChiNhanh">@cn.TenChiNhanh (@cn.DiaChi)</option>
                                     }
                                 </select>
+                            </div>
+                            <div class="col-12">
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
+                                    <label style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem;"><i class="fas fa-calendar-check me-1" style="color: var(--brand-gold);"></i> Đặt lịch hẹn nhận xe (tùy chọn)</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <input type="date" asp-for="LichHenNgay" class="form-control" style="font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="time" asp-for="LichHenGio" class="form-control" style="font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Ghi chú</label>

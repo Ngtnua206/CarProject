@@ -80,6 +80,13 @@
                                 </div>
                             }
 
+                            @if (Model.IsPreOrder)
+                            {
+                                <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.3); color: #c084fc; padding: 0.75rem 1rem; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                                    <i class="fas fa-truck me-1"></i> Xe này hiện đã hết hàng. Bạn có thể <strong>đặt trước</strong> với cọc <strong>15%</strong> và chọn showroom để họ chuẩn bị xe cho bạn.
+                                </div>
+                            }
+
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label asp-for="DepositData.HoTen" class="form-label">Họ tên</label>
@@ -94,8 +101,14 @@
                                     <input asp-for="DepositData.DiaChi" class="form-control" required placeholder="Nhập địa chỉ" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label asp-for="DepositData.SoTienCoc" class="form-label">Số tiền cọc (VNĐ)</label>
-                                    <input asp-for="DepositData.SoTienCoc" type="number" class="form-control" required placeholder="VD: 50,000,000" />
+                                    <label asp-for="MaChiNhanh" class="form-label">Showroom nguồn <span style="color:var(--text-faint);">(nơi chuẩn bị xe)</span></label>
+                                    <select asp-for="MaChiNhanh" class="form-control" required>
+                                        <option value="">-- Chọn showroom --</option>
+                                        @foreach (var cn in Model.DanhSachChiNhanh)
+                                        {
+                                            <option value="@cn.MaChiNhanh">@cn.TenChiNhanh (@cn.DiaChi)</option>
+                                        }
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="DepositData.PhuongThucThanhToan" class="form-label">Phương thức thanh toán</label>
@@ -105,6 +118,10 @@
                                         <option value="Chuyển khoản">Chuyển khoản</option>
                                         <option value="Thẻ tín dụng">Thẻ tín dụng</option>
                                     </select>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="DepositData.SoTienCoc" class="form-label">Số tiền cọc (VNĐ) — @(Model.IsPreOrder ? "15%" : "20%") giá xe</label>
+                                    <input asp-for="DepositData.SoTienCoc" type="number" class="form-control" required placeholder="VD: 50,000,000" value="@DepositCalculator.Compute(Model.PhienBan.GiaNiemYet, Model.IsPreOrder)" />
                                 </div>
                                 <div class="col-12">
                                     <label asp-for="DepositData.GhiChu" class="form-label">Ghi chú</label>

@@ -15,6 +15,7 @@ public class DetailsModel : PageModel
     public HangXe HangXe { get; set; }
     public List<PhienBanXe> PhienBans { get; set; }
     public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
+    public HashSet<int> PhienBanDaDatCoc { get; set; } = new();
 
     public DetailsModel(AppDbContext db, IActivityLogService log)
     {
@@ -36,6 +37,15 @@ public class DetailsModel : PageModel
             .ToListAsync();
         TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
             .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Các phiên bản đã được đặt cọc (đơn đang chờ xử lý/đã xác nhận)
+        var reservedStatuses = new List<string> { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán" };
+        var daDatCoc = await _db.DonDatCocChiTiet
+            .Where(c => maPhienBans.Contains(c.MaPhienBan)
+                && reservedStatuses.Contains(c.DonDatCoc!.TrangThaiDonHang ?? ""))
+            .Select(c => c.MaPhienBan)
+            .ToListAsync();
+        PhienBanDaDatCoc = daDatCoc.ToHashSet();
 
         await _log.LogAsync("Xem chi tiết xe", $"{HangXe?.TenHang} {Dong.TenDong} (ID={id})");
         return Page();

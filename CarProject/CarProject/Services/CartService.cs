@@ -28,6 +28,8 @@ public class CartItem
     public string? DuongDanAnh { get; set; }
     [JsonPropertyName("soLuong")]
     public int SoLuong { get; set; } = 1;
+    [JsonPropertyName("soLuongTrongKho")]
+    public int SoLuongTrongKho { get; set; }
 }
 
 public interface ICartService
@@ -75,7 +77,8 @@ public class CartService : ICartService
             TenPhienBan = g.PhienBan?.TenPhienBan ?? "",
             TenDong = g.PhienBan?.DongXe?.TenDong ?? "",
             GiaNiemYet = g.PhienBan?.GiaNiemYet ?? 0,
-            SoTienCoc = Math.Round((g.PhienBan?.GiaNiemYet ?? 0) * 0.2m / 1_000_000) * 1_000_000,
+            SoLuongTrongKho = g.PhienBan?.SoLuongTrongKho ?? 0,
+            SoTienCoc = DepositCalculator.Compute(g.PhienBan?.GiaNiemYet ?? 0, (g.PhienBan?.SoLuongTrongKho ?? 0) <= 0),
             MauSac = g.PhienBan?.MauSac,
             DongCo = g.PhienBan?.DongCo,
             HopSo = g.PhienBan?.HopSo,
@@ -169,7 +172,7 @@ public class CartService : ICartService
 
         return cartRows.Sum(g =>
         {
-            var deposit = Math.Round((g.PhienBan?.GiaNiemYet ?? 0) * 0.2m / 1_000_000) * 1_000_000;
+            var deposit = DepositCalculator.Compute(g.PhienBan?.GiaNiemYet ?? 0, (g.PhienBan?.SoLuongTrongKho ?? 0) <= 0);
             return deposit * g.SoLuong;
         });
     }

@@ -63,6 +63,7 @@ public class ProfileModel : PageModel
 
             DonDatCocList = await _db.DonDatCoc
                 .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
+                .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
                 .Include(d => d.ChiNhanh)
                 .Where(d => d.MaKhachHang == userId)
                 .OrderByDescending(d => d.NgayTaoDon)

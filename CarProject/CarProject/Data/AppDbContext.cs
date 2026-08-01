@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<TaiKhoan> TaiKhoan { get; set; }
     public DbSet<ChiTietKhachHang> ChiTietKhachHang { get; set; }
     public DbSet<DonDatCoc> DonDatCoc { get; set; }
+    public DbSet<DonDatCocChiTiet> DonDatCocChiTiet { get; set; }
     public DbSet<HoaDonMuaXe> HoaDonMuaXe { get; set; }
     public DbSet<LichHenLaiThu> LichHenLaiThu { get; set; }
     public DbSet<ChiNhanhShowroom> ChiNhanhShowroom { get; set; }
@@ -125,6 +126,27 @@ public class AppDbContext : DbContext
             .HasForeignKey(d => d.MaChiNhanh)
             .OnDelete(DeleteBehavior.NoAction);
 
+        modelBuilder.Entity<DonDatCocChiTiet>().ToTable("DonDatCocChiTiet");
+        modelBuilder.Entity<DonDatCocChiTiet>().HasKey(c => c.MaChiTiet);
+
+        modelBuilder.Entity<DonDatCoc>()
+            .HasMany(d => d.ChiTiets)
+            .WithOne(c => c.DonDatCoc)
+            .HasForeignKey(c => c.MaDonCoc)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DonDatCocChiTiet>()
+            .HasOne(c => c.PhienBan)
+            .WithMany()
+            .HasForeignKey(c => c.MaPhienBan)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DonDatCocChiTiet>()
+            .HasOne(c => c.ChiNhanh)
+            .WithMany()
+            .HasForeignKey(c => c.MaChiNhanh)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<HoaDonMuaXe>()
             .HasOne(h => h.DonDatCoc)
             .WithMany()
@@ -136,6 +158,12 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(h => h.MaChiNhanh)
             .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<DonDatCoc>()
+            .HasOne(d => d.PhienBan)
+            .WithMany()
+            .HasForeignKey(d => d.MaPhienBan)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ChiNhanhShowroom>()
             .HasOne(c => c.QuanLy)

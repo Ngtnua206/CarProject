@@ -29,6 +29,8 @@ public class IndexModel : PageModel
         DonCocList = await _db.DonDatCoc
             .Include(d => d.KhachHang)
             .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.ChiNhanh)
             .Include(d => d.ChiNhanh)
             .OrderByDescending(d => d.NgayTaoDon)
             .ToListAsync();
@@ -38,7 +40,11 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostApproveAsync(int maDonCoc, string maChiNhanhMoi, string? lichHenNgay, string? lichHenGio)
     {
-        var don = await _db.DonDatCoc.Include(d => d.KhachHang).FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
+        var don = await _db.DonDatCoc
+            .Include(d => d.KhachHang)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.PhienBan)
+            .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
         if (don == null) return NotFound();
 
         don.TrangThaiDonHang = "Đã duyệt";
@@ -65,7 +71,7 @@ public class IndexModel : PageModel
 var lichHen = new LichHenLaiThu
                 {
                     MaKhachHang = don.MaKhachHang,
-                    MaDong = don.PhienBan?.MaDong ?? 0,
+                    MaDong = don.ChiTiets.FirstOrDefault()?.PhienBan?.MaDong ?? don.PhienBan?.MaDong ?? 0,
                     MaChiNhanh = don.MaChiNhanh ?? maChiNhanhMoi ?? "",
                     HoTenNguoiLai = don.HoTen ?? "",
                     SoDienThoai = don.SoDienThoai ?? "",
@@ -117,22 +123,29 @@ var lichHen = new LichHenLaiThu
 
         var don = await _db.DonDatCoc
             .Include(d => d.PhienBan)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
             .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
-        if (don == null || don.PhienBan == null) return NotFound();
+        if (don == null) return NotFound();
 
-        // 1. Tạo hoá đơn
+        var listPhienBan = don.ChiTiets.Any()
+            ? don.ChiTiets.Select(c => c.PhienBan).Where(p => p != null).ToList()
+            : new List<PhienBanXe?> { don.PhienBan };
+        if (listPhienBan.Count == 0 || listPhienBan.All(p => p == null)) return NotFound();
+
+        // 1. Tạo hoá đơn (một hoá đơn cho toàn đơn)
+        var tongGia = (long)listPhienBan.Sum(p => p!.GiaNiemYet);
         var hoaDon = new HoaDonMuaXe
         {
             MaHoaDon = $"HD{DateTime.Now:yyMMddHHmmss}{maDonCoc:D4}",
             MaDonCoc = maDonCoc,
             MaKhachHang = don.MaKhachHang,
-            MaPhienBan = don.MaPhienBan,
+            MaPhienBan = don.MaPhienBan ?? listPhienBan.First()!.MaPhienBan,
             MaQuanLyXuat = userName,
             MaChiNhanh = don.MaChiNhanh,
-            GiaXeThucTe = don.PhienBan.GiaNiemYet,
+            GiaXeThucTe = tongGia,
             ThueTruocBaVaPhiLanBanh = 0,
             SoTienDuocGiam = 0,
-            TongTienPhaiTra = don.PhienBan.GiaNiemYet,
+            TongTienPhaiTra = tongGia,
             SoTienDaThanhToan = (long)don.SoTienCoc,
             PhuongThucThanhToan = don.PhuongThucThanhToan,
             NgayXuatHoaDon = DateTime.Now,
@@ -142,17 +155,23 @@ var lichHen = new LichHenLaiThu
         };
         _db.HoaDonMuaXe.Add(hoaDon);
 
-        // 2. Trừ tồn kho
-        don.PhienBan.SoLuongTrongKho--;
+        // 2. Trừ tồn kho từng xe
+        foreach (var p in listPhienBan)
+        {
+            p!.SoLuongTrongKho--;
+        }
 
-        // 3. Cập nhật thống kê doanh thu
-        await CapNhatDoanhThu(don.MaChiNhanh ?? "", don.PhienBan.GiaNiemYet, don.MaPhienBan);
+        // 3. Cập nhật thống kê doanh thu theo từng xe
+        foreach (var p in listPhienBan)
+        {
+            await CapNhatDoanhThu(don.MaChiNhanh ?? "", p!.GiaNiemYet, p.MaPhienBan);
+        }
 
         // 4. Cập nhật trạng thái đơn
         don.TrangThaiDonHang = "Hoàn tất";
         await _db.SaveChangesAsync();
 
-        var tenXe = $"{don.PhienBan.DongXe?.TenDong ?? ""} {don.PhienBan.TenPhienBan}".Trim();
+        var tenXe = string.Join(", ", listPhienBan.Select(p => $"{p!.DongXe?.TenDong ?? ""} {p.TenPhienBan}".Trim()));
         await _notif.SendAsync(don.MaKhachHang!, "Mua xe thành công",
             $"Xe {tenXe} - Đơn cọc #{maDonCoc} đã hoàn tất. Cảm ơn bạn đã mua xe!", "");
 
@@ -180,6 +199,7 @@ var lichHen = new LichHenLaiThu
 
         var don = await _db.DonDatCoc
             .Include(d => d.PhienBan)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan)
             .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
         if (don == null) return NotFound();
 
@@ -189,8 +209,13 @@ var lichHen = new LichHenLaiThu
             await HoanTacDoanhThu(don.MaChiNhanh ?? "", hoaDon.TongTienPhaiTra);
             _db.HoaDonMuaXe.Remove(hoaDon);
 
-            if (don.PhienBan != null)
-                don.PhienBan.SoLuongTrongKho++;
+            var listPhienBan = don.ChiTiets.Any()
+                ? don.ChiTiets.Select(c => c.PhienBan).Where(p => p != null).ToList()
+                : new List<PhienBanXe?> { don.PhienBan };
+            foreach (var p in listPhienBan)
+            {
+                if (p != null) p.SoLuongTrongKho++;
+            }
         }
 
         don.TrangThaiDonHang = "Đã hủy";

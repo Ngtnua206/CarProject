@@ -40,58 +40,114 @@ public class DonCocModel : PageModel
 
         DanhSachDonCoc = await _db.DonDatCoc
             .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.ChiNhanh)
             .Include(d => d.KhachHang)
-            .Where(d => d.MaChiNhanh == Showroom.MaChiNhanh)
+            .Where(d => d.ChiTiets.Any(c => c.MaChiNhanh == Showroom.MaChiNhanh))
             .OrderByDescending(d => d.NgayTaoDon)
             .ToListAsync();
 
         return Page();
     }
 
-    // ----- Chấp nhận đặt cọc -----
-    public async Task<IActionResult> OnPostApproveAsync(int maDonCoc)
+    // ----- Chấp nhận tiếp nhận một xe trong đơn -----
+    public async Task<IActionResult> OnPostAcceptAsync(int maChiTiet)
     {
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
 
-        var don = await _db.DonDatCoc.FindAsync(maDonCoc);
-        if (don == null) return NotFound();
+        var chiTiet = await _db.DonDatCocChiTiet
+            .Include(c => c.DonDatCoc)
+            .Include(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(c => c.ChiNhanh)
+            .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet);
+        if (chiTiet == null) return NotFound();
 
-        don.TrangThaiDonHang = "Đã xác nhận";
-        don.MaQuanLyDuyet = userName;
+        // Chỉ quản lý showroom nguồn của xe đó mới được xác nhận
+        var showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (showroom == null || chiTiet.MaChiNhanh != showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền xác nhận xe thuộc showroom khác.";
+            return RedirectToPage();
+        }
+
+        chiTiet.TrangThaiTiepNhan = "Đã tiếp nhận";
+        chiTiet.NguoiPhanHoi = userName;
+        chiTiet.NgayPhanHoi = DateTime.Now;
         await _db.SaveChangesAsync();
 
-        await _notif.SendAsync(don.MaKhachHang!, "Đơn cọc đã được xác nhận",
-            $"Đơn cọc #{maDonCoc} đã được chấp nhận. Vui lòng đến showroom để hoàn tất thủ tục.", "");
-        await _notif.SendToRoleAsync("Admin", "Đơn cọc đã được Quản Lý xác nhận",
-            $"Đơn cọc #{maDonCoc} - {don.HoTen} - Vui lòng vào bán xe",
-            $"/Admin/DonCoc/Index");
-        await _log.LogAsync($"QL chấp nhận đơn cọc #{maDonCoc}");
+        // Nếu tất cả xe đã tiếp nhận thì đơn chuyển sang Đã xác nhận
+        var allAccepted = await _db.DonDatCocChiTiet
+            .AllAsync(c => c.MaDonCoc == chiTiet.MaDonCoc
+                && (c.TrangThaiTiepNhan == "Đã tiếp nhận" || c.TrangThaiTiepNhan == "Từ chối"));
+        if (allAccepted && chiTiet.DonDatCoc != null)
+        {
+            chiTiet.DonDatCoc.TrangThaiDonHang = "Đã xác nhận";
+            chiTiet.DonDatCoc.MaQuanLyDuyet = userName;
+            await _db.SaveChangesAsync();
 
-        SuccessMessage = "Đã chấp nhận đơn cọc.";
+            var don = chiTiet.DonDatCoc;
+            await _notif.SendAsync(don.MaKhachHang!, "Đơn cọc đã được xác nhận",
+                $"Đơn cọc #{don.MaDonCoc} đã được chấp nhận. Vui lòng đến showroom để hoàn tất thủ tục.", "/Orders/DepositResult?maDonCoc=" + don.MaDonCoc);
+            await _notif.SendToRoleAsync("Admin", "Đơn cọc đã được Quản Lý xác nhận",
+                $"Đơn cọc #{don.MaDonCoc} - {don.HoTen} - Vui lòng vào bán xe",
+                $"/Admin/DonCoc/Index");
+        }
+
+        await _log.LogAsync($"QL chấp nhận xe #{maChiTiet} của đơn #{chiTiet.MaDonCoc}");
+        SuccessMessage = "Đã tiếp nhận xe trong đơn.";
         return RedirectToPage();
     }
 
-    // ----- Không chấp nhận đặt cọc -----
-    public async Task<IActionResult> OnPostRejectAsync(int maDonCoc)
+    // ----- Từ chối tiếp nhận một xe (phải điền lý do) -----
+    public async Task<IActionResult> OnPostRejectAsync(int maChiTiet, string lyDoTuChoi)
     {
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
 
-        var don = await _db.DonDatCoc.FindAsync(maDonCoc);
-        if (don == null) return NotFound();
+        if (string.IsNullOrWhiteSpace(lyDoTuChoi))
+        {
+            ErrorMessage = "Vui lòng nhập lý do từ chối.";
+            return RedirectToPage();
+        }
 
-        don.TrangThaiDonHang = "Đã từ chối";
-        don.MaQuanLyDuyet = userName;
+        var chiTiet = await _db.DonDatCocChiTiet
+            .Include(c => c.DonDatCoc)
+            .Include(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(c => c.ChiNhanh)
+            .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet);
+        if (chiTiet == null) return NotFound();
+
+        var showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (showroom == null || chiTiet.MaChiNhanh != showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền xác nhận xe thuộc showroom khác.";
+            return RedirectToPage();
+        }
+
+        chiTiet.TrangThaiTiepNhan = "Từ chối";
+        chiTiet.LyDoTuChoi = lyDoTuChoi.Trim();
+        chiTiet.NguoiPhanHoi = userName;
+        chiTiet.NgayPhanHoi = DateTime.Now;
         await _db.SaveChangesAsync();
 
-        await _notif.SendAsync(don.MaKhachHang!, "Đơn cọc không được chấp nhận",
-            $"Đơn cọc #{maDonCoc} không được chấp nhận. Tiền cọc sẽ được hoàn lại. Vui lòng liên hệ showroom.", "");
-        await _log.LogAsync($"QL từ chối đơn cọc #{maDonCoc}");
+        var tenXe = $"{chiTiet.PhienBan?.DongXe?.TenDong ?? ""} {chiTiet.PhienBan?.TenPhienBan ?? ""}".Trim();
+        await _log.LogAsync($"QL từ chối xe #{maChiTiet} đơn #{chiTiet.MaDonCoc}",
+            $"Lý do: {lyDoTuChoi.Trim()}");
 
-        SuccessMessage = "Đã từ chối đơn cọc. Tiền cọc sẽ được hoàn lại cho khách.";
+        // Gửi thông báo tới Admin khi từ chối
+        await _notif.SendToRoleAsync("Admin", "Showroom từ chối tiếp nhận xe",
+            $"Showroom {showroom.TenChiNhanh} từ chối tiếp nhận xe {tenXe} (Đơn cọc #{chiTiet.MaDonCoc}). Lý do: {lyDoTuChoi.Trim()}",
+            $"/Admin/DonCoc/Edit?maDonCoc={chiTiet.MaDonCoc}");
+
+        if (chiTiet.DonDatCoc?.MaKhachHang != null)
+        {
+            await _notif.SendAsync(chiTiet.DonDatCoc.MaKhachHang, "Xe bị từ chối tiếp nhận",
+                $"Xe {tenXe} trong đơn cọc #{chiTiet.MaDonCoc} bị từ chối bởi showroom {showroom.TenChiNhanh}. Lý do: {lyDoTuChoi.Trim()}",
+                "");
+        }
+
+        SuccessMessage = "Đã từ chối tiếp nhận xe. Lý do đã được gửi tới Admin.";
         return RedirectToPage();
     }
-
-
 }

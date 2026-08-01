@@ -37,7 +37,7 @@ public class ActivityLogService : IActivityLogService
         {
             var entry = new NhatKyHeThong
             {
-                MaTaiKhoan = ctx?.User.GetJwtUserName(),
+                MaTaiKhoan = ctx?.User.GetJwtUserName() ?? "(anonymous)",
                 TenDangNhap = userName,
                 VaiTro = role,
                 HanhDong = hanhDong,
@@ -52,7 +52,12 @@ public class ActivityLogService : IActivityLogService
         }
         catch
         {
-            // ignore DB logging errors
+            // Gỡ entity lỗi khỏi change tracker để không ảnh hưởng các lần SaveChanges sau
+            var broken = _db.ChangeTracker.Entries<NhatKyHeThong>()
+                .Where(e => e.State == Microsoft.EntityFrameworkCore.EntityState.Added)
+                .ToList();
+            foreach (var b in broken)
+                b.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
         }
     }
 }

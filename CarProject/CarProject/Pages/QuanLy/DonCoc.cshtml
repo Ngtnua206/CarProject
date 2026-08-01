@@ -66,7 +66,35 @@
                             <tr>
                                 <td>#@d.MaDonCoc</td>
                                 <td><strong>@d.HoTen</strong><br><small class="text-muted">@d.SoDienThoai</small></td>
-                                <td>@d.PhienBan?.DongXe?.TenDong<br><small class="text-muted">@d.PhienBan?.TenPhienBan</small></td>
+                                <td>
+                                    @foreach (var ct in d.ChiTiets)
+                                    {
+                                        var ctTen = $"{ct.PhienBan?.DongXe?.TenDong ?? ""} {ct.PhienBan?.TenPhienBan ?? ""}".Trim();
+                                        var isMine = ct.MaChiNhanh == Model.Showroom?.MaChiNhanh;
+                                        var tienNhanBadge = ct.TrangThaiTiepNhan switch
+                                        {
+                                            "Đã tiếp nhận" => "<span class='badge badge-confirmed'>Đã tiếp nhận</span>",
+                                            "Từ chối" => $"<span class='badge badge-rejected'>Từ chối</span><br><small class='text-muted'>{(ct.LyDoTuChoi ?? "")}</small>",
+                                            _ => "<span class='badge badge-waiting'>Chờ xác nhận</span>"
+                                        };
+                                        <div style="border:1px solid #eee;border-radius:6px;padding:0.5rem;margin-bottom:0.4rem;">
+                                            <div>@ctTen <small class="text-muted">x@(ct.SoLuong)</small> @Html.Raw(tienNhanBadge)</div>
+                                            <div style="font-size:0.7rem;color:#999;">Showroom: @(ct.ChiNhanh?.TenChiNhanh ?? ct.MaChiNhanh)@(isMine ? " (của bạn)" : "")</div>
+                                            @if (isMine && ct.TrangThaiTiepNhan == "Chờ xác nhận")
+                                            {
+                                                <div style="margin-top:0.3rem;">
+                                                    <form method="post" asp-page-handler="Accept" style="display:inline" onsubmit="return confirm('Tiếp nhận xe này?');">
+                                                        <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
+                                                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Tiếp nhận</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@ct.MaChiTiet, '@ctTen.Replace("'", "\\'")')">
+                                                        <i class="fas fa-times"></i> Không tiếp nhận
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </td>
                                 <td>@d.SoTienCoc.ToString("N0")đ</td>
                                 <td>@d.NgayTaoDon.ToString("dd/MM/yyyy")</td>
                                 <td>
@@ -92,19 +120,7 @@
                                             break;
                                     }
                                 </td>
-                                <td>
-                                    @if (d.TrangThaiDonHang == "Chờ xác nhận")
-                                    {
-                                        <form method="post" asp-page-handler="Approve" style="display:inline" onsubmit="return confirm('Chấp nhận đơn cọc #@d.MaDonCoc?');">
-                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Chấp nhận</button>
-                                        </form>
-                                        <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc? Tiền cọc sẽ được hoàn lại.');">
-                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Không chấp nhận</button>
-                                        </form>
-                                    }
-                                </td>
+                                <td></td>
                             </tr>
                         }
                     </tbody>
@@ -113,3 +129,42 @@
         </div>
     }
 </div>
+
+<!-- Modal từ chối tiếp nhận xe -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Reject">
+                <div class="modal-header">
+                    <h5 class="modal-title">Từ chối tiếp nhận xe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="maChiTiet" id="rejectMaChiTiet" />
+                    <div class="mb-3">
+                        <label class="form-label">Xe</label>
+                        <input type="text" class="form-control" id="rejectTenXe" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do từ chối <span style="color:red;">*</span></label>
+                        <textarea name="lyDoTuChoi" id="rejectLyDo" class="form-control" rows="3" required placeholder="Bắt buộc nhập lý do từ chối"></textarea>
+                        <small class="text-muted">Lý do sẽ được gửi tới Admin và khách hàng.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Xác nhận từ chối</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openRejectModal(maChiTiet, tenXe) {
+        document.getElementById('rejectMaChiTiet').value = maChiTiet;
+        document.getElementById('rejectTenXe').value = tenXe;
+        document.getElementById('rejectLyDo').value = '';
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+</script>

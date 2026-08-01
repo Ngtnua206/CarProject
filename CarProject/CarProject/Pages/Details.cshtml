@@ -76,15 +76,23 @@
                     var priceFormatted = p.item.GiaNiemYet >= 1_000_000_000
                         ? $"{p.item.GiaNiemYet / 1_000_000_000:N1} tỷ"
                         : $"{p.item.GiaNiemYet / 1_000_000:N0} triệu";
+                    var isDeposited = Model.PhienBanDaDatCoc.Contains(p.item.MaPhienBan);
                     var statusClass = "in";
                     var statusText = "Còn hàng";
-                    if (p.item.SoLuongTrongKho <= 0) { statusClass = "out"; statusText = "Hết hàng"; }
+                    if (p.item.SoLuongTrongKho <= 0) { statusClass = "preorder"; statusText = "Đặt trước"; }
                     else if (p.item.SoLuongTrongKho <= 3) { statusClass = "low"; statusText = "Sắp hết"; }
 
                     <div class="version-content" id="version-@p.idx" style="display: @(p.idx == 0 ? "block" : "none")">
                         <div class="price-hero">
                             @priceFormatted <small>VNĐ</small>
-                            <span class="badge-stock @statusClass" style="margin-left: 1rem; font-size: 0.7rem; vertical-align: middle;">@statusText</span>
+                            @if (isDeposited)
+                            {
+                                <span class="badge-stock deposited" style="margin-left: 1rem; font-size: 0.7rem; vertical-align: middle;">Đã đặt cọc</span>
+                            }
+                            else
+                            {
+                                <span class="badge-stock @statusClass" style="margin-left: 1rem; font-size: 0.7rem; vertical-align: middle;">@statusText</span>
+                            }
                         </div>
 
                         <div class="quick-specs-grid">

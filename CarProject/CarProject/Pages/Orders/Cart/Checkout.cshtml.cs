@@ -33,6 +33,14 @@ public class CheckoutModel : PageModel
     [BindProperty]
     public Dictionary<int, int> QuantityInput { get; set; } = new();
 
+    [BindProperty]
+    public Dictionary<int, string> SourceChiNhanh { get; set; } = new();
+
+    [BindProperty]
+    public string? LichHenNgay { get; set; }
+    [BindProperty]
+    public string? LichHenGio { get; set; }
+
     [BindProperty(Name = "_ajax")]
     public bool IsAjaxSubmit { get; set; }
 
@@ -108,8 +116,10 @@ public class CheckoutModel : PageModel
             }
         }
 
-        // Kiểm tra tồn kho trước khi đặt cọc
-        var reservedStatuses = new[] { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
+        TotalDeposit = CartItems.Sum(c => c.SoTienCoc * c.SoLuong);
+
+        // Kiểm tra tồn kho theo showroom nguồn trước khi đặt cọc
+        var reservedStatuses = new List<string> { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
         foreach (var item in CartItems)
         {
             var phienBan = await _db.PhienBanXe.FindAsync(item.MaPhienBan);
@@ -120,74 +130,124 @@ public class CheckoutModel : PageModel
                 return Page();
             }
 
-            // Tính số xe đã đặt cọc (mọi trạng thái trừ Đã từ chối)
-            var reservedQty = await _db.DonDatCoc
-                .CountAsync(d => d.MaPhienBan == item.MaPhienBan
-                    && reservedStatuses.Contains(d.TrangThaiDonHang ?? ""));
+            var sourceCn = SourceChiNhanh.TryGetValue(item.MaPhienBan, out var sc) && !string.IsNullOrEmpty(sc)
+                ? sc
+                : MaChiNhanh;
 
-            // Kiểm tra theo showroom nếu có chọn
-            int available;
-            if (!string.IsNullOrEmpty(MaChiNhanh))
-            {
-                var tonKho = await _db.TonKhoTheoChiNhanh
-                    .FirstOrDefaultAsync(t => t.MaPhienBan == item.MaPhienBan && t.MaChiNhanh == MaChiNhanh);
-                available = (tonKho?.SoLuong ?? 0) - reservedQty;
-            }
-            else
-            {
-                available = phienBan.SoLuongTrongKho - reservedQty;
-            }
+            // Xe hết hàng được phép đặt trước (chọn showroom bất kỳ để chuẩn bị xe)
+            if (phienBan.SoLuongTrongKho <= 0)
+                continue;
+
+            // Tính số xe đã đặt cọc (mọi trạng thái trừ Đã từ chối)
+            var reservedQty = await _db.DonDatCocChiTiet
+                .CountAsync(ct => ct.MaPhienBan == item.MaPhienBan
+                    && ct.MaChiNhanh == sourceCn
+                    && reservedStatuses.Contains(ct.DonDatCoc!.TrangThaiDonHang ?? ""));
+
+            var tonKho = await _db.TonKhoTheoChiNhanh
+                .FirstOrDefaultAsync(t => t.MaPhienBan == item.MaPhienBan && t.MaChiNhanh == sourceCn);
+            var available = (tonKho?.SoLuong ?? 0) - reservedQty;
 
             if (item.SoLuong > available)
             {
-                ErrorMessage = $"Số lượng xe \"{item.TenPhienBan}\" trong kho không đủ. Hiện chỉ còn {available} xe.";
+                ErrorMessage = $"Showroom \"{sourceCn}\" không đủ xe \"{item.TenPhienBan}\". Hiện chỉ còn {available} xe.";
                 await LoadShowrooms();
                 return Page();
             }
         }
 
-        var createdDeposits = new List<int>();
         var totalXe = CartItems.Sum(c => c.SoLuong);
-        var tenXeList = new List<string>();
 
+        // Tạo MỘT đơn cọc duy nhất kèm thông tin người đặt
+        var deposit = new DonDatCoc
+        {
+            MaKhachHang = userName ?? "",
+            MaChiNhanh = MaChiNhanh,
+            SoTienCoc = TotalDeposit,
+            PhuongThucThanhToan = PhuongThucThanhToan,
+            TrangThaiThanhToan = "Chưa thanh toán",
+            TrangThaiDonHang = "Chờ xử lý",
+            NgayTaoDon = DateTime.Now,
+            HoTen = HoTen,
+            SoDienThoai = SoDienThoai,
+            DiaChi = DiaChi,
+            GhiChu = GhiChu,
+            MaGiaoDich = groupCode
+        };
+
+        // Thêm chi tiết từng xe vào chung một đơn, mỗi xe có showroom nguồn riêng
         foreach (var item in CartItems)
         {
-            for (int i = 0; i < item.SoLuong; i++)
+            var sourceCn = SourceChiNhanh.TryGetValue(item.MaPhienBan, out var sc) && !string.IsNullOrEmpty(sc)
+                ? sc
+                : MaChiNhanh;
+            deposit.ChiTiets.Add(new DonDatCocChiTiet
             {
-                var deposit = new DonDatCoc
-                {
-                    MaKhachHang = userName ?? "",
-                    MaPhienBan = item.MaPhienBan,
-                    MaChiNhanh = MaChiNhanh,
-                    SoTienCoc = item.SoTienCoc,
-                    PhuongThucThanhToan = PhuongThucThanhToan,
-                    TrangThaiThanhToan = "Chưa thanh toán",
-                    TrangThaiDonHang = "Chờ xử lý",
-                    NgayTaoDon = DateTime.Now,
-                    HoTen = HoTen,
-                    SoDienThoai = SoDienThoai,
-                    DiaChi = DiaChi,
-                    GhiChu = GhiChu,
-                    MaGiaoDich = $"{groupCode}-{item.MaPhienBan}-{i + 1}"
-                };
-
-                _db.DonDatCoc.Add(deposit);
-                await _db.SaveChangesAsync();
-                createdDeposits.Add(deposit.MaDonCoc);
-                tenXeList.Add(item.TenPhienBan);
-            }
+                MaPhienBan = item.MaPhienBan,
+                MaChiNhanh = sourceCn,
+                SoLuong = item.SoLuong
+            });
         }
 
-        var tenXeStr = string.Join(", ", tenXeList.Distinct());
+        _db.DonDatCoc.Add(deposit);
+        await _db.SaveChangesAsync();
+
+        // Tạo lịch hẹn nhận xe tại showroom nhận nếu có chọn
+        if (!string.IsNullOrEmpty(LichHenNgay) && !string.IsNullOrEmpty(LichHenGio))
+        {
+            var lichHen = new LichHenLaiThu
+            {
+                MaKhachHang = userName ?? "",
+                MaDong = CartItems.FirstOrDefault()?.MaPhienBan ?? 0,
+                MaChiNhanh = MaChiNhanh,
+                HoTenNguoiLai = HoTen,
+                SoDienThoai = SoDienThoai,
+                SoBangLaiXe = "",
+                NgayHen = DateTime.Parse(LichHenNgay),
+                GioHen = LichHenGio,
+                TrangThai = "Chờ xác nhận",
+                YKienKhachHang = GhiChu ?? ""
+            };
+            _db.LichHenLaiThu.Add(lichHen);
+            await _db.SaveChangesAsync();
+        }
+
+        var tenXeList = CartItems.Select(c => c.TenPhienBan).Distinct().ToList();
+        var tenXeStr = string.Join(", ", tenXeList);
 
         await _log.LogAsync("Đặt cọc giỏ hàng",
-            $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Showroom: {MaChiNhanh}");
+            $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Nhận tại: {MaChiNhanh}");
+
+        // Gửi thông báo chung cho Admin
+        await _notif.SendToRoleAsync("Admin", "Đơn đặt cọc mới",
+            $"Đơn cọc #{deposit.MaDonCoc} - {HoTen} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}đ - Nhận tại {MaChiNhanh}",
+            $"/Admin/DonCoc/Edit?maDonCoc={deposit.MaDonCoc}");
+
+        // Gửi thông báo tới từng showroom có xe trong đơn
+        foreach (var group in deposit.ChiTiets.GroupBy(c => c.MaChiNhanh))
+        {
+            var cn = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == group.Key);
+            if (cn?.MaQuanLy == null) continue;
+
+            var soLuongCn = group.Sum(c => c.SoLuong);
+            string noiDung;
+            if (group.Key == MaChiNhanh)
+            {
+                noiDung = $"Khách {HoTen} muốn mua {soLuongCn} xe tại showroom {cn.TenChiNhanh} của bạn. Vui lòng xác nhận tiếp nhận.";
+            }
+            else
+            {
+                noiDung = $"Khách {HoTen} muốn mua {soLuongCn} xe tại showroom {cn.TenChiNhanh} của bạn và nhận xe tại {MaChiNhanh}. Bạn có tiếp nhận vận chuyển xe tới showroom nhận không?";
+            }
+            await _notif.SendAsync(cn.MaQuanLy, "Đơn đặt cọc mới - cần xác nhận",
+                $"{noiDung} (Đơn cọc #{deposit.MaDonCoc})",
+                $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+        }
 
         await _cart.ClearCartAsync();
 
         if (IsAjaxSubmit)
         {
-            var first = createdDeposits.FirstOrDefault();
             var sepay = HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<CarProject.Services.SepaySettings>>();
             var s = sepay.Value;
             var bin = "970436";
@@ -195,7 +255,7 @@ public class CheckoutModel : PageModel
             return new JsonResult(new
             {
                 success = true,
-                maDonCoc = first,
+                maDonCoc = deposit.MaDonCoc,
                 maGiaoDich = groupCode,
                 soTienCoc = TotalDeposit,
                 bankName = $"{s.BankAccount} ({s.BankName})",
@@ -205,22 +265,13 @@ public class CheckoutModel : PageModel
             });
         }
 
-        return RedirectToPage("/Orders/Payment", new { maDonCoc = createdDeposits.FirstOrDefault() });
+        return RedirectToPage("/Orders/DepositResult", new { maDonCoc = deposit.MaDonCoc });
     }
 
     private async Task LoadShowrooms()
     {
-        var maPhienBans = CartItems.Select(c => c.MaPhienBan).ToList();
-
-        var showroomCoTonKho = await _db.TonKhoTheoChiNhanh
-            .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
-            .Select(t => t.MaChiNhanh)
-            .Distinct()
-            .ToListAsync();
-
         DanhSachChiNhanh = await _db.ChiNhanhShowroom
-            .Where(c => (c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
-                && showroomCoTonKho.Contains(c.MaChiNhanh))
+            .Where(c => c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
             .ToListAsync();
     }
 

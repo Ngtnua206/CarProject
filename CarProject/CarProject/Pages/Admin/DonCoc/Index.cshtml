@@ -48,7 +48,28 @@
                                         <strong>@d.HoTen</strong><br>
                                         <small>@d.SoDienThoai</small>
                                     </td>
-                                    <td>@d.PhienBan?.TenPhienBan <br><small>@d.PhienBan?.DongXe?.TenDong</small></td>
+                                    <td>
+                                        @if (d.ChiTiets.Any())
+                                        {
+                                            foreach (var ct in d.ChiTiets)
+                                            {
+                                                var ctTen = $"{ct.PhienBan?.TenPhienBan ?? ""}";
+                                                var ctStatus = ct.TrangThaiTiepNhan == "Đã tiếp nhận"
+                                                    ? "<span class='badge bg-success'>Đã tiếp nhận</span>"
+                                                    : (ct.TrangThaiTiepNhan == "Từ chối"
+                                                        ? $"<span class='badge bg-danger'>Từ chối</span> <small class='text-danger'>{ct.LyDoTuChoi}</small>"
+                                                        : "<span class='badge bg-warning text-dark'>Chờ xác nhận</span>");
+                                                <div style="margin-bottom:0.3rem;">
+                                                    <span>@ctTen</span> <small class="text-muted">x@(ct.SoLuong)</small>
+                                                    <div style="font-size:0.72rem;">@Html.Raw(ctStatus)</div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>@d.PhienBan?.TenPhienBan <br><small>@d.PhienBan?.DongXe?.TenDong</small></span>
+                                        }
+                                    </td>
                                     <td>@d.ChiNhanh?.TenChiNhanh ?? "—"</td>
                                     <td>@d.SoTienCoc.ToString("N0")đ</td>
                                     <td>
@@ -86,7 +107,7 @@
                                     <td>
                                         @if (d.TrangThaiDonHang == "Chờ xử lý" && d.TrangThaiThanhToan == "Đã thanh toán")
                                         {
-                                            <button class="btn btn-success btn-sm" onclick="openApproveModal(@d.MaDonCoc, '@d.HoTen', '@d.PhienBan?.TenPhienBan')">
+                                            <button class="btn btn-success btn-sm" onclick="openApproveModal(@d.MaDonCoc, '@d.HoTen', '@string.Join(", ", d.ChiTiets.Select(c => c.PhienBan?.TenPhienBan))')">
                                                 <i class="fas fa-check"></i> Duyệt
                                             </button>
                                             <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc?');">

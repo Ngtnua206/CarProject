@@ -27,7 +27,10 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        DonCoc = await _db.DonDatCoc.FindAsync(id);
+        DonCoc = await _db.DonDatCoc
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.ChiNhanh)
+            .FirstOrDefaultAsync(d => d.MaDonCoc == id);
         if (DonCoc == null)
             return NotFound();
 
