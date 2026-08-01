@@ -452,6 +452,17 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
 }
 
+/* Neutralize desktop hover dropdown inside mobile drawer (higher specificity than .nav-item-dropdown:hover .nav-dropdown-menu) */
+.mobile-nav-panel .nav-item-dropdown:hover .nav-dropdown-menu {
+    transform: none;
+}
+.mobile-nav-panel .nav-item-dropdown:hover .dropdown-toggle::after {
+    transform: none;
+}
+.mobile-nav-panel .nav-item-dropdown.open .dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
 /* ====== Auth stacked (right) ====== */
 /* ============= CART ICON ============= */
 .nav-cart-wrapper {
