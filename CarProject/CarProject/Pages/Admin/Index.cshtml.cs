@@ -14,7 +14,6 @@ public class IndexModel : PageModel
     public int TotalHangXe { get; set; }
     public int TotalDongXe { get; set; }
     public int TotalPhienBan { get; set; }
-    public int TotalBanner { get; set; }
     public int TotalLogs { get; set; }
     public int TotalUsers { get; set; }
     public int TotalChiNhanh { get; set; }
@@ -43,7 +42,6 @@ public class IndexModel : PageModel
         TotalHangXe = await _db.HangXe.CountAsync();
         TotalDongXe = await _db.DongXe.CountAsync();
         TotalPhienBan = await _db.PhienBanXe.CountAsync();
-        TotalBanner = await _db.QuangCaoBanner.CountAsync();
         TotalLogs = await _db.NhatKyHeThong.CountAsync();
         TotalUsers = await _db.TaiKhoan.CountAsync();
         TotalChiNhanh = await _db.ChiNhanhShowroom.CountAsync();

@@ -51,6 +51,13 @@ public class DepositFormModel : PageModel
             return NotFound();
 
         IsPreOrder = PhienBan.SoLuongTrongKho <= 0;
+
+        if (!IsPreOrder)
+        {
+            TempData["DepositError"] = "Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua.";
+            return RedirectToPage("/Details", new { id = PhienBan.MaDong });
+        }
+
         await LoadShowrooms();
         await _log.LogAsync("Xem form đặt cọc", $"{PhienBan.TenPhienBan} (ID={id})");
         return Page();
@@ -60,6 +67,7 @@ public class DepositFormModel : PageModel
     {
         if (!ModelState.IsValid)
         {
+            if (IsAjaxSubmit) return JsonError("Vui lòng kiểm tra lại thông tin đặt cọc.");
             PhienBan = await _db.PhienBanXe
                 .Include(p => p.DongXe)
                 .FirstOrDefaultAsync(p => p.MaPhienBan == DepositData.MaPhienBan);
@@ -70,6 +78,7 @@ public class DepositFormModel : PageModel
 
         if (string.IsNullOrEmpty(DepositData.HoTen) || string.IsNullOrEmpty(DepositData.SoDienThoai))
         {
+            if (IsAjaxSubmit) return JsonError("Vui lòng điền họ tên và số điện thoại.");
             PhienBan = await _db.PhienBanXe
                 .Include(p => p.DongXe)
                 .FirstOrDefaultAsync(p => p.MaPhienBan == DepositData.MaPhienBan);
@@ -88,28 +97,30 @@ public class DepositFormModel : PageModel
 
         IsPreOrder = PhienBan.SoLuongTrongKho <= 0;
 
-        // Kiểm tra tồn kho: xe hết hàng vẫn được đặt trước
-        if (!IsPreOrder)
-        {
-            var reservedStatuses = new List<string> { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
-            var reservedQty = await _db.DonDatCoc
-                .CountAsync(d => d.MaPhienBan == DepositData.MaPhienBan
-                    && reservedStatuses.Contains(d.TrangThaiDonHang ?? ""));
-            var available = PhienBan.SoLuongTrongKho - reservedQty;
-            if (available <= 0)
-            {
-                ModelState.AddModelError("", "Xe này đã hết hàng. Vui lòng chọn xe khác.");
-                await LoadShowrooms();
-                return Page();
-            }
-        }
-
         if (string.IsNullOrEmpty(MaChiNhanh))
         {
+            if (IsAjaxSubmit) return JsonError("Vui lòng chọn showroom nguồn (nơi chuẩn bị xe).");
             ModelState.AddModelError("", "Vui lòng chọn showroom nguồn (nơi chuẩn bị xe).");
             await LoadShowrooms();
             return Page();
         }
+
+        // Đặt cọc 1 xe chỉ hiệu nghiệm khi xe hết hàng (đặt trước)
+        if (!IsPreOrder)
+        {
+            var msg = "Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua.";
+            if (IsAjaxSubmit) return JsonError(msg);
+            ModelState.AddModelError("", msg);
+            await LoadShowrooms();
+            return Page();
+        }
+
+        // ===== Transaction + khoá dòng để chống bán vượt tồn kho =====
+        await using var tx = await _db.Database.BeginTransactionAsync();
+
+        // Khoá các dòng tồn kho của phiên bản này
+        await _db.Database.ExecuteSqlRawAsync(
+            "SELECT MaTonKho FROM TonKhoTheoChiNhanh WITH (UPDLOCK, HOLDLOCK) WHERE MaPhienBan = {0}", PhienBan.MaPhienBan);
 
         var deposit = new DonDatCoc
         {
@@ -119,7 +130,7 @@ public class DepositFormModel : PageModel
             SoTienCoc = DepositData.SoTienCoc,
             PhuongThucThanhToan = DepositData.PhuongThucThanhToan ?? "Chuyển khoản",
             TrangThaiThanhToan = "Chưa thanh toán",
-            TrangThaiDonHang = "Chờ xử lý",
+            TrangThaiDonHang = IsPreOrder ? "Chờ xử lý" : "Chờ xác nhận",
             NgayTaoDon = DateTime.Now,
             HoTen = DepositData.HoTen,
             SoDienThoai = DepositData.SoDienThoai,
@@ -137,6 +148,7 @@ public class DepositFormModel : PageModel
 
         _db.DonDatCoc.Add(deposit);
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         var tenXe = $"{PhienBan.DongXe?.TenDong ?? ""} {PhienBan.TenPhienBan}".Trim();
 
@@ -147,13 +159,13 @@ public class DepositFormModel : PageModel
             $"Đơn cọc #{deposit.MaDonCoc} - {DepositData.HoTen} - {tenXe} - {DepositData.SoTienCoc:N0}đ",
             $"/Admin/DonCoc/Edit?maDonCoc={deposit.MaDonCoc}");
 
-        // Gửi thông báo cho quản lý showroom nguồn
+        // Gửi thông báo cho quản lý showroom nguồn (đặt trước: cần chuẩn bị xe)
         var cn = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == MaChiNhanh);
         if (cn?.MaQuanLy != null)
         {
             var noiDung = IsPreOrder
-                ? $"Khách {DepositData.HoTen} đặt trước xe {tenXe} tại showroom {cn.TenChiNhanh} của bạn. Vui lòng xác nhận để chuẩn bị xe."
-                : $"Khách {DepositData.HoTen} muốn mua xe {tenXe} tại showroom {cn.TenChiNhanh} của bạn. Vui lòng xác nhận tiếp nhận.";
+                ? $"Khách {DepositData.HoTen} muốn mua:\n- 1 xe {tenXe}\nĐịa điểm hẹn: {cn.TenChiNhanh}\n\nXe hết hàng - bạn vui lòng Chấp nhận để chuẩn bị xe hoặc Từ chối kèm lý do."
+                : $"Khách {DepositData.HoTen} muốn mua:\n- 1 xe {tenXe}\nĐịa điểm hẹn: {cn.TenChiNhanh}\n\nVui lòng chọn Tiếp nhận hoặc Không tiếp nhận.";
             await _notif.SendAsync(cn.MaQuanLy, "Đơn đặt cọc mới - cần xác nhận",
                 $"{noiDung} (Đơn cọc #{deposit.MaDonCoc})",
                 $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
@@ -209,7 +221,7 @@ public class DepositFormModel : PageModel
         public string DiaChi { get; set; }
         public decimal SoTienCoc { get; set; }
         public string PhuongThucThanhToan { get; set; }
-        public string GhiChu { get; set; }
+        public string? GhiChu { get; set; }
     }
 
     private async Task LoadShowrooms()
@@ -218,4 +230,7 @@ public class DepositFormModel : PageModel
             .Where(c => c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
             .ToListAsync();
     }
+
+    private IActionResult JsonError(string message)
+        => new JsonResult(new { success = false, error = message });
 }

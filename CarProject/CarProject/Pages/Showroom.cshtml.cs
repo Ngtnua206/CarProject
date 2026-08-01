@@ -15,6 +15,8 @@ public class ShowroomModel : PageModel
     public List<HangXe> HangXeList { get; set; } = new();
     public Dictionary<int, List<DongXe>> DongXeByHang { get; set; } = new();
     public Dictionary<int, List<PhienBanXe>> PhienBanByDong { get; set; } = new();
+    public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
+    public Dictionary<string, string> TenChiNhanhLut { get; set; } = new();
 
     public ShowroomModel(AppDbContext db, IActivityLogService log)
     {
@@ -38,6 +40,19 @@ public class ShowroomModel : PageModel
         var phienBanList = await _db.PhienBanXe.ToListAsync();
         PhienBanByDong = phienBanList.GroupBy(p => p.MaDong)
             .ToDictionary(g => g.Key, g => g.ToList());
+
+        var maPhienBans = phienBanList.Select(p => p.MaPhienBan).ToList();
+        if (maPhienBans.Any())
+        {
+            var tonKhoList = await _db.TonKhoTheoChiNhanh
+                .Include(t => t.ChiNhanh)
+                .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
+                .ToListAsync();
+            TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
+                .ToDictionary(g => g.Key, g => g.ToList());
+            TenChiNhanhLut = await _db.ChiNhanhShowroom
+                .ToDictionaryAsync(c => c.MaChiNhanh, c => c.TenChiNhanh);
+        }
 
         await _log.LogAsync("Xem trang Showroom");
     }

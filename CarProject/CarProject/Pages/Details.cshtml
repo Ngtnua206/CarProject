@@ -11,14 +11,14 @@
     <!-- Gallery Section -->
     <div class="gallery-section">
         <div class="container position-relative">
-            <nav class="breadcrumb-premium position-absolute" style="top: 1.5rem; left: 1rem; z-index: 2;">
+            <nav class="breadcrumb-premium position-absolute" style="top: 1.5rem; left: 1rem; z-index: 5; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 0.45rem 1rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08);">
                 <a asp-page="/Index" style="color: var(--text-muted);"><i class="fas fa-home"></i> Trang chủ</a>
                 <span style="color: var(--text-faint);">/</span>
                 <a asp-page="/Cars" style="color: var(--text-muted);">Showroom</a>
                 <span style="color: var(--text-faint);">/</span>
                 <span style="color: var(--text-soft);">@Model.Dong?.TenDong</span>
             </nav>
-            <div class="row align-items-center" style="min-height: 500px;">
+            <div class="row align-items-center hero-wrap" style="min-height: 500px;">
                 <div class="col-lg-8 offset-lg-2 text-center">
                     @if (!string.IsNullOrEmpty(carImg))
                     {
@@ -76,16 +76,24 @@
                     var priceFormatted = p.item.GiaNiemYet >= 1_000_000_000
                         ? $"{p.item.GiaNiemYet / 1_000_000_000:N1} tỷ"
                         : $"{p.item.GiaNiemYet / 1_000_000:N0} triệu";
-                    var isDeposited = Model.PhienBanDaDatCoc.Contains(p.item.MaPhienBan);
+                    var isDeposited = Model.TongDaDatCocTheoPhienBan.TryGetValue(p.item.MaPhienBan, out var pbReserved) && pbReserved > 0;
+                    var pbTonKho = p.item.SoLuongTrongKho;
+                    var pbAvailable = pbTonKho - (isDeposited ? pbReserved : 0);
                     var statusClass = "in";
                     var statusText = "Còn hàng";
-                    if (p.item.SoLuongTrongKho <= 0) { statusClass = "preorder"; statusText = "Đặt trước"; }
-                    else if (p.item.SoLuongTrongKho <= 3) { statusClass = "low"; statusText = "Sắp hết"; }
+                    if (pbTonKho <= 0) { statusClass = "out"; statusText = "Hết hàng"; }
+                    else if (pbAvailable <= 0) { statusClass = "deposited"; statusText = "Đã đặt cọc"; }
+                    else if (pbAvailable <= 3) { statusClass = "low"; statusText = "Sắp hết"; }
 
                     <div class="version-content" id="version-@p.idx" style="display: @(p.idx == 0 ? "block" : "none")">
                         <div class="price-hero">
                             @priceFormatted <small>VNĐ</small>
-                            @if (isDeposited)
+                            @if (pbTonKho <= 0)
+                            {
+                                <span class="badge-stock out" style="margin-left: 1rem; font-size: 0.7rem; vertical-align: middle;">Hết hàng</span>
+                                <span class="badge-stock preorder" style="margin-left: 0.5rem; font-size: 0.7rem; vertical-align: middle;">Đặt trước</span>
+                            }
+                            else if (pbAvailable <= 0)
                             {
                                 <span class="badge-stock deposited" style="margin-left: 1rem; font-size: 0.7rem; vertical-align: middle;">Đã đặt cọc</span>
                             }
@@ -127,9 +135,20 @@
     onclick="addToCart(parseInt(this.dataset.maphienban), this.dataset.tenphienban, this.dataset.tendong, parseInt(this.dataset.gianiemyet), this.dataset.mausac, this.dataset.dongco, this.dataset.hopso, this.dataset.duongdananh)">
     <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
 </button>
-                            <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
-                                <i class="fas fa-credit-card"></i> Đặt cọc ngay
-                            </a>
+                            @if (pbTonKho <= 0)
+                            {
+                                <a asp-page="/Orders/DepositForm" asp-route-id="@p.item.MaPhienBan" class="btn-cta btn-deposit">
+                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0)" class="btn-cta btn-deposit btn-deposit-disabled"
+                                   title="Chỉ đặt cọc khi xe hết hàng"
+                                   onclick="showToast('Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua.', true);">
+                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                </a>
+                            }
                             <a asp-page="/TestDrive" class="btn-cta btn-testdrive">
                                 <i class="fas fa-calendar-check"></i> Đăng ký lái thử
                             </a>
@@ -138,12 +157,38 @@
                         @if (Model.TonKhoTheoPhienBan.TryGetValue(p.item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
                         {
                             <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Tồn kho theo showroom</div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Phân bổ showroom</div>
                                 <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                                    @foreach (var tk in tonKhoList)
+                                    @foreach (var tk in tonKhoList.Where(t => t.SoLuong > 0))
                                     {
+                                        var tkReserved = 0;
+                                        if (Model.DaDatCocTheoPhienBanVaChiNhanh.TryGetValue(p.item.MaPhienBan, out var cnRes) && cnRes.TryGetValue(tk.MaChiNhanh, out var rq))
+                                        {
+                                            tkReserved = rq;
+                                        }
+                                        var tkAvailable = tk.SoLuong - tkReserved;
                                         <span style="background: rgba(255,255,255,0.04); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; color: var(--text-soft);">
                                             @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@tk.SoLuong</strong>
+                                            @if (tkReserved > 0)
+                                            {
+                                                <span style="color: var(--text-faint);">(đã cọc @tkReserved, còn @tkAvailable)</span>
+                                            }
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.DaDatCocTheoPhienBanVaChiNhanh.TryGetValue(p.item.MaPhienBan, out var reservedCn) && reservedCn.Any())
+                        {
+                            <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(217,70,239,0.06); border-radius: 8px; border: 1px solid rgba(217,70,239,0.15);">
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Đã được đặt cọc</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                    @foreach (var kv in reservedCn.OrderBy(k => k.Key))
+                                    {
+                                        var cnName = tonKhoList?.FirstOrDefault(t => t.MaChiNhanh == kv.Key)?.ChiNhanh?.TenChiNhanh ?? kv.Key;
+                                        <span style="background: rgba(217,70,239,0.12); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; color: #d946ef;">
+                                            @cnName: <strong>@kv.Value</strong>
                                         </span>
                                     }
                                 </div>
@@ -167,15 +212,20 @@
                             <tr><td>Nhiên liệu</td><td>@first.LoaiNhietLieu</td></tr>
                             <tr><td>Màu sắc</td><td>@first.MauSac</td></tr>
                             <tr><td>Tồn kho</td><td>@first.SoLuongTrongKho xe</td></tr>
+                            @{
+                                var firstReserved = Model.TongDaDatCocTheoPhienBan.TryGetValue(first.MaPhienBan, out var fr) ? fr : 0;
+                            }
+                            <tr><td>Đã đặt cọc</td><td style="color: #d946ef; font-weight: 600;">@firstReserved xe</td></tr>
                             @if (Model.TonKhoTheoPhienBan.TryGetValue(first.MaPhienBan, out var sidebarTonKho) && sidebarTonKho.Any())
                             {
                                 <tr><td colspan="2" style="padding:0.3rem 0;">
                                     <div style="font-size:0.68rem;color:var(--text-faint);">Phân bổ:</div>
                                     @foreach (var tk in sidebarTonKho)
                                     {
+                                        var tkR = Model.DaDatCocTheoPhienBanVaChiNhanh.TryGetValue(first.MaPhienBan, out var sideRes) && sideRes.TryGetValue(tk.MaChiNhanh, out var sr) ? sr : 0;
                                         <div style="font-size:0.68rem;display:flex;justify-content:space-between;padding:0.1rem 0;">
                                             <span style="color:var(--text-muted);">@tk.ChiNhanh?.TenChiNhanh</span>
-                                            <span style="color:var(--brand-gold);">@tk.SoLuong</span>
+                                            <span style="color:var(--brand-gold);">@tk.SoLuong@(tkR > 0 ? $" (đã cọc {tkR})" : "")</span>
                                         </div>
                                     }
                                 </td></tr>
@@ -238,5 +288,13 @@
         document.querySelectorAll('.version-tabs .tab').forEach(el => el.classList.remove('active'));
         document.getElementById('version-' + idx).style.display = 'block';
         document.querySelectorAll('.version-tabs .tab')[idx].classList.add('active');
+    }
+    @if (TempData["DepositError"] != null)
+    {
+        <text>
+        $(function () {
+            if (window.showToast) window.showToast('@TempData["DepositError"]', true);
+        });
+        </text>
     }
 </script>

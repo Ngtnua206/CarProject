@@ -82,13 +82,14 @@
                                             <div style="font-size:0.7rem;color:#999;">Showroom: @(ct.ChiNhanh?.TenChiNhanh ?? ct.MaChiNhanh)@(isMine ? " (của bạn)" : "")</div>
                                             @if (isMine && ct.TrangThaiTiepNhan == "Chờ xác nhận")
                                             {
+                                                var isReceive = ct.MaChiNhanh == d.MaChiNhanh;
                                                 <div style="margin-top:0.3rem;">
-                                                    <form method="post" asp-page-handler="Accept" style="display:inline" onsubmit="return confirm('Tiếp nhận xe này?');">
+                                                    <form method="post" asp-page-handler="Accept" style="display:inline" onsubmit="return confirm('@(isReceive ? "Tiếp nhận xe này?" : "Đồng ý vận chuyển xe này?")');">
                                                         <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
-                                                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Tiếp nhận</button>
+                                                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> @(isReceive ? "Tiếp nhận" : "Đồng ý vận chuyển")</button>
                                                     </form>
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@ct.MaChiTiet, '@ctTen.Replace("'", "\\'")')">
-                                                        <i class="fas fa-times"></i> Không tiếp nhận
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@ct.MaChiTiet, '@ctTen.Replace("'", "\\'")', @(isReceive ? "'Không tiếp nhận'" : "'Từ chối vận chuyển'"))">
+                                                        <i class="fas fa-times"></i> @(isReceive ? "Không tiếp nhận" : "Từ chối vận chuyển")
                                                     </button>
                                                 </div>
                                             }
@@ -136,7 +137,7 @@
         <div class="modal-content">
             <form method="post" asp-page-handler="Reject">
                 <div class="modal-header">
-                    <h5 class="modal-title">Từ chối tiếp nhận xe</h5>
+                    <h5 class="modal-title" id="rejectTitle">Từ chối tiếp nhận xe</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -161,10 +162,11 @@
 </div>
 
 <script>
-    function openRejectModal(maChiTiet, tenXe) {
+    function openRejectModal(maChiTiet, tenXe, actionLabel) {
         document.getElementById('rejectMaChiTiet').value = maChiTiet;
         document.getElementById('rejectTenXe').value = tenXe;
         document.getElementById('rejectLyDo').value = '';
+        document.getElementById('rejectTitle').textContent = actionLabel || 'Từ chối tiếp nhận xe';
         new bootstrap.Modal(document.getElementById('rejectModal')).show();
     }
 </script>

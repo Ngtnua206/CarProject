@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CarProject.Data;
+using CarProject.Models;
 using CarProject.Services;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -33,6 +34,7 @@ public class DepositResultModel : PageModel
     public string GiaNiemYetStr { get; set; } = "";
     public string TrangThaiDonHang { get; set; } = "";
     public string SoDienThoai { get; set; } = "";
+    public List<DonDatCocChiTiet> ChiTiets { get; set; } = new();
 
     public DepositResultModel(AppDbContext db, IOptions<SepaySettings> sepay)
     {
@@ -70,6 +72,7 @@ public class DepositResultModel : PageModel
             var don = await _db.DonDatCoc
                 .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
                 .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+                .Include(d => d.ChiTiets).ThenInclude(c => c.ChiNhanh)
                 .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc.Value);
             if (don == null) return RedirectToPage("/Index");
 
@@ -80,6 +83,7 @@ public class DepositResultModel : PageModel
             BankNumber = _sepay.BankNumber;
             AccountName = _sepay.AccountName;
             TransferContent = don.MaGiaoDich ?? "";
+            ChiTiets = don.ChiTiets.ToList();
             TenPhienBan = string.Join(", ", don.ChiTiets.Select(c =>
                 $"{c.PhienBan?.DongXe?.TenDong ?? ""} {c.PhienBan?.TenPhienBan ?? ""}".Trim()).Where(s => s.Length > 0));
             if (string.IsNullOrEmpty(TenPhienBan))

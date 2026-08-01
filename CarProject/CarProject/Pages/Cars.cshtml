@@ -103,9 +103,30 @@
                         var brandInfo = d.item.HangXe;
                         var carIcon = carIconMap.GetValueOrDefault(d.item.TenDong, "\U0001f697");
                         var firstVer = d.item.PhienBanXes?.FirstOrDefault();
+                        var totalStock = d.item.PhienBanXes?.Sum(p => (int?)p.SoLuongTrongKho) ?? 0;
                         var carImg = d.item.DuongDanAnh ?? firstVer?.DuongDanAnh ?? brandInfo?.DuongDanLogo;
                         var carPrice = firstVer?.GiaNiemYet;
-                        <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;">
+                        var versionsJson = System.Text.Json.JsonSerializer.Serialize(
+                            d.item.PhienBanXes?.Select(p => (object)new { p.TenPhienBan, p.GiaNiemYet, p.SoLuongTrongKho }) ?? new object[0]);
+                        var showroomGroups = (d.item.PhienBanXes ?? new List<PhienBanXe>())
+                            .SelectMany(p => Model.TonKhoTheoPhienBan.TryGetValue(p.MaPhienBan, out var tl) ? tl : new List<TonKhoTheoChiNhanh>())
+                            .GroupBy(t => t.MaChiNhanh)
+                            .Select(g => new { g.Key, SoLuong = g.Sum(x => x.SoLuong), Ten = Model.TenChiNhanhLut.TryGetValue(g.Key, out var tn) ? tn : g.Key })
+                            .OrderByDescending(x => x.SoLuong);
+                        var showroomJson = System.Text.Json.JsonSerializer.Serialize(showroomGroups);
+                        <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;"
+                             data-car-name="@d.item.TenDong"
+                             data-car-brand="@(brandInfo?.TenHang ?? "")"
+                             data-car-style="@d.item.KieuDang"
+                             data-car-country="@(brandInfo?.QuocGia ?? "")"
+                             data-car-price="@(carPrice.HasValue ? $"{carPrice.Value:N0}đ" : "Liên hệ")"
+                             data-car-stock="@(totalStock <= 0 ? "out" : totalStock <= 5 ? "low" : "in")"
+                             data-car-stock-text="@(totalStock <= 0 ? "Hết hàng" : totalStock <= 5 ? "Sắp hết" : "Còn hàng")"
+                             data-car-img="@(string.IsNullOrEmpty(carImg) ? "" : carImg)"
+                             data-car-count="@(d.item.PhienBanXes?.Count ?? 0)"
+                             data-car-versions="@versionsJson"
+                             data-car-showrooms="@showroomJson"
+                             data-car-detail="/Details/@d.item.MaDong">
                             @if (isAdminView)
                             {
                                 <div class="admin-edit-overlay">
@@ -113,14 +134,14 @@
                                     <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
                                 </div>
                             }
-                            <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}?v={DateTime.Now.Ticks}') center/cover");">
+                            <div class="card-image" onclick="location.href='/Details/@d.item.MaDong'" style="cursor:pointer;background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}?v={DateTime.Now.Ticks}') center/cover");">
                                 @if (string.IsNullOrEmpty(carImg))
                                 {
                                     if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
                                     <span class="card-badge">@d.item.KieuDang</span>
                                     <div class="card-actions">
-                                        <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="action-btn" title="Chi tiết"><i class="fas fa-info"></i></a>
-                                        <a asp-page="/Viewer360" asp-route-id="@d.item.MaDong" class="action-btn" title="Xem 360°"><i class="fas fa-sync"></i></a>
+                                        <a asp-page="/Details" asp-route-id="@d.item.MaDong" class="action-btn" title="Chi tiết" onclick="event.stopPropagation()"><i class="fas fa-info"></i></a>
+                                        <a asp-page="/Viewer360" asp-route-id="@d.item.MaDong" class="action-btn" title="Xem 360°" onclick="event.stopPropagation()"><i class="fas fa-sync"></i></a>
                                     </div>
                                     <span class="car-icon">@carIcon</span>
                                 }
@@ -128,6 +149,12 @@
                             <div class="card-body">
                                 <span class="model-series">@(brandInfo?.TenHang ?? "")</span>
                                 <h5>@d.item.TenDong</h5>
+                                @if (firstVer != null)
+                                {
+                                    var stockClass = totalStock <= 0 ? "out" : "in";
+                                    var stockText = totalStock <= 0 ? "Hết hàng" : "Còn hàng";
+                                    <span class="badge-stock @stockClass" style="font-size:0.62rem;margin-top:0.3rem;display:inline-block;">@stockText</span>
+                                }
                                 <div class="quick-specs">
                                     <span>Kiểu dáng <strong>@d.item.KieuDang</strong></span>
                                     <span>@(brandInfo?.QuocGia ?? "")</span>
@@ -269,6 +296,7 @@
 </div>
 
 @section Scripts {
+<script src="~/js/car-hover-preview.js" asp-append-version="true"></script>
 <script>
 let _carsVersions = [];
 let _carsPage = 1;

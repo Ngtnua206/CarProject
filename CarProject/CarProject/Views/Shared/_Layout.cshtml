@@ -155,7 +155,6 @@
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/HoaDon/Index"><i class="fas fa-file-invoice-dollar me-2"></i> Hóa đơn</a></li>
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/ChiNhanh/Index"><i class="fas fa-building me-2"></i> Chi nhánh</a></li>
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/KhuyenMai/Index"><i class="fas fa-gift me-2"></i> Khuyến mãi</a></li>
-                                    <li><a class="dropdown-item admin-link" asp-page="/Admin/Banner/Index"><i class="fas fa-image me-2"></i> Banner</a></li>
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/KenhTuVan/Index"><i class="fas fa-headset me-2"></i> Kênh tư vấn</a></li>
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/ThongKe/Index"><i class="fas fa-chart-bar me-2"></i> Thống kê</a></li>
                                     <li><a class="dropdown-item admin-link" asp-page="/Admin/Logs/Index"><i class="fas fa-history me-2"></i> Nhật ký</a></li>
@@ -223,7 +222,6 @@
                     <a class="mobile-auth-link" asp-page="/Admin/HoaDon/Index"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
                     <a class="mobile-auth-link" asp-page="/Admin/ChiNhanh/Index"><i class="fas fa-building"></i> Chi nhánh</a>
                     <a class="mobile-auth-link" asp-page="/Admin/KhuyenMai/Index"><i class="fas fa-gift"></i> Khuyến mãi</a>
-                    <a class="mobile-auth-link" asp-page="/Admin/Banner/Index"><i class="fas fa-image"></i> Banner</a>
                     <a class="mobile-auth-link" asp-page="/Admin/KenhTuVan/Index"><i class="fas fa-headset"></i> Kênh tư vấn</a>
                     <a class="mobile-auth-link" asp-page="/Admin/ThongKe/Index"><i class="fas fa-chart-bar"></i> Thống kê</a>
                     <a class="mobile-auth-link" asp-page="/Admin/Logs/Index"><i class="fas fa-history"></i> Nhật ký</a>
@@ -368,7 +366,7 @@
                 var container = $('#toastContainer');
                 var id = 't' + Date.now() + Math.random().toString(36).substr(2, 4);
                 var toast = $(
-                    '<div class="toast-item" id="' + id + '">' +
+                    '<div class="toast-item' + (isError ? ' toast-error' : '') + '" id="' + id + '">' +
                         '<div class="toast-icon"><i class="fas ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') + '"></i></div>' +
                         '<div class="toast-body">' +
                             '<div class="toast-title">' + (isError ? 'Thất bại' : 'Thành công') + '</div>' +

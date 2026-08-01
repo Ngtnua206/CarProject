@@ -37,18 +37,30 @@
     @if (isAdminView)
     {
         <div class="admin-edit-overlay" style="top:calc(var(--nav-height,76px) + 10px);right:10px;">
+            <a href="javascript:void(0)" onclick="deleteCurrentHeroBanner()" class="admin-edit-btn btn-delete" title="Xoá Banner Đang Hiển Thị"><i class="fas fa-trash"></i></a>
             <a href="javascript:void(0)" onclick="openBannerEditor()" class="admin-edit-btn btn-edit" title="Sửa Banner"><i class="fas fa-pen"></i></a>
-            @if (Model.BannerId.HasValue)
-            {
-                <a asp-page="/Admin/Banner/Delete" asp-route-id="@Model.BannerId" class="admin-edit-btn btn-delete" title="Xóa Banner"><i class="fas fa-trash"></i></a>
-            }
             <a href="javascript:void(0)" onclick="openBannerEditor()" class="admin-edit-btn btn-add" title="Thêm Ảnh Banner"><i class="fas fa-plus"></i></a>
         </div>
     }
-    @if (!string.IsNullOrEmpty(Model.BannerUrl))
+    @if (Model.BannerList.Any())
     {
-        <div style="position:absolute;inset:0;background:url('@Model.BannerUrl') center/cover no-repeat;"></div>
-        <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 100%);"></div>
+        <div class="hero-banner-slider" id="heroBannerSlider">
+            @for (int i = 0; i < Model.BannerList.Count; i++)
+            {
+                var b = Model.BannerList[i];
+                <div class="hero-banner-slide @(i == 0 ? "active" : "")" data-slide="@i" data-mabanner="@b.MaBanner" style="background-image:url('@b.DuongDanAnh');"></div>
+            }
+        </div>
+        <div class="hero-overlay"></div>
+        @if (Model.BannerList.Count > 1)
+        {
+            <div class="hero-banner-dots" id="heroBannerDots">
+                @for (int i = 0; i < Model.BannerList.Count; i++)
+                {
+                    <button type="button" class="hero-banner-dot @(i == 0 ? "active" : "")" onclick="goHeroSlide(@i)" aria-label="Banner @(i+1)"></button>
+                }
+            </div>
+        }
     }
     else
     {
@@ -153,7 +165,7 @@
                             <a asp-page="/Admin/DongXe/Delete" asp-route-id="@d.item.MaDong" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
                         </div>
                     }
-                    <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}') center/cover");">
+                    <div class="card-image" onclick="location.href='/Details/@d.item.MaDong'" style="cursor:pointer;background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}') center/cover");">
                         @if (string.IsNullOrEmpty(carImg))
                         {
                             if (brandInfo != null) { <span class="brand-tag">@brandInfo.TenHang</span> }
@@ -249,11 +261,25 @@
 <div class="modal fade" id="bannerEditorModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
-            <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-image me-2"></i> Banner Image</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-images me-2"></i> Quản lý Banner Slide</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <div class="mb-3"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="bannerUrlInput" class="form-control form-control-dark" placeholder="https://..." /></div>
+                <div class="mb-3">
+                    <label class="form-label small text-secondary">Banner hiện có (@Model.BannerList.Count)</label>
+                    <div class="d-flex flex-column gap-2" style="max-height:190px;overflow-y:auto;" id="bannerListContainer">
+                        @foreach (var b in Model.BannerList)
+                        {
+                            <div class="banner-row" data-id="@b.MaBanner" data-anh="@b.DuongDanAnh">
+                                <img src="@b.DuongDanAnh" alt="" onerror="this.style.visibility='hidden';" />
+                                <span class="banner-name" title="@b.DuongDanAnh">@b.DuongDanAnh</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius:8px;font-size:0.7rem;padding:0.3rem 0.6rem;" onclick="deleteBanner(@b.MaBanner)"><i class="fas fa-trash me-1"></i>Xoá</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <hr class="border-secondary opacity-25">
+                <div class="mb-3"><label class="form-label small text-secondary">Thêm ảnh URL mới</label><input type="url" id="bannerUrlInput" class="form-control form-control-dark" placeholder="https://..." /></div>
                 <div class="mb-3 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="bannerFileInput" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('bannerFileInput','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('bannerFileInput','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
-                <button onclick="saveBanner()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-save me-2"></i>Save</button>
+                <button onclick="saveBanner()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-plus me-2"></i>Thêm Banner Mới</button>
             </div>
         </div>
     </div>
@@ -379,6 +405,7 @@
             <button class="crop-btn-reset" onclick="resetCropPosition()"><i class="fas fa-arrows-alt me-1"></i> Đặt lại</button>
             <button class="crop-btn-apply" onclick="applyCrop()"><i class="fas fa-check me-1"></i> Áp dụng</button>
         </div>
+        <div class="crop-status" id="cropStatus"></div>
     </div>
 </div>
 
@@ -457,12 +484,17 @@ function openCropModal(inputId, aspectRatio) {
     }
 }
 
+function baseScale() {
+    const vp = document.getElementById('cropViewport');
+    return Math.min(vp.clientWidth / _cropState.imgW, vp.clientHeight / _cropState.imgH) * 0.9;
+}
+
 function centerCropDrag() {
     const vp = document.getElementById('cropViewport');
     const vw = vp.clientWidth, vh = vp.clientHeight;
     const iw = _cropState.imgW, ih = _cropState.imgH;
     if (!iw || !ih) return;
-    const s = Math.min(vw / iw, vh / ih) * 0.9 * _cropState.zoom;
+    const s = baseScale() * _cropState.zoom;
     _cropState.drag.x = (vw - iw * s) / 2;
     _cropState.drag.y = (vh - ih * s) / 2;
 }
@@ -474,18 +506,33 @@ function fitCropImage() {
     const vh = viewport.clientHeight;
     const iw = _cropState.imgW, ih = _cropState.imgH;
     if (!iw || !ih) return;
-    let scale = Math.min(vw / iw, vh / ih) * 0.9;
-    img.style.width = (iw * scale * _cropState.zoom) + 'px';
-    img.style.height = (ih * scale * _cropState.zoom) + 'px';
+    const scale = baseScale() * _cropState.zoom;
+    img.style.width = (iw * scale) + 'px';
+    img.style.height = (ih * scale) + 'px';
     img.style.left = _cropState.drag.x + 'px';
     img.style.top = _cropState.drag.y + 'px';
 }
 
-function onCropZoom() {
-    const val = parseInt(document.getElementById('cropZoom').value);
+/* Zoom từ TÂM ảnh: giữ điểm trung tâm ảnh cố định trên viewport khi phóng/thu */
+function applyCropZoom(val) {
+    val = Math.max(10, Math.min(300, val));
+    const base = baseScale();
+    const oldW = _cropState.imgW * base * _cropState.zoom;
+    const oldH = _cropState.imgH * base * _cropState.zoom;
+    const cx = _cropState.drag.x + oldW / 2;
+    const cy = _cropState.drag.y + oldH / 2;
     _cropState.zoom = val / 100;
+    const newW = _cropState.imgW * base * _cropState.zoom;
+    const newH = _cropState.imgH * base * _cropState.zoom;
+    _cropState.drag.x = cx - newW / 2;
+    _cropState.drag.y = cy - newH / 2;
+    document.getElementById('cropZoom').value = val;
     document.getElementById('cropZoomVal').textContent = val + '%';
     fitCropImage();
+}
+
+function onCropZoom() {
+    applyCropZoom(parseInt(document.getElementById('cropZoom').value));
 }
 
 function resetCropPosition() {
@@ -533,36 +580,56 @@ function applyCrop() {
     const viewport = document.getElementById('cropViewport');
     const img = document.getElementById('cropImage');
     const vw = viewport.clientWidth, vh = viewport.clientHeight;
+    const iw = _cropState.imgW, ih = _cropState.imgH;
+    if (!iw || !ih) { alert('Ảnh chưa được tải xong. Vui lòng thử lại.'); return; }
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    let outW = vw, outH = vh;
+    // Khung cắt giống hệt frame người dùng đang thấy (updateCropFrame)
+    let fw = vw, fh = vh, fl = 0, ft = 0;
     if (_cropState.ratio !== 'free') {
         const p = _cropState.ratio.split(':');
         const rW = parseInt(p[0]), rH = parseInt(p[1]);
-        if (vw / vh > rW / rH) { outH = vh; outW = vh * rW / rH; }
-        else { outW = vw; outH = vw * rH / rW; }
+        if (vw / vh > rW / rH) { fh = vh * 0.85; fw = fh * rW / rH; }
+        else { fw = vw * 0.85; fh = fw * rH / rW; }
+        fl = (vw - fw) / 2; ft = (vh - fh) / 2;
     }
-    canvas.width = outW;
-    canvas.height = outH;
 
+    // Toạ độ vùng cắt trên ảnh GỐC (pixel gốc)
     const imgRect = img.getBoundingClientRect();
     const vpRect = viewport.getBoundingClientRect();
-    const sx = (vpRect.left + (vw - outW) / 2 - imgRect.left) / (imgRect.width / _cropState.imgW);
-    const sy = (vpRect.top + (vh - outH) / 2 - imgRect.top) / (imgRect.height / _cropState.imgH);
-    const sw = outW / (imgRect.width / _cropState.imgW);
-    const sh = outH / (imgRect.height / _cropState.imgH);
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+    const scaleX = imgRect.width / iw;   // px hiển thị / px gốc
+    const scaleY = imgRect.height / ih;
+    const frameLeft = vpRect.left + fl;
+    const frameTop = vpRect.top + ft;
+    let sx = (frameLeft - imgRect.left) / scaleX;
+    let sy = (frameTop - imgRect.top) / scaleY;
+    let sw = fw / scaleX;
+    let sh = fh / scaleY;
+
+    // Clamp vào biên ảnh gốc — chống vùng đen/vỡ ảnh
+    if (sx < 0) { sx = 0; }
+    if (sy < 0) { sy = 0; }
+    if (sx + sw > iw) { sw = iw - sx; }
+    if (sy + sh > ih) { sh = ih - sy; }
+    if (sw <= 0 || sh <= 0) { alert('Vùng cắt nằm ngoài ảnh. Vui lòng kéo ảnh vào trong khung.'); return; }
+
+    // Xuất ảnh ở ĐỘ PHÂN GIẢI GỐC của vùng cắt (không bị mờ khi hiển thị fullscreen)
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(sw));
+    canvas.height = Math.max(1, Math.round(sh));
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob(function(blob) {
         if (blob && _cropState.targetInputId) {
             _croppedBlobs[_cropState.targetInputId] = blob;
             const tag = document.getElementById('cropStatus');
-            if (tag) tag.textContent = 'Đã cắt ảnh ✓';
+            if (tag) tag.textContent = 'Thành công ✓';
         }
         closeCropModal();
         showToast('Đã áp dụng crop! Tiếp tục bấm Lưu.','success');
-    }, 'image/jpeg', 0.92);
+    }, 'image/jpeg', 0.95);
 }
 
 /* Drag to pan */
@@ -586,12 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
     vp.addEventListener('wheel', e => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? -10 : 10;
-        let val = parseInt(document.getElementById('cropZoom').value) + delta;
-        val = Math.max(10, Math.min(300, val));
-        document.getElementById('cropZoom').value = val;
-        _cropState.zoom = val / 100;
-        document.getElementById('cropZoomVal').textContent = val + '%';
-        fitCropImage();
+        applyCropZoom(parseInt(document.getElementById('cropZoom').value) + delta);
     }, { passive: false });
 });
 
@@ -617,6 +679,46 @@ function fileOrCrop(fileInput, inputId) {
 /* ======================================== */
 
 function openBannerEditor() { new bootstrap.Modal(document.getElementById('bannerEditorModal')).show(); }
+
+/* ===== Hero banner slideshow ===== */
+let _heroSlideIdx = 0;
+let _heroSlideTimer = null;
+
+function goHeroSlide(i) {
+    const slides = document.querySelectorAll('.hero-banner-slide');
+    const dots = document.querySelectorAll('.hero-banner-dot');
+    if (!slides.length) return;
+    const total = slides.length;
+    _heroSlideIdx = ((i % total) + total) % total;
+    slides.forEach((s, n) => s.classList.toggle('active', n === _heroSlideIdx));
+    dots.forEach((d, n) => d.classList.toggle('active', n === _heroSlideIdx));
+}
+
+function initHeroSlider() {
+    const slides = document.querySelectorAll('.hero-banner-slide');
+    if (slides.length < 2) return;
+    if (_heroSlideTimer) clearInterval(_heroSlideTimer);
+    _heroSlideTimer = setInterval(() => goHeroSlide(_heroSlideIdx + 1), 6000);
+}
+
+document.addEventListener('DOMContentLoaded', initHeroSlider);
+
+async function deleteBanner(id) {
+    if (!confirm('Xoá banner này?')) return;
+    try {
+        const res = await apiPost('/api/admin/banner/delete', { maBanner: id });
+        showToast('Đã xoá banner!');
+        setTimeout(() => location.reload(true), 1200);
+    } catch (e) { showToast('Lỗi xoá banner: ' + e.message, 'error'); }
+}
+
+function deleteCurrentHeroBanner() {
+    const active = document.querySelector('.hero-banner-slide.active');
+    if (!active) { showToast('Không có banner đang hiển thị', 'error'); return; }
+    const id = active.getAttribute('data-mabanner');
+    if (!id) { showToast('Không tìm thấy banner đang hiển thị', 'error'); return; }
+    deleteBanner(parseInt(id));
+}
 
 function openBrandEditor(id, name, country, logo) {
     document.getElementById('brandEditId').value = id;
@@ -705,8 +807,8 @@ async function saveBanner() {
         console.log('Saving banner URL:', url);
         const res = await apiPost('/api/admin/banner/save', { duongDanAnh: url });
         console.log('Banner save response:', res);
-        showToast('Đã lưu banner!');
-        setTimeout(() => location.reload(true), 1500);
+        showToast('Đã thêm banner mới!');
+        setTimeout(() => location.reload(true), 1200);
     } catch (e) { showToast('Lỗi lưu banner: ' + e.message, 'error'); console.error(e); }
 }
 

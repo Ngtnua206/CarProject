@@ -14,6 +14,8 @@ public class CarsModel : PageModel
     public List<DongXe> DongXeList { get; set; } = new();
     public List<HangXe> HangXeList { get; set; } = new();
     public int TotalCount { get; set; }
+    public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
+    public Dictionary<string, string> TenChiNhanhLut { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
     public string? Search { get; set; }
@@ -57,6 +59,19 @@ public class CarsModel : PageModel
 
         DongXeList = await query.ToListAsync();
         TotalCount = DongXeList.Count;
+
+        var maPhienBans = DongXeList.SelectMany(d => d.PhienBanXes).Select(p => p.MaPhienBan).ToList();
+        if (maPhienBans.Any())
+        {
+            var tonKhoList = await _db.TonKhoTheoChiNhanh
+                .Include(t => t.ChiNhanh)
+                .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
+                .ToListAsync();
+            TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
+                .ToDictionary(g => g.Key, g => g.ToList());
+            TenChiNhanhLut = await _db.ChiNhanhShowroom
+                .ToDictionaryAsync(c => c.MaChiNhanh, c => c.TenChiNhanh);
+        }
 
         var detail = $"Tìm kiếm=\"{Search}\" Hãng={Brand} Kiểu={BodyType} Sắp xếp={Sort} Kết quả={TotalCount}";
         await _log.LogAsync("Xem danh sách xe", detail);

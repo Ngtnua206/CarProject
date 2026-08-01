@@ -13,8 +13,6 @@ public class IndexModel : PageModel
     public List<HangXe> HangXeList { get; set; } = new();
     public List<DongXe> DongXeList { get; set; } = new();
     public List<QuangCaoBanner> BannerList { get; set; } = new();
-    public string? BannerUrl { get; set; }
-    public int? BannerId { get; set; }
     public int TotalModels { get; set; }
     public int TotalBrands { get; set; }
     public int TotalVersions { get; set; }
@@ -32,9 +30,6 @@ public class IndexModel : PageModel
             .Where(d => d.NoiBat)
             .ToListAsync();
         BannerList = await _db.QuangCaoBanner.OrderBy(b => b.ThuTuHienThi).ToListAsync();
-        var firstBanner = BannerList.FirstOrDefault();
-        BannerUrl = firstBanner?.DuongDanAnh;
-        BannerId = firstBanner?.MaBanner;
         TotalBrands = HangXeList.Count;
         TotalModels = DongXeList.Count;
         TotalVersions = await _db.PhienBanXe.CountAsync();

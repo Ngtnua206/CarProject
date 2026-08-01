@@ -49,17 +49,20 @@
                                 <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <label style="font-size: 0.72rem; color: var(--text-muted);">Số lượng:</label>
                                     <input type="number" name="QuantityInput[@item.MaPhienBan]" value="@item.SoLuong" min="1" max="@(isPreOrder ? 10 : item.SoLuong)"
-                                           class="form-control" style="width: 70px; font-size: 0.82rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" />
+                                           class="form-control" style="width: 70px; font-size: 0.82rem; padding: 0.25rem 0.5rem;" />
                                 </div>
                                 <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <label style="font-size: 0.72rem; color: var(--text-muted); flex-shrink:0;">Showroom nguồn:</label>
-                                    <select name="SourceChiNhanh[@item.MaPhienBan]" class="form-control" style="font-size: 0.82rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);">
+                                    <label style="font-size: 0.72rem; color: var(--text-muted); flex-shrink:0;">Showroom khả dụng:</label>
+                                    <select name="SourceChiNhanh[@item.MaPhienBan]" class="form-control" style="font-size: 0.82rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">-- Ưu tiên showroom hẹn gặp --</option>
                                         @if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tkList) && tkList.Any())
                                         {
                                             foreach (var tk in tkList)
                                             {
+                                                var avail = Model.TonKhoConLaiLut.TryGetValue((item.MaPhienBan, tk.MaChiNhanh), out var a) ? a : tk.SoLuong;
+                                                if (avail <= 0) continue;
                                                 <option value="@tk.MaChiNhanh" selected="@(Model.SourceChiNhanh.TryGetValue(item.MaPhienBan, out var v) && v == tk.MaChiNhanh)">
-                                                    @tk.ChiNhanh?.TenChiNhanh (@tk.SoLuong xe)
+                                                    @tk.ChiNhanh?.TenChiNhanh (còn @avail)
                                                 </option>
                                             }
                                         }
@@ -83,8 +86,9 @@
                                     <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.04); font-size: 0.72rem; color: var(--text-faint); display: flex; flex-wrap: wrap; gap: 0.4rem;">
                                         @foreach (var tk in tonKhoList)
                                         {
+                                            var avail = Model.TonKhoConLaiLut.TryGetValue((item.MaPhienBan, tk.MaChiNhanh), out var a) ? a : tk.SoLuong;
                                             <span style="background: rgba(255,255,255,0.04); padding: 0.15rem 0.5rem; border-radius: 4px;">
-                                                @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@tk.SoLuong</strong>
+                                                @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@(avail > 0 ? $"còn {avail}" : "hết")</strong>
                                             </span>
                                         }
                                     </div>
@@ -138,24 +142,35 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Showroom nhận xe</label>
+                                @{
+                                    var cnCoXe = Model.TonKhoTheoPhienBan.Values
+                                        .SelectMany(l => l)
+                                        .Where(t => t.SoLuong > 0)
+                                        .Select(t => t.MaChiNhanh)
+                                        .Distinct()
+                                        .ToHashSet();
+                                    var showroomsHep = Model.DanhSachChiNhanh.Where(c => cnCoXe.Contains(c.MaChiNhanh)).ToList();
+                                    if (showroomsHep.Count == 0) showroomsHep = Model.DanhSachChiNhanh;
+                                }
+                                <label class="form-label">Showroom hẹn gặp (nhận xe)</label>
                                 <select asp-for="MaChiNhanh" class="form-control" required>
                                     <option value="">-- Chọn showroom --</option>
-                                    @foreach (var cn in Model.DanhSachChiNhanh)
+                                    @foreach (var cn in showroomsHep)
                                     {
                                         <option value="@cn.MaChiNhanh">@cn.TenChiNhanh (@cn.DiaChi)</option>
                                     }
                                 </select>
+                                <small style="color: var(--text-faint); font-size: 0.72rem;">Chỉ hiển thị các showroom đang có xe nguồn của đơn hàng để tránh phát sinh chi phí vận chuyển. Xe sẽ ưu tiên lấy từ showroom này trước.</small>
                             </div>
                             <div class="col-12">
                                 <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
                                     <label style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem;"><i class="fas fa-calendar-check me-1" style="color: var(--brand-gold);"></i> Đặt lịch hẹn nhận xe (tùy chọn)</label>
                                     <div class="row g-2">
                                         <div class="col-md-6">
-                                            <input type="date" asp-for="LichHenNgay" class="form-control" style="font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                            <input type="date" asp-for="LichHenNgay" class="form-control" style="font-size: 0.82rem;" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                         </div>
                                         <div class="col-md-6">
-                                            <input type="time" asp-for="LichHenGio" class="form-control" style="font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--brand-white);" />
+                                            <input type="time" asp-for="LichHenGio" class="form-control" style="font-size: 0.82rem;" />
                                         </div>
                                     </div>
                                 </div>

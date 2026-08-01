@@ -376,17 +376,17 @@ SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
 
 -- ==================== 6. THÊM CHI NHÁNH ====================
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN01', N'Showroom Sài Gòn - Quận 7', N'123 Nguyễn Văn Linh, P. Tân Phong, Quận 7', N'TP. Hồ Chí Minh', '0909123456', 'quanly1', N'Hoạt động');
+VALUES ('CN01', N'Showroom TP. Hồ Chí Minh (Cơ sở 1)', N'123 Nguyễn Văn Linh, P. Tân Phong, Quận 7', N'TP. Hồ Chí Minh', '0909123456', 'QuanlyCS1', N'Hoạt động');
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN02', N'Showroom Sài Gòn - Thủ Đức', N'456 Xa lộ Hà Nội, P. Bình Thọ, TP. Thủ Đức', N'TP. Hồ Chí Minh', '0911222333', 'quanly2', N'Hoạt động');
+VALUES ('CN02', N'Showroom TP. Hồ Chí Minh (Cơ sở 2)', N'456 Xa lộ Hà Nội, P. Bình Thọ, TP. Thủ Đức', N'TP. Hồ Chí Minh', '0911222333', 'QuanlyCS2', N'Hoạt động');
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN03', N'Showroom Hà Nội - Cầu Giấy', N'789 Trần Duy Hưng, P. Trung Hòa, Q. Cầu Giấy', N'Hà Nội', '0922333444', 'quanly3', N'Hoạt động');
+VALUES ('CN03', N'Showroom Hà Nội (Cơ sở 3)', N'789 Trần Duy Hưng, P. Trung Hòa, Q. Cầu Giấy', N'Hà Nội', '0922333444', 'QuanlyCS3', N'Hoạt động');
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN04', N'Showroom Hà Nội - Hoàng Mai', N'321 Giải Phóng, P. Hoàng Văn Thụ, Q. Hoàng Mai', N'Hà Nội', '0933444555', 'quanly4', N'Hoạt động');
+VALUES ('CN04', N'Showroom Hà Nội (Cơ sở 4)', N'321 Giải Phóng, P. Hoàng Văn Thụ, Q. Hoàng Mai', N'Hà Nội', '0933444555', 'QuanlyCS4', N'Hoạt động');
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN05', N'Showroom Đà Nẵng', N'654 Nguyễn Văn Linh, P. Khuê Trung, Q. Hải Châu', N'Đà Nẵng', '0944555666', 'quanly5', N'Hoạt động');
+VALUES ('CN05', N'Showroom Đà Nẵng (Cơ sở 5)', N'654 Nguyễn Văn Linh, P. Khuê Trung, Q. Hải Châu', N'Đà Nẵng', '0944555666', 'QuanlyCS5', N'Hoạt động');
 INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN06', N'Showroom Hải Phòng', N'987 Võ Nguyên Giáp, P. Vĩnh Niệm, Q. Lê Chân', N'Hải Phòng', '0955666777', 'quanly6', N'Hoạt động');
+VALUES ('CN06', N'Showroom Hải Phòng (Cơ sở 6)', N'987 Võ Nguyên Giáp, P. Vĩnh Niệm, Q. Lê Chân', N'Hải Phòng', '0955666777', 'QuanlyCS6', N'Hoạt động');
 
 -- ==================== 5b. TỒN KHO THEO CHI NHÁNH ====================
 SET IDENTITY_INSERT TonKhoTheoChiNhanh ON;
@@ -664,73 +664,73 @@ SET IDENTITY_INSERT KenhTuVan OFF;
 SET IDENTITY_INSERT DonDatCoc ON;
 -- Đã giao xe (MaDonCoc 1-6)
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (1, 'user1', 31, 'quanly1', 'CN01', 200000000, N'Chuyển khoản', N'Đã thanh toán', '2026-01-15 09:30:00', '2026-02-20', N'Đã giao xe', N'Giao tại showroom Quận 7', N'Nguyễn Văn A', '0901000001', N'123 Lê Lợi, Quận 1', 'MGC250701-1');
+VALUES (1, 'user1', 31, 'QuanlyCS1', 'CN01', 200000000, N'Chuyển khoản', N'Đã thanh toán', '2026-01-15 09:30:00', '2026-02-20', N'Đã giao xe', N'Giao tại showroom Quận 7', N'Nguyễn Văn A', '0901000001', N'123 Lê Lợi, Quận 1', 'MGC250701-1');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (2, 'user2', 3,  'quanly2', 'CN02', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-02-10 14:00:00', '2026-03-05', N'Đã giao xe', N'Xe màu bạc', N'Trần Văn B', '0901000002', N'456 Nguyễn Huệ, Quận 1', 'MGC250702-2');
+VALUES (2, 'user2', 3,  'QuanlyCS2', 'CN02', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-02-10 14:00:00', '2026-03-05', N'Đã giao xe', N'Xe màu bạc', N'Trần Văn B', '0901000002', N'456 Nguyễn Huệ, Quận 1', 'MGC250702-2');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (3, 'user3', 59, 'quanly3', 'CN03', 150000000, N'Tiền mặt', N'Đã thanh toán', '2026-03-05 10:00:00', '2026-03-28', N'Đã giao xe', N'Giao tại showroom Cầu Giấy', N'Lê Thị C', '0901000003', N'789 Trần Hưng Đạo, Hoàn Kiếm', 'MGC250703-3');
+VALUES (3, 'user3', 59, 'QuanlyCS3', 'CN03', 150000000, N'Tiền mặt', N'Đã thanh toán', '2026-03-05 10:00:00', '2026-03-28', N'Đã giao xe', N'Giao tại showroom Cầu Giấy', N'Lê Thị C', '0901000003', N'789 Trần Hưng Đạo, Hoàn Kiếm', 'MGC250703-3');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (4, 'user4', 24, 'quanly4', 'CN04', 450000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-20 15:30:00', '2026-04-15', N'Đã giao xe', N'Khách VIP - gói phụ kiện', N'Phạm Văn D', '0901000004', N'123 Nguyễn Văn Linh, Quận 7', 'MGC250704-4');
+VALUES (4, 'user4', 24, 'QuanlyCS4', 'CN04', 450000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-20 15:30:00', '2026-04-15', N'Đã giao xe', N'Khách VIP - gói phụ kiện', N'Phạm Văn D', '0901000004', N'123 Nguyễn Văn Linh, Quận 7', 'MGC250704-4');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (5, 'user5', 41, 'quanly5', 'CN05', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-25 08:00:00', '2026-04-20', N'Đã giao xe', N'Mercedes C200 màu bạc', N'Đỗ Thúy Hằng', '0901000011', N'456 Nguyễn Văn Linh, Đà Nẵng', 'MGC250711-11');
+VALUES (5, 'user5', 41, 'QuanlyCS5', 'CN05', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-25 08:00:00', '2026-04-20', N'Đã giao xe', N'Mercedes C200 màu bạc', N'Đỗ Thúy Hằng', '0901000011', N'456 Nguyễn Văn Linh, Đà Nẵng', 'MGC250711-11');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (6, 'user1', 37, 'quanly6', 'CN06', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-05 11:00:00', '2026-05-10', N'Đã giao xe', N'VF 8 màu xanh', N'Nguyễn Văn G', '0901000012', N'789 Văn Cao, Hải Phòng', 'MGC250712-12');
+VALUES (6, 'user1', 37, 'QuanlyCS6', 'CN06', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-05 11:00:00', '2026-05-10', N'Đã giao xe', N'VF 8 màu xanh', N'Nguyễn Văn G', '0901000012', N'789 Văn Cao, Hải Phòng', 'MGC250712-12');
 -- Đã xác nhận (MaDonCoc 7-9)
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (7, 'user2', 2,  'quanly1', 'CN01', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-10 09:00:00', '2026-05-20', N'Đã xác nhận', N'Camry Hybrid màu đen', N'Hoàng Thị E', '0901000005', N'456 Hải Phòng, Đà Nẵng', 'MGC250705-5');
+VALUES (7, 'user2', 2,  'QuanlyCS1', 'CN01', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-10 09:00:00', '2026-05-20', N'Đã xác nhận', N'Camry Hybrid màu đen', N'Hoàng Thị E', '0901000005', N'456 Hải Phòng, Đà Nẵng', 'MGC250705-5');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (8, 'user3', 11, 'quanly2', 'CN02', 180000000, N'Tiền mặt', N'Đã thanh toán', '2026-05-05 11:30:00', '2026-06-10', N'Đã xác nhận', N'Civic Turbo màu đỏ', N'Đặng Văn F', '0901000006', N'789 Văn Cao, Hải Phòng', 'MGC250706-6');
+VALUES (8, 'user3', 11, 'QuanlyCS2', 'CN02', 180000000, N'Tiền mặt', N'Đã thanh toán', '2026-05-05 11:30:00', '2026-06-10', N'Đã xác nhận', N'Civic Turbo màu đỏ', N'Đặng Văn F', '0901000006', N'789 Văn Cao, Hải Phòng', 'MGC250706-6');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (9, 'user4', 75, 'quanly3', 'CN03', 100000000, N'Chuyển khoản', N'Đã thanh toán', '2026-06-20 14:00:00', '2026-07-25', N'Đã xác nhận', N'CX-5 Deluxe màu đỏ', N'Vũ Thị M', '0901000013', N'123 Hoàng Quốc Việt, Cầu Giấy', 'MGC250713-13');
+VALUES (9, 'user4', 75, 'QuanlyCS3', 'CN03', 100000000, N'Chuyển khoản', N'Đã thanh toán', '2026-06-20 14:00:00', '2026-07-25', N'Đã xác nhận', N'CX-5 Deluxe màu đỏ', N'Vũ Thị M', '0901000013', N'123 Hoàng Quốc Việt, Cầu Giấy', 'MGC250713-13');
 -- Chờ xác nhận (MaDonCoc 10-12)
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (10, 'user5', 17, 'quanly1', 'CN01', 200000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-01 08:00:00', N'Chờ xác nhận', N'Khách đang chờ vay ngân hàng', N'Nguyễn Văn H', '0901000007', N'123 Quận 7, TP.HCM', 'MGC250707-7');
+VALUES (10, 'user5', 17, 'QuanlyCS1', 'CN01', 200000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-01 08:00:00', N'Chờ xác nhận', N'Khách đang chờ vay ngân hàng', N'Nguyễn Văn H', '0901000007', N'123 Quận 7, TP.HCM', 'MGC250707-7');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (11, 'user1', 46, 'quanly2', 'CN02', 350000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-15 14:00:00', N'Chờ xác nhận', N'Khách muốn lái thử trước', N'Trần Thị K', '0901000008', N'456 Thủ Đức, TP.HCM', 'MGC250708-8');
+VALUES (11, 'user1', 46, 'QuanlyCS2', 'CN02', 350000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-15 14:00:00', N'Chờ xác nhận', N'Khách muốn lái thử trước', N'Trần Thị K', '0901000008', N'456 Thủ Đức, TP.HCM', 'MGC250708-8');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (12, 'user2', 67, 'quanly3', 'CN03', 150000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-07-01 09:00:00', N'Chờ xác nhận', N'Đang thương lượng giá', N'Lê Văn P', '0901000014', N'789 Cầu Giấy, Hà Nội', 'MGC250714-14');
+VALUES (12, 'user2', 67, 'QuanlyCS3', 'CN03', 150000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-07-01 09:00:00', N'Chờ xác nhận', N'Đang thương lượng giá', N'Lê Văn P', '0901000014', N'789 Cầu Giấy, Hà Nội', 'MGC250714-14');
 -- Đã hủy (MaDonCoc 13-15)
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (13, 'user3', 33, 'quanly4', 'CN04', 100000000, N'Tiền mặt', N'Đã hoàn tiền', '2026-04-20 16:00:00', N'Đã hủy', N'Khách đổi ý không mua nữa', N'Lê Văn I', '0901000009', N'789 Cầu Giấy, Hà Nội', 'MGC250709-9');
+VALUES (13, 'user3', 33, 'QuanlyCS4', 'CN04', 100000000, N'Tiền mặt', N'Đã hoàn tiền', '2026-04-20 16:00:00', N'Đã hủy', N'Khách đổi ý không mua nữa', N'Lê Văn I', '0901000009', N'789 Cầu Giấy, Hà Nội', 'MGC250709-9');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (14, 'user4', 9,  'quanly5', 'CN05', 150000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-05-10 10:30:00', N'Đã hủy', N'Không đủ khả năng tài chính', N'Phạm Thị K', '0901000010', N'321 Hoàng Mai, Hà Nội', 'MGC250710-10');
+VALUES (14, 'user4', 9,  'QuanlyCS5', 'CN05', 150000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-05-10 10:30:00', N'Đã hủy', N'Không đủ khả năng tài chính', N'Phạm Thị K', '0901000010', N'321 Hoàng Mai, Hà Nội', 'MGC250710-10');
 INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (15, 'user5', 61, 'quanly6', 'CN06', 80000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-06-25 15:00:00', N'Đã hủy', N'Chọn mua dòng xe khác', N'Ngô Văn Q', '0901000015', N'456 Lê Lợi, Hải Phòng', 'MGC250715-15');
+VALUES (15, 'user5', 61, 'QuanlyCS6', 'CN06', 80000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-06-25 15:00:00', N'Đã hủy', N'Chọn mua dòng xe khác', N'Ngô Văn Q', '0901000015', N'456 Lê Lợi, Hải Phòng', 'MGC250715-15');
 SET IDENTITY_INSERT DonDatCoc OFF;
 
 -- ==================== 10b. CHI TIẾT ĐƠN CỌC ====================
 SET IDENTITY_INSERT DonDatCocChiTiet ON;
 INSERT INTO DonDatCocChiTiet (MaChiTiet, MaDonCoc, MaPhienBan, MaChiNhanh, SoLuong, TrangThaiTiepNhan, NguoiPhanHoi, NgayPhanHoi, LyDoTuChoi) VALUES
-(1,  1,  31, 'CN01', 1, N'Đã tiếp nhận', 'quanly1', '2026-02-15 09:30:00', NULL),
-(2,  2,  3,  'CN02', 1, N'Đã tiếp nhận', 'quanly2', '2026-03-01 14:00:00', NULL),
-(3,  3,  59, 'CN03', 1, N'Đã tiếp nhận', 'quanly3', '2026-03-15 10:00:00', NULL),
-(4,  4,  24, 'CN04', 1, N'Đã tiếp nhận', 'quanly4', '2026-04-05 15:30:00', NULL),
-(5,  5,  41, 'CN05', 1, N'Đã tiếp nhận', 'quanly5', '2026-04-10 08:00:00', NULL),
-(6,  6,  37, 'CN06', 1, N'Đã tiếp nhận', 'quanly6', '2026-04-25 11:00:00', NULL),
-(7,  7,  2,  'CN01', 1, N'Đã tiếp nhận', 'quanly1', '2026-05-10 09:00:00', NULL),
-(8,  8,  11, 'CN02', 1, N'Đã tiếp nhận', 'quanly2', '2026-05-25 11:30:00', NULL),
-(9,  9,  75, 'CN03', 1, N'Đã tiếp nhận', 'quanly3', '2026-07-05 14:00:00', NULL),
+(1,  1,  31, 'CN01', 1, N'Đã tiếp nhận', 'QuanlyCS1', '2026-02-15 09:30:00', NULL),
+(2,  2,  3,  'CN02', 1, N'Đã tiếp nhận', 'QuanlyCS2', '2026-03-01 14:00:00', NULL),
+(3,  3,  59, 'CN03', 1, N'Đã tiếp nhận', 'QuanlyCS3', '2026-03-15 10:00:00', NULL),
+(4,  4,  24, 'CN04', 1, N'Đã tiếp nhận', 'QuanlyCS4', '2026-04-05 15:30:00', NULL),
+(5,  5,  41, 'CN05', 1, N'Đã tiếp nhận', 'QuanlyCS5', '2026-04-10 08:00:00', NULL),
+(6,  6,  37, 'CN06', 1, N'Đã tiếp nhận', 'QuanlyCS6', '2026-04-25 11:00:00', NULL),
+(7,  7,  2,  'CN01', 1, N'Đã tiếp nhận', 'QuanlyCS1', '2026-05-10 09:00:00', NULL),
+(8,  8,  11, 'CN02', 1, N'Đã tiếp nhận', 'QuanlyCS2', '2026-05-25 11:30:00', NULL),
+(9,  9,  75, 'CN03', 1, N'Đã tiếp nhận', 'QuanlyCS3', '2026-07-05 14:00:00', NULL),
 (10, 10, 17, 'CN01', 1, N'Chờ xác nhận', NULL, NULL, NULL),
 (11, 11, 46, 'CN02', 1, N'Chờ xác nhận', NULL, NULL, NULL),
 (12, 12, 67, 'CN03', 1, N'Chờ xác nhận', NULL, NULL, NULL),
-(13, 13, 33, 'CN04', 1, N'Từ chối', 'quanly4', '2026-05-01 16:00:00', N'Khách đổi ý không mua nữa'),
-(14, 14, 9,  'CN05', 1, N'Từ chối', 'quanly5', '2026-05-20 10:30:00', N'Không đủ khả năng tài chính'),
-(15, 15, 61, 'CN06', 1, N'Từ chối', 'quanly6', '2026-07-05 15:00:00', N'Chọn mua dòng xe khác');
+(13, 13, 33, 'CN04', 1, N'Từ chối', 'QuanlyCS4', '2026-05-01 16:00:00', N'Khách đổi ý không mua nữa'),
+(14, 14, 9,  'CN05', 1, N'Từ chối', 'QuanlyCS5', '2026-05-20 10:30:00', N'Không đủ khả năng tài chính'),
+(15, 15, 61, 'CN06', 1, N'Từ chối', 'QuanlyCS6', '2026-07-05 15:00:00', N'Chọn mua dòng xe khác');
 SET IDENTITY_INSERT DonDatCocChiTiet OFF;
 
 -- ==================== 11. THÊM HÓA ĐƠN MẪU ====================
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000001', 1, 'user1', 31, 'quanly1', 'CN01', 1100000000, 110000000, 50000000, 1160000000, 1160000000, N'Chuyển khoản + Tiền mặt', '2026-02-20', 'WDB1111111A000001', 'M274000001', N'Đã thanh toán');
+VALUES ('HD000001', 1, 'user1', 31, 'QuanlyCS1', 'CN01', 1100000000, 110000000, 50000000, 1160000000, 1160000000, N'Chuyển khoản + Tiền mặt', '2026-02-20', 'WDB1111111A000001', 'M274000001', N'Đã thanh toán');
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000002', 2, 'user2', 3,  'quanly2', 'CN02', 950000000, 95000000, 30000000, 1015000000, 1015000000, N'Chuyển khoản', '2026-03-05', 'WDB2222222A000002', 'M274000002', N'Đã thanh toán');
+VALUES ('HD000002', 2, 'user2', 3,  'QuanlyCS2', 'CN02', 950000000, 95000000, 30000000, 1015000000, 1015000000, N'Chuyển khoản', '2026-03-05', 'WDB2222222A000002', 'M274000002', N'Đã thanh toán');
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000003', 3, 'user3', 59, 'quanly3', 'CN03', 1150000000, 115000000, 80000000, 1170000000, 1170000000, N'Chuyển khoản', '2026-03-28', 'WDB3333333A000003', 'M274000003', N'Đã thanh toán');
+VALUES ('HD000003', 3, 'user3', 59, 'QuanlyCS3', 'CN03', 1150000000, 115000000, 80000000, 1170000000, 1170000000, N'Chuyển khoản', '2026-03-28', 'WDB3333333A000003', 'M274000003', N'Đã thanh toán');
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000004', 4, 'user4', 24, 'quanly4', 'CN04', 1600000000, 160000000, 120000000, 1640000000, 1640000000, N'Chuyển khoản', '2026-04-15', 'WDB4444444A000004', 'M274000004', N'Đã thanh toán');
+VALUES ('HD000004', 4, 'user4', 24, 'QuanlyCS4', 'CN04', 1600000000, 160000000, 120000000, 1640000000, 1640000000, N'Chuyển khoản', '2026-04-15', 'WDB4444444A000004', 'M274000004', N'Đã thanh toán');
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000005', 5, 'user5', 41, 'quanly5', 'CN05', 1500000000, 150000000, 100000000, 1550000000, 1550000000, N'Chuyển khoản', '2026-04-20', 'WDB5555555A000005', 'M274000005', N'Đã thanh toán');
+VALUES ('HD000005', 5, 'user5', 41, 'QuanlyCS5', 'CN05', 1500000000, 150000000, 100000000, 1550000000, 1550000000, N'Chuyển khoản', '2026-04-20', 'WDB5555555A000005', 'M274000005', N'Đã thanh toán');
 INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000006', 6, 'user1', 37, 'quanly6', 'CN06', 1050000000, 105000000, 105000000, 1050000000, 1050000000, N'Chuyển khoản', '2026-05-10', 'WDB6666666A000006', 'M274000006', N'Đã thanh toán');
+VALUES ('HD000006', 6, 'user1', 37, 'QuanlyCS6', 'CN06', 1050000000, 105000000, 105000000, 1050000000, 1050000000, N'Chuyển khoản', '2026-05-10', 'WDB6666666A000006', 'M274000006', N'Đã thanh toán');
 
 -- ==================== 12. THỐNG KÊ DOANH THU (TÍNH TỪ DỮ LIỆU THỰC TẾ) ====================
 -- Tháng 1: Don 1 (CN01, 200M), chưa có hóa đơn
@@ -866,3 +866,177 @@ UPDATE DonDatCoc SET MaChiNhanh = 'MB001' WHERE MaChiNhanh IS NULL;
 -- 3. Kiểm tra kết quả
 SELECT MaLichHen, MaChiNhanh, TrangThai FROM LichHenLaiThu ORDER BY MaLichHen;
 SELECT MaDonCoc, MaChiNhanh, TrangThaiDonHang FROM DonDatCoc ORDER BY MaDonCoc;
+
+
+-- ============================================
+-- PHẦN 16: CÂN ĐỐI LẠI TỒN KHO THEO SHOWROOM (CHẠY RIÊNG)
+-- ============================================
+-- Mục tiêu: Hà Nội (CN03 + CN04) là showroom chính ~70% lượng xe;
+-- còn lại chia cho TP.HCM (CN01, CN02), Đà Nẵng (CN05), Hải Phòng (CN06).
+-- Đa số phiên bản còn hàng 3-10, một số ít sắp hết hàng 1-2, vài mẫu hết hàng 0.
+-- Chỉ dùng UPDATE/INSERT (KHÔNG DELETE, KHÔNG đổi logic), chạy lại được nhiều lần.
+-- LƯU Ý: đã áp dụng thành công. KHÔNG cần chạy lại PHẦN 16.
+-- Nếu chạy lại: bôi đen TỪ DÒNG "BEGIN TRAN" đến DÒNG "COMMIT" (tuyệt đối không bôi thiếu BEGIN TRAN).
+
+-- ===== PHẦN 16: BẮT ĐẦU =====
+BEGIN TRAN;
+
+-- 16.1 Tổng tồn kho mục tiêu cho từng phiên bản (MaPhienBan -> SoLuongTrongKho)
+DECLARE @Tong TABLE (MaPhienBan INT PRIMARY KEY, Tong INT);
+INSERT INTO @Tong (MaPhienBan, Tong) VALUES
+(1,6),(2,4),(3,7),(4,4),(5,6),(6,3),(7,6),(8,3),(9,10),(10,8),
+(11,5),(12,3),(13,4),(14,3),(15,5),(16,2),(17,4),(18,1),(19,5),(20,3),
+(21,8),(22,5),(23,4),(24,0),(25,3),(26,1),(27,1),(28,3),(29,1),(30,0),
+(31,6),(32,4),(33,10),(34,8),(35,4),(36,3),(37,5),(38,3),(39,3),(40,1),
+(41,4),(42,3),(43,3),(44,1),(45,0),(46,3),(47,2),(48,1),(49,1),(50,4),
+(51,3),(52,2),(53,4),(54,0),(55,3),(56,0),(57,3),(58,1),(59,5),(60,3),
+(61,7),(62,4),(63,8),(64,6),(65,5),(66,4),(67,4),(68,2),(69,5),(70,3),
+(71,6),(72,4),(73,10),(74,8),(75,6),(76,4),(77,3),(78,7),(79,4),(80,4),
+(81,2),(82,5),(83,4),(84,5),(85,6),(86,3),(87,5),(88,3),(89,4),(90,3),
+(91,4),(92,5),(93,3),(94,2),(95,1),(96,2);
+
+-- 16.2 Phân bổ tỷ lệ: CN03 42% + CN04 28% = 70% Hà Nội; CN01 10%, CN02 5%, CN05 5%, CN06 = còn lại
+SELECT MaPhienBan, Tong,
+    CN03 = ROUND(Tong * 0.42, 0),
+    CN04 = ROUND(Tong * 0.28, 0),
+    CN01 = ROUND(Tong * 0.10, 0),
+    CN02 = ROUND(Tong * 0.05, 0),
+    CN05 = ROUND(Tong * 0.05, 0),
+    CN06 = Tong - (ROUND(Tong*0.42,0) + ROUND(Tong*0.28,0) + ROUND(Tong*0.10,0) + ROUND(Tong*0.05,0) + ROUND(Tong*0.05,0))
+INTO #PB FROM @Tong;
+
+-- 16.3 Ghép thành danh sách (MaPhienBan, MaChiNhanh, SoLuong)
+SELECT MaPhienBan, 'CN03' AS MaChiNhanh, CN03 AS SoLuong INTO #PBShow FROM #PB WHERE CN03 > 0
+UNION ALL SELECT MaPhienBan, 'CN04', CN04 FROM #PB WHERE CN04 > 0
+UNION ALL SELECT MaPhienBan, 'CN01', CN01 FROM #PB WHERE CN01 > 0
+UNION ALL SELECT MaPhienBan, 'CN02', CN02 FROM #PB WHERE CN02 > 0
+UNION ALL SELECT MaPhienBan, 'CN05', CN05 FROM #PB WHERE CN05 > 0
+UNION ALL SELECT MaPhienBan, 'CN06', CN06 FROM #PB WHERE CN06 > 0;
+
+-- 16.4 Reset tồn kho các phiên bản đang cập nhật về 0
+UPDATE t SET t.SoLuong = 0
+FROM TonKhoTheoChiNhanh t JOIN @Tong k ON k.MaPhienBan = t.MaPhienBan;
+
+-- 16.5 Cập nhật số xe mới cho dòng đã tồn tại
+UPDATE t SET t.SoLuong = p.SoLuong, t.NgayCapNhat = GETDATE()
+FROM TonKhoTheoChiNhanh t JOIN #PBShow p ON t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh;
+
+-- 16.6 Thêm dòng tồn kho chưa có (vd CN05 Đà Nẵng)
+INSERT INTO TonKhoTheoChiNhanh (MaPhienBan, MaChiNhanh, SoLuong, NgayCapNhat)
+SELECT p.MaPhienBan, p.MaChiNhanh, p.SoLuong, GETDATE()
+FROM #PBShow p
+WHERE NOT EXISTS (SELECT 1 FROM TonKhoTheoChiNhanh t WHERE t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh);
+
+-- 16.7 Đồng bộ SoLuongTrongKho + TrangThai trên bảng phiên bản
+UPDATE p SET
+    p.SoLuongTrongKho = k.Tong,
+    p.TrangThai = CASE WHEN k.Tong = 0 THEN N'Hết hàng' WHEN k.Tong <= 2 THEN N'Sắp hết' ELSE N'Còn hàng' END
+FROM PhienBanXe_SanPham p JOIN @Tong k ON p.MaPhienBan = k.MaPhienBan;
+
+DROP TABLE #PB;
+DROP TABLE #PBShow;
+COMMIT;
+
+-- 16.8 Kiểm tra nhanh sau khi chạy
+SELECT t.MaChiNhanh, SUM(t.SoLuong) AS TongXe,
+       CAST(SUM(t.SoLuong) * 100.0 / (SELECT SUM(SoLuong) FROM TonKhoTheoChiNhanh) AS DECIMAL(6,2)) AS PhanTram
+FROM TonKhoTheoChiNhanh t GROUP BY t.MaChiNhanh ORDER BY t.MaChiNhanh;
+SELECT COUNT(*) AS SoPhienBanHetHang FROM PhienBanXe_SanPham WHERE SoLuongTrongKho = 0;
+SELECT COUNT(*) AS SoPhienBanSapHet FROM PhienBanXe_SanPham WHERE SoLuongTrongKho BETWEEN 1 AND 2;
+-- Kiểm tra tổng tồn kho khớp SoLuongTrongKho (phải trả về 0 dòng)
+SELECT a.MaPhienBan FROM (SELECT MaPhienBan, SUM(SoLuong) s FROM TonKhoTheoChiNhanh GROUP BY MaPhienBan) a
+JOIN PhienBanXe_SanPham p ON p.MaPhienBan = a.MaPhienBan WHERE a.s <> p.SoLuongTrongKho;
+-- KẾT THÚC PHẦN 16
+
+
+-- ============================================
+-- PHẦN 17: BỔ SUNG TỒN KHO (CHẠY RIÊNG)
+-- ============================================
+-- Mục tiêu: ~60% phiên bản ở trạng thái "Còn hàng" (SoLuongTrongKho >= 6),
+-- số còn lại chia 1-5 (Sắp hết) và 0 (Hết hàng).
+-- Ưu tiên khu vực đông dân: Hà Nội (CN03, CN04) ~75%, TP.HCM (CN01, CN02) ~21%,
+-- Đà Nẵng (CN05) + Hải Phòng (CN06) phần còn lại.
+-- Chỉ dùng UPDATE/INSERT (KHÔNG DELETE), chạy lại được nhiều lần.
+-- LƯU Ý: đã áp dụng thành công (57 phiên bản Còn hàng). KHÔNG cần chạy lại PHẦN 17.
+-- Nếu chạy lại: bôi đen TỪ DÒNG "BEGIN TRAN" đến DÒNG "COMMIT" (tuyệt đối không bôi thiếu BEGIN TRAN).
+
+-- ===== PHẦN 17: BẮT ĐẦU =====
+BEGIN TRAN;
+
+-- 17.1 Tổng tồn kho mục tiêu (đa số >=6 để Còn hàng)
+DECLARE @Tong TABLE (MaPhienBan INT PRIMARY KEY, Tong INT);
+INSERT INTO @Tong (MaPhienBan, Tong) VALUES
+(1,10),(2,8),(3,8),(4,6),(5,10),(6,6),(7,8),(8,6),(9,14),(10,12),
+(11,8),(12,6),(13,7),(14,6),(15,6),(16,4),(17,6),(18,3),(19,7),(20,6),
+(21,10),(22,7),(23,6),(24,0),(25,5),(26,3),(27,3),(28,5),(29,2),(30,0),
+(31,8),(32,6),(33,12),(34,10),(35,6),(36,5),(37,7),(38,6),(39,5),(40,3),
+(41,6),(42,5),(43,5),(44,2),(45,0),(46,5),(47,3),(48,2),(49,2),(50,6),
+(51,5),(52,3),(53,6),(54,0),(55,5),(56,2),(57,5),(58,2),(59,7),(60,5),
+(61,9),(62,6),(63,10),(64,8),(65,7),(66,6),(67,6),(68,3),(69,7),(70,5),
+(71,8),(72,6),(73,12),(74,10),(75,8),(76,6),(77,5),(78,9),(79,6),(80,6),
+(81,3),(82,7),(83,6),(84,7),(85,8),(86,5),(87,7),(88,5),(89,6),(90,5),
+(91,6),(92,7),(93,5),(94,3),(95,2),(96,2);
+
+-- 17.2 Phân bổ: CN03 30%, CN04 25%, CN01 20%, CN02 15%, CN05 5%, CN06 5% (phần dư chia cho CN03+CN04 - Hà Nội)
+SELECT MaPhienBan, Tong,
+    CN03 = FLOOR(Tong * 0.30),
+    CN04 = FLOOR(Tong * 0.25),
+    CN01 = FLOOR(Tong * 0.20),
+    CN02 = FLOOR(Tong * 0.15),
+    CN05 = ROUND(Tong * 0.05, 0),
+    CN06 = ROUND(Tong * 0.05, 0),
+    du = Tong - (FLOOR(Tong*0.30) + FLOOR(Tong*0.25) + FLOOR(Tong*0.20) + FLOOR(Tong*0.15) + ROUND(Tong*0.05,0) + ROUND(Tong*0.05,0))
+INTO #PB0 FROM @Tong;
+
+SELECT MaPhienBan, Tong,
+    CN03 = CN03 + FLOOR(du * 0.5),
+    CN04 = CN04 + (du - FLOOR(du * 0.5)),
+    CN01, CN02, CN05, CN06
+INTO #PB FROM #PB0;
+
+-- 17.3 Ghép thành danh sách (MaPhienBan, MaChiNhanh, SoLuong)
+SELECT MaPhienBan, 'CN03' AS MaChiNhanh, CN03 AS SoLuong INTO #PBShow FROM #PB WHERE CN03 > 0
+UNION ALL SELECT MaPhienBan, 'CN04', CN04 FROM #PB WHERE CN04 > 0
+UNION ALL SELECT MaPhienBan, 'CN01', CN01 FROM #PB WHERE CN01 > 0
+UNION ALL SELECT MaPhienBan, 'CN02', CN02 FROM #PB WHERE CN02 > 0
+UNION ALL SELECT MaPhienBan, 'CN05', CN05 FROM #PB WHERE CN05 > 0
+UNION ALL SELECT MaPhienBan, 'CN06', CN06 FROM #PB WHERE CN06 > 0;
+
+-- 17.4 Reset tồn kho các phiên bản đang cập nhật về 0
+UPDATE t SET t.SoLuong = 0
+FROM TonKhoTheoChiNhanh t JOIN @Tong k ON k.MaPhienBan = t.MaPhienBan;
+
+-- 17.5 Cập nhật số xe mới cho dòng đã tồn tại
+UPDATE t SET t.SoLuong = p.SoLuong, t.NgayCapNhat = GETDATE()
+FROM TonKhoTheoChiNhanh t JOIN #PBShow p ON t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh;
+
+-- 17.6 Thêm dòng tồn kho chưa có
+INSERT INTO TonKhoTheoChiNhanh (MaPhienBan, MaChiNhanh, SoLuong, NgayCapNhat)
+SELECT p.MaPhienBan, p.MaChiNhanh, p.SoLuong, GETDATE()
+FROM #PBShow p
+WHERE NOT EXISTS (SELECT 1 FROM TonKhoTheoChiNhanh t WHERE t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh);
+
+-- 17.7 Đồng bộ SoLuongTrongKho + TrangThai (ngưỡng hiển thị: 0 = Hết hàng, 1-5 = Sắp hết, >=6 = Còn hàng)
+UPDATE p SET
+    p.SoLuongTrongKho = k.Tong,
+    p.TrangThai = CASE WHEN k.Tong = 0 THEN N'Hết hàng' WHEN k.Tong <= 5 THEN N'Sắp hết' ELSE N'Còn hàng' END
+FROM PhienBanXe_SanPham p JOIN @Tong k ON p.MaPhienBan = k.MaPhienBan;
+
+DROP TABLE #PB0;
+DROP TABLE #PB;
+DROP TABLE #PBShow;
+COMMIT;
+
+-- 17.8 Kiểm tra nhanh sau khi chạy
+SELECT t.MaChiNhanh, SUM(t.SoLuong) AS TongXe,
+       CAST(SUM(t.SoLuong) * 100.0 / (SELECT SUM(SoLuong) FROM TonKhoTheoChiNhanh) AS DECIMAL(6,2)) AS PhanTram
+FROM TonKhoTheoChiNhanh t GROUP BY t.MaChiNhanh ORDER BY t.MaChiNhanh;
+SELECT
+  SUM(CASE WHEN SoLuongTrongKho >= 6 THEN 1 ELSE 0 END) AS ConHang_GE6,
+  SUM(CASE WHEN SoLuongTrongKho BETWEEN 1 AND 5 THEN 1 ELSE 0 END) AS SapHet_1_5,
+  SUM(CASE WHEN SoLuongTrongKho = 0 THEN 1 ELSE 0 END) AS HetHang_0
+FROM PhienBanXe_SanPham;
+-- Kiểm tra tổng tồn kho khớp SoLuongTrongKho (phải trả về 0 dòng)
+SELECT a.MaPhienBan FROM (SELECT MaPhienBan, SUM(SoLuong) s FROM TonKhoTheoChiNhanh GROUP BY MaPhienBan) a
+JOIN PhienBanXe_SanPham p ON p.MaPhienBan = a.MaPhienBan WHERE a.s <> p.SoLuongTrongKho;
+-- KẾT THÚC PHẦN 17

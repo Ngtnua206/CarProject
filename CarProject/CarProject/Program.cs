@@ -483,25 +483,60 @@ try
 
     app.MapPost("/api/admin/banner/save", async (HttpContext ctx, AppDbContext db) =>
     {
-        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
-        var duongDanAnh = body.GetProperty("duongDanAnh").GetString();
-        var banner = await db.QuangCaoBanner.OrderBy(b => b.ThuTuHienThi).FirstOrDefaultAsync();
-        if (banner == null)
+        try
         {
-            banner = new CarProject.Models.QuangCaoBanner
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var duongDanAnh = body.TryGetProperty("duongDanAnh", out var prop) ? prop.GetString() : null;
+            if (string.IsNullOrWhiteSpace(duongDanAnh))
+                return Results.BadRequest(new { success = false, error = "Vui lòng cung cấp đường dẫn ảnh" });
+
+            var userName = ctx.User.GetJwtUserName();
+            if (string.IsNullOrEmpty(userName) || !await db.TaiKhoan.AnyAsync(t => t.TenDangNhap == userName))
+                userName = await db.TaiKhoan.Where(t => t.VaiTro == "Admin").Select(t => t.TenDangNhap).FirstOrDefaultAsync() ?? "admin";
+            var maxThuTu = await db.QuangCaoBanner.AnyAsync()
+                ? await db.QuangCaoBanner.MaxAsync(b => b.ThuTuHienThi)
+                : 0;
+            var banner = new CarProject.Models.QuangCaoBanner
             {
                 DuongDanAnh = duongDanAnh,
-                ThuTuHienThi = 1,
-                MaQuanLyCapNhat = ctx.User.GetJwtUserName() ?? "admin"
+                DuongDanLienKet = "",
+                ThuTuHienThi = maxThuTu + 1,
+                MaQuanLyCapNhat = userName,
+                TrangThaiKichHoat = true
             };
             db.QuangCaoBanner.Add(banner);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true });
         }
-        else
+        catch (Exception ex)
         {
-            banner.DuongDanAnh = duongDanAnh;
+            var logPath = Path.Combine(Path.GetTempPath(), "banner_save_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
         }
-        await db.SaveChangesAsync();
-        return Results.Ok(new { success = true });
+    });
+
+    app.MapPost("/api/admin/banner/delete", async (HttpContext ctx, AppDbContext db) =>
+    {
+        try
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var maBanner = body.TryGetProperty("maBanner", out var p) ? p.GetInt32() : 0;
+            var banner = await db.QuangCaoBanner.FirstOrDefaultAsync(b => b.MaBanner == maBanner);
+            if (banner == null)
+                return Results.BadRequest(new { success = false, error = "Không tìm thấy banner" });
+            db.QuangCaoBanner.Remove(banner);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), "banner_delete_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
     });
 
     app.MapGet("/api/admin/dongxe/{id}", async (int id, AppDbContext db) =>
@@ -637,7 +672,8 @@ try
 
             donCoc.SepayTransactionId = data.id.ToString();
             donCoc.TrangThaiThanhToan = "Đã thanh toán";
-            donCoc.TrangThaiDonHang = "Chờ xác nhận";
+            if (string.IsNullOrEmpty(donCoc.TrangThaiDonHang))
+                donCoc.TrangThaiDonHang = "Chờ xác nhận";
             await db.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(donCoc.MaKhachHang))
@@ -647,41 +683,11 @@ try
                     $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
             }
 
-            // Gửi thông báo cho Admin và các showroom có xe sau khi thanh toán thành công
+            // Gửi thông báo cho Admin sau khi thanh toán thành công
             var notifSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
             await notifSvc.SendToRoleAsync("Admin", "Thanh toán đơn cọc",
                 $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán thành công.",
                 $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
-
-            // Nạp chi tiết các xe + showroom nguồn
-            var chiTiets = await db.DonDatCocChiTiet
-                .Include(ct => ct.PhienBan).ThenInclude(p => p.DongXe)
-                .Where(ct => ct.MaDonCoc == donCoc.MaDonCoc)
-                .ToListAsync();
-
-            foreach (var group in chiTiets.GroupBy(ct => ct.MaChiNhanh))
-            {
-                var chiNhanh = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == group.Key);
-                if (chiNhanh?.MaQuanLy == null) continue;
-
-                var soLuong = group.Sum(ct => ct.SoLuong);
-                var tenCacXe = string.Join(", ", group.Select(ct =>
-                    $"{ct.PhienBan?.DongXe?.TenDong ?? ""} {ct.PhienBan?.TenPhienBan ?? ""}".Trim() + $" x{ct.SoLuong}"));
-
-                string noiDung;
-                if (group.Key == donCoc.MaChiNhanh)
-                {
-                    noiDung = $"Khách {donCoc.HoTen} đã đặt cọc {soLuong} xe tại showroom {chiNhanh.TenChiNhanh} của bạn: {tenCacXe}. Vui lòng xác nhận tiếp nhận.";
-                }
-                else
-                {
-                    noiDung = $"Khách {donCoc.HoTen} đã đặt cọc {soLuong} xe tại showroom {chiNhanh.TenChiNhanh} của bạn: {tenCacXe}. Xe sẽ nhận tại {donCoc.MaChiNhanh}. Bạn có tiếp nhận vận chuyển tới showroom nhận không?";
-                }
-
-                await notifSvc.SendAsync(chiNhanh.MaQuanLy, "Đơn đặt cọc đã thanh toán - cần xác nhận",
-                    $"{noiDung} (Đơn cọc #{donCoc.MaDonCoc})",
-                    $"/QuanLy/DonCoc?highlight={donCoc.MaDonCoc}");
-            }
 
             await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");
             return Results.Ok(new { success = true });
