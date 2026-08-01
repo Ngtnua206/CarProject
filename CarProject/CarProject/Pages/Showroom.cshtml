@@ -90,10 +90,16 @@
                             var totalStock = phienBanList.Sum(p => p.SoLuongTrongKho);
                             <div class="col-md-4">
                                 <div class="car-card-premium" style="animation: none;">
-                                    <div class="card-image" style="background: var(--brand-dark); min-height: 100px;">
-                                        <span class="brand-tag">@dong.KieuDang</span>
-                                        <span class="car-icon" style="font-size: 2rem;">🚗</span>
-                                    </div>
+@{
+    var carImg = dong.DuongDanAnh ?? hang.DuongDanLogo;
+}
+                            <div class="card-image" style="background:@(string.IsNullOrEmpty(carImg) ? "var(--brand-dark)" : $"url('{carImg}?v={DateTime.Now.Ticks}') center/cover");">
+                                @if (string.IsNullOrEmpty(carImg))
+                                {
+                                    <span class="car-icon" style="font-size: 2rem;">🚗</span>
+                                }
+                                <span class="brand-tag">@dong.KieuDang</span>
+                            </div>
                                     <div class="card-body" style="padding: 1rem;">
                                         <h5 class="mb-1" style="font-size: 0.95rem;">@dong.TenDong</h5>
                                         <div class="d-flex justify-content-between align-items-center mb-2">
