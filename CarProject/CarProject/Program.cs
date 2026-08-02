@@ -260,6 +260,9 @@ try
     });
 
     app.MapStaticAssets();
+    // Serve runtime-uploaded files (e.g. /uploads/admin/*) that are NOT in the
+    // MapStaticAssets build-time manifest (production publish only serves manifest assets)
+    app.UseStaticFiles();
     // Minimal API for avatar upload (bypasses Razor Pages pipeline entirely)
     app.MapPost("/api/upload-avatar", async (HttpContext ctx, IWebHostEnvironment env) =>
     {
