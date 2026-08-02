@@ -99,8 +99,22 @@
                             var showroomGroups = (phienBanList ?? new List<PhienBanXe>())
                                 .SelectMany(p => Model.TonKhoTheoPhienBan.TryGetValue(p.MaPhienBan, out var tl) ? tl : new List<TonKhoTheoChiNhanh>())
                                 .GroupBy(t => t.MaChiNhanh)
-                                .Select(g => new { g.Key, SoLuong = g.Sum(x => x.SoLuong), Ten = Model.TenChiNhanhLut.TryGetValue(g.Key, out var tn) ? tn : g.Key })
-                                .OrderByDescending(x => x.SoLuong);
+                                .Select(g => new
+                                {
+                                    g.Key,
+                                    SoLuong = g.Sum(x => x.SoLuong),
+                                    Ten = Model.TenChiNhanhLut.TryGetValue(g.Key, out var tn) ? tn : g.Key,
+                                    PhienBans = g.GroupBy(x => x.MaPhienBan)
+                                        .Select(pg => new
+                                        {
+                                            TenPhienBan = phienBanList.FirstOrDefault(p => p.MaPhienBan == pg.Key)?.TenPhienBan ?? pg.Key.ToString(),
+                                            SoLuong = pg.Sum(x => x.SoLuong)
+                                        })
+                                        .OrderByDescending(x => x.SoLuong)
+                                        .ToList()
+                                })
+                                .OrderByDescending(x => x.SoLuong)
+                                .ToList();
                             var showroomJson = System.Text.Json.JsonSerializer.Serialize(showroomGroups);
                             <div class="col-md-4">
                                 <div class="car-card-premium" style="animation: none;"

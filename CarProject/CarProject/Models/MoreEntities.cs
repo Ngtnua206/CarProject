@@ -220,6 +220,19 @@ public class ThongBao
     public TaiKhoan? NguoiNhan { get; set; }
 }
 
+public class HinhAnhXe
+{
+    [Key]
+    public int MaHinhAnh { get; set; }
+    public int MaDong { get; set; }
+    public string DuongDanAnh { get; set; }
+    public bool LaChinh { get; set; }
+    public int ThuTu { get; set; }
+
+    [ForeignKey("MaDong")]
+    public DongXe DongXe { get; set; }
+}
+
 public class TonKhoTheoChiNhanh
 {
     [Key]

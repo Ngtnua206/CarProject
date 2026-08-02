@@ -17,6 +17,7 @@ public class DetailsModel : PageModel
     public Dictionary<int, List<TonKhoTheoChiNhanh>> TonKhoTheoPhienBan { get; set; } = new();
     public Dictionary<int, Dictionary<string, int>> DaDatCocTheoPhienBanVaChiNhanh { get; set; } = new();
     public Dictionary<int, int> TongDaDatCocTheoPhienBan { get; set; } = new();
+    public List<HinhAnhXe> HinhAnhXes { get; set; } = new();
 
     public DetailsModel(AppDbContext db, IActivityLogService log)
     {
@@ -34,10 +35,16 @@ public class DetailsModel : PageModel
         var maPhienBans = PhienBans.Select(p => p.MaPhienBan).ToList();
         var tonKhoList = await _db.TonKhoTheoChiNhanh
             .Include(t => t.ChiNhanh)
-            .Where(t => maPhienBans.Contains(t.MaPhienBan))
+            .Where(t => maPhienBans.Contains(t.MaPhienBan) && t.SoLuong > 0)
             .ToListAsync();
         TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
             .ToDictionary(g => g.Key, g => g.ToList());
+
+        HinhAnhXes = await _db.HinhAnhXe
+            .Where(h => h.MaDong == id)
+            .OrderBy(h => h.ThuTu)
+            .ThenBy(h => h.MaHinhAnh)
+            .ToListAsync();
 
         // Các phiên bản đã được đặt cọc (đơn đang chờ xử lý/đã xác nhận) - đếm theo từng showroom
         var reservedStatuses = new List<string> { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };

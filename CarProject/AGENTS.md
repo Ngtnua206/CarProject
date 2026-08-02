@@ -16,6 +16,16 @@
 
 ## Progress
 ### Done
+- **Nhiều ảnh xe: model HinhAnhXe + gallery slide + quản lý ảnh admin + hover theo phiên bản** (yêu cầu người dùng):
+  - Model mới `HinhAnhXe` (MoreEntities.cs): `MaHinhAnh` (PK), `MaDong` (FK → DongXe, Restrict), `DuongDanAnh`, `LaChinh`, `ThuTu`; nav `ICollection<HinhAnhXe>` trong `DongXe` (Entities.cs); `AppDbContext` có `DbSet<HinhAnhXe>`, table `"HinhAnhXe"`, index IX_HinhAnhXe_MaDong
+  - Migration mới: `Migrations/20260802140351_AddHinhAnhXe.cs` (chưa đẩy production)
+  - **Fix showroom 0 xe**: `Details.cshtml.cs` thêm `&& t.SoLuong > 0` vào query `TonKhoTheoPhienBan` → "Phân bổ showroom" (phiên bản + sidebar) bỏ hẳn showroom stock 0
+  - **Gallery slide Details**: `DetailsModel.HinhAnhXes` load theo MaDong + OrderBy(ThuTu); Details.cshtml render `.car-gallery` (stage/slide active, prev/next, thumbs 72×48 chỉ hiện khi >1 ảnh); fallback `carImg`/🚗 giữ nguyên; JS `galleryGo/galleryMove` + init DOMContentLoaded; CSS `.car-gallery*` trong site.css
+  - **Hover theo phiên bản**: Cars.cshtml + Showroom.cshtml JSON showroomGroups thêm `PhienBans:[{TenPhienBan,SoLuong}]` sắp desc; `car-hover-preview.js` render `.chp-sr-vers/.chp-sr-ver` (tên PB + số xe màu stock); CSS `.chp-sr-vers*`
+  - **Endpoints admin** (Program.cs): `GET /api/admin/dongxe/{id}` trả thêm `images`; `POST /api/admin/dongxe/images/upload` (multipart nhiều file → `wwwroot/uploads/admin`, trả urls); `POST .../images/save` (replace toàn bộ ảnh, tự set ảnh đầu làm chính, sync `DongXe.DuongDanAnh` = ảnh chính, trả list có id); `POST .../images/setmain` (bỏ chính cũ, set mới, sync DuongDanAnh); `POST .../images/delete` (xoá; ảnh chính bị xoá → chuyển cho ảnh kế + sync); lỗi ghi `%TEMP%\dongxe_images_{save,setmain,delete}_error.log`
+  - **UI admin**: Index.cshtml (`editModelImagesList`, input multiple, `_carImages`, `renderModelImages/uploadModelImages/setMainCarImage/deleteCarImage`) + Cars.cshtml (`carsEditModelImagesList`, `_carsImages`, `renderCarsModelImages/carsUploadModelImages/carsSetMainImage/carsDeleteImage`); cả hai `open*EditorFull` gán `d.images`
+  - E2E verified (port 5002, app HTTP): bảng HinhAnhXe tồn tại; save/setmain/delete/upload qua curl hoạt động; Details hiện slideshow + thumbs khi có nhiều ảnh; Details "Phân bổ" không còn showroom stock 0; Cars + Showroom hover JSON có `PhienBans` (VD `A3 35 TFSI:3`); Cars card-image + `data-car-img` dùng ảnh chính mới khi lưu HinhAnhXe (sync DongXe.DuongDanAnh); build Release 0 lỗi; test data đã xoá (HinhAnhXe 0 rows, DongXe.DuongDanAnh xe 5/28 restore NULL)
+  - **Ghi chú toolchain**: `dotnet ef migrations add` bắt buộc `--configuration Release` (Debug bin bị lock bởi CarProject cũ); build Release cũng phải dừng mọi instance CarProject đang chạy (MSB3027 lock DLL)
 - **Brand scroll tự động + quản lý thương hiệu** (yêu cầu người dùng):
   - Bỏ nút mũi tên `brand-scroll-left/right` + hàm `scrollBrands()`; brand-scroll giờ là **marquee tự động** trái→phải: `brand-track` (display:flex, width:max-content) chứa **2 bản sao** `brand-group` (lặp `@for copy 0..1`), animation CSS `brandMarquee` translateX 0→-50% 45s linear infinite, pause khi hover; thêm CSS `.brand-track`/`.brand-group`/`@keyframes brandMarquee`
   - **Bút chì duy nhất góc trên phải** `.brand-manage-btn` (chỉ admin view) → mở modal `brandListModal` "Quản lý Thương Hiệu": liệt kê từng hàng giống banner editor (tên thương hiệu + nút Sửa + nút Xoá), nút "Thêm Thương Hiệu Mới" link `/Admin/HangXe/Create`; xoá bỏ overlay sửa/xoá per-item trên từng brand card cũ
@@ -140,7 +150,14 @@
 - `rebuild-and-run.bat` at workspace root — build + run in one click
 
 ## Relevant Files
-- `CarProject/wwwroot/css/site.css`: complete luxury theme (all CSS)
+- `CarProject/wwwroot/css/site.css`: complete luxury theme (all CSS) — gồm `.car-gallery*`, `.chp-sr-vers/.chp-sr-ver*`
+- `CarProject/wwwroot/js/car-hover-preview.js`: render phiên bản per showroom (`.chp-sr-vers`)
+- `CarProject/Models/MoreEntities.cs`: class `HinhAnhXe` mới
+- `CarProject/Models/Entities.cs`: `DongXe.HinhAnhXes`
+- `CarProject/Data/AppDbContext.cs`: DbSet + mapping `HinhAnhXe` (FK Restrict)
+- `CarProject/Migrations/20260802140351_AddHinhAnhXe.cs`
+- `CarProject/Pages/Details.cshtml + .cs`: lọc stock >0, load HinhAnhXe, slideshow gallery + JS/CSS
+- `CarProject/Pages/Showroom.cshtml`: hover JSON kèm `PhienBans`
 - `CarProject/Views/Shared/_Layout.cshtml`: premium layout (navbar + footer + floating buttons)
 - `CarProject/Pages/_ViewStart.cshtml`: layout directive for Razor Pages
 - `CarProject/Pages/_ViewImports.cshtml`: tag helpers and usings

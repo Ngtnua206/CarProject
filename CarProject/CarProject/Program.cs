@@ -484,6 +484,25 @@ try
         return Results.Ok(new { url = $"/uploads/admin/{fileName}" });
     });
 
+    app.MapPost("/api/admin/dongxe/images/upload", async (HttpContext ctx, IWebHostEnvironment env) =>
+    {
+        var files = ctx.Request.Form.Files;
+        if (files == null || files.Count == 0)
+            return Results.BadRequest(new { error = "No files" });
+        var uploadsDir = Path.Combine(env.WebRootPath, "uploads", "admin");
+        Directory.CreateDirectory(uploadsDir);
+        var urls = new List<string>();
+        foreach (var file in files)
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var path = Path.Combine(uploadsDir, fileName);
+            using (var stream = new FileStream(path, FileMode.Create))
+                await file.CopyToAsync(stream);
+            urls.Add($"/uploads/admin/{fileName}");
+        }
+        return Results.Ok(new { success = true, urls });
+    });
+
     app.MapPost("/api/admin/banner/save", async (HttpContext ctx, AppDbContext db) =>
     {
         try
@@ -548,6 +567,11 @@ try
             .FirstOrDefaultAsync(d => d.MaDong == id);
         if (dongXe == null) return Results.NotFound();
         var hx = dongXe.HangXe;
+        var images = await db.HinhAnhXe
+            .Where(h => h.MaDong == id)
+            .OrderBy(h => h.ThuTu).ThenBy(h => h.MaHinhAnh)
+            .Select(h => new { h.MaHinhAnh, h.DuongDanAnh, h.LaChinh, h.ThuTu })
+            .ToListAsync();
         return Results.Ok(new
         {
             dongXe.MaDong,
@@ -555,6 +579,7 @@ try
             dongXe.KieuDang,
             dongXe.MaHang,
             dongXe.DuongDanAnh,
+            images,
             brand = hx != null ? new { hx.MaHang, hx.TenHang, hx.QuocGia, hx.DuongDanLogo } : null,
             versions = dongXe.PhienBanXes?.Select(v => new
             {
@@ -626,6 +651,123 @@ try
             dongXe.DuongDanAnh = dda.ValueKind == JsonValueKind.Null || string.IsNullOrEmpty(dda.GetString()) ? null : dda.GetString();
         await db.SaveChangesAsync();
         return Results.Ok(new { success = true });
+    });
+
+    app.MapPost("/api/admin/dongxe/images/save", async (HttpContext ctx, AppDbContext db) =>
+    {
+        try
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var maDong = body.GetProperty("maDong").GetInt32();
+            if (!await db.DongXe.AnyAsync(d => d.MaDong == maDong))
+                return Results.BadRequest(new { success = false, error = "Không tìm thấy dòng xe" });
+
+            var images = new List<CarProject.Models.HinhAnhXe>();
+            if (body.TryGetProperty("images", out var imgArr) && imgArr.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var it in imgArr.EnumerateArray())
+                {
+                    var url = it.TryGetProperty("duongDanAnh", out var u) ? u.GetString() : null;
+                    if (string.IsNullOrWhiteSpace(url)) continue;
+                    var isChinh = it.TryGetProperty("laChinh", out var lc) && lc.GetBoolean();
+                    images.Add(new CarProject.Models.HinhAnhXe
+                    {
+                        MaDong = maDong,
+                        DuongDanAnh = url,
+                        LaChinh = isChinh,
+                        ThuTu = images.Count
+                    });
+                }
+            }
+
+            if (images.Any() && !images.Any(i => i.LaChinh))
+                images[0].LaChinh = true;
+
+            var existing = await db.HinhAnhXe.Where(h => h.MaDong == maDong).ToListAsync();
+            db.HinhAnhXe.RemoveRange(existing);
+            foreach (var img in images) db.HinhAnhXe.Add(img);
+
+            var dongXe = await db.DongXe.FindAsync(maDong);
+            if (dongXe != null)
+                dongXe.DuongDanAnh = images.FirstOrDefault(i => i.LaChinh)?.DuongDanAnh ?? dongXe.DuongDanAnh;
+
+            await db.SaveChangesAsync();
+            var saved = await db.HinhAnhXe.Where(h => h.MaDong == maDong)
+                .OrderBy(h => h.ThuTu).ThenBy(h => h.MaHinhAnh)
+                .Select(h => new { h.MaHinhAnh, h.DuongDanAnh, h.LaChinh, h.ThuTu })
+                .ToListAsync();
+            return Results.Ok(new { success = true, count = images.Count, images = saved });
+        }
+        catch (Exception ex)
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), "dongxe_images_save_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
+    app.MapPost("/api/admin/dongxe/images/setmain", async (HttpContext ctx, AppDbContext db) =>
+    {
+        try
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var maHinhAnh = body.GetProperty("maHinhAnh").GetInt32();
+            var hinhAnh = await db.HinhAnhXe.FindAsync(maHinhAnh);
+            if (hinhAnh == null) return Results.BadRequest(new { success = false, error = "Không tìm thấy ảnh" });
+            await db.HinhAnhXe.Where(h => h.MaDong == hinhAnh.MaDong).ExecuteUpdateAsync(s => s.SetProperty(h => h.LaChinh, false));
+            hinhAnh.LaChinh = true;
+            var dongXe = await db.DongXe.FindAsync(hinhAnh.MaDong);
+            if (dongXe != null) dongXe.DuongDanAnh = hinhAnh.DuongDanAnh;
+            await db.SaveChangesAsync();
+            var saved = await db.HinhAnhXe.Where(h => h.MaDong == hinhAnh.MaDong)
+                .OrderBy(h => h.ThuTu).ThenBy(h => h.MaHinhAnh)
+                .Select(h => new { h.MaHinhAnh, h.DuongDanAnh, h.LaChinh, h.ThuTu })
+                .ToListAsync();
+            return Results.Ok(new { success = true, images = saved });
+        }
+        catch (Exception ex)
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), "dongxe_images_setmain_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
+    app.MapPost("/api/admin/dongxe/images/delete", async (HttpContext ctx, AppDbContext db) =>
+    {
+        try
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var maHinhAnh = body.GetProperty("maHinhAnh").GetInt32();
+            var hinhAnh = await db.HinhAnhXe.FindAsync(maHinhAnh);
+            if (hinhAnh == null) return Results.BadRequest(new { success = false, error = "Không tìm thấy ảnh" });
+            var maDong = hinhAnh.MaDong;
+            var wasMain = hinhAnh.LaChinh;
+            db.HinhAnhXe.Remove(hinhAnh);
+            await db.SaveChangesAsync();
+            if (wasMain)
+            {
+                var next = await db.HinhAnhXe.Where(h => h.MaDong == maDong).OrderBy(h => h.ThuTu).FirstOrDefaultAsync();
+                if (next != null) next.LaChinh = true;
+                var dongXe = await db.DongXe.FindAsync(maDong);
+                if (dongXe != null) dongXe.DuongDanAnh = next?.DuongDanAnh ?? dongXe.DuongDanAnh;
+                await db.SaveChangesAsync();
+            }
+            var remaining = await db.HinhAnhXe.Where(h => h.MaDong == maDong)
+                .OrderBy(h => h.ThuTu).ThenBy(h => h.MaHinhAnh)
+                .Select(h => new { h.MaHinhAnh, h.DuongDanAnh, h.LaChinh, h.ThuTu })
+                .ToListAsync();
+            return Results.Ok(new { success = true, images = remaining });
+        }
+        catch (Exception ex)
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), "dongxe_images_delete_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
     });
 
     app.MapPost("/api/admin/phienban/save", async (HttpContext ctx, AppDbContext db) =>

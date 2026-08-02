@@ -20,7 +20,33 @@
             </nav>
             <div class="row align-items-center hero-wrap" style="min-height: 500px;">
                 <div class="col-lg-8 offset-lg-2 text-center">
-                    @if (!string.IsNullOrEmpty(carImg))
+                    @if (Model.HinhAnhXes.Any())
+                    {
+                        <div class="car-gallery" id="carGallery" data-current="0">
+                            <button type="button" class="car-gallery-nav car-gallery-prev" onclick="galleryMove(-1)" aria-label="Ảnh trước"><i class="fas fa-chevron-left"></i></button>
+                            <button type="button" class="car-gallery-nav car-gallery-next" onclick="galleryMove(1)" aria-label="Ảnh sau"><i class="fas fa-chevron-right"></i></button>
+                            <div class="car-gallery-stage">
+                                @for (int gi = 0; gi < Model.HinhAnhXes.Count; gi++)
+                                {
+                                    <div class="car-gallery-slide @(gi == 0 ? "active" : "")" data-slide="@gi">
+                                        <img src="@Model.HinhAnhXes[gi].DuongDanAnh?v=@DateTime.Now.Ticks" alt="@Model.Dong?.TenDong" class="detail-hero-img" style="max-width:100%;max-height:450px;border-radius:16px;object-fit:contain;" />
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.HinhAnhXes.Count > 1)
+                            {
+                                <div class="car-gallery-thumbs">
+                                    @for (int gi = 0; gi < Model.HinhAnhXes.Count; gi++)
+                                    {
+                                        <div class="car-gallery-thumb @(gi == 0 ? "active" : "")" data-thumb="@gi" onclick="galleryGo(@gi)">
+                                            <img src="@Model.HinhAnhXes[gi].DuongDanAnh?v=@DateTime.Now.Ticks" alt="Ảnh @(gi+1)" />
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(carImg))
                     {
                         <img src="@carImg?v=@DateTime.Now.Ticks" alt="@Model.Dong?.TenDong" class="detail-hero-img" style="max-width:100%;max-height:450px;border-radius:16px;object-fit:contain;" />
                     }
@@ -289,6 +315,29 @@
         document.getElementById('version-' + idx).style.display = 'block';
         document.querySelectorAll('.version-tabs .tab')[idx].classList.add('active');
     }
+    function galleryGo(idx) {
+        const gallery = document.getElementById('carGallery');
+        if (!gallery) return;
+        const slides = gallery.querySelectorAll('.car-gallery-slide');
+        const thumbs = gallery.querySelectorAll('.car-gallery-thumb');
+        if (!slides.length) return;
+        if (idx < 0) idx = 0;
+        if (idx >= slides.length) idx = slides.length - 1;
+        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+        thumbs.forEach((t, i) => t.classList.toggle('active', i === idx));
+        gallery.dataset.current = idx;
+        const nextBtn = gallery.querySelector('.car-gallery-next');
+        const prevBtn = gallery.querySelector('.car-gallery-prev');
+        if (nextBtn) nextBtn.style.display = idx >= slides.length - 1 ? 'none' : '';
+        if (prevBtn) prevBtn.style.display = idx <= 0 ? 'none' : '';
+    }
+    function galleryMove(dir) {
+        const gallery = document.getElementById('carGallery');
+        if (!gallery) return;
+        galleryGo(parseInt(gallery.dataset.current || '0') + dir);
+    }
+    document.addEventListener('DOMContentLoaded', () => galleryGo(0));
+</script>
     @if (TempData["DepositError"] != null)
     {
         <text>

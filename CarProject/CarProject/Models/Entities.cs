@@ -25,6 +25,7 @@ public class DongXe
     [ForeignKey("MaHang")]
     public HangXe HangXe { get; set; } = null!;
     public ICollection<PhienBanXe> PhienBanXes { get; set; } = new List<PhienBanXe>();
+    public ICollection<HinhAnhXe> HinhAnhXes { get; set; } = new List<HinhAnhXe>();
 }
 
 public class PhienBanXe

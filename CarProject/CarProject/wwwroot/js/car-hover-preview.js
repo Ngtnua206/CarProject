@@ -84,10 +84,21 @@
         var srHtml = showrooms.length
             ? '<div class="chp-showrooms">' + showrooms.map(function (s) {
                 var sc = Number(s.SoLuong) <= 0 ? '#dc3545' : (Number(s.SoLuong) <= 5 ? '#ffc107' : '#28a745');
+                var versions = Array.isArray(s.PhienBans) ? s.PhienBans : [];
+                var subHtml = versions.length > 1
+                    ? '<div class="chp-sr-vers">' + versions.map(function (v) {
+                        var vc = Number(v.SoLuong) <= 0 ? '#dc3545' : (Number(v.SoLuong) <= 2 ? '#ffc107' : '#28a745');
+                        return '<div class="chp-sr-ver">'
+                            + '<span class="chp-sr-ver-name">' + escapeHtml(v.TenPhienBan || '') + '</span>'
+                            + '<span class="chp-sr-ver-stock" style="color:' + vc + ';">' + escapeHtml(v.SoLuong) + ' xe</span>'
+                            + '</div>';
+                    }).join('') + '</div>'
+                    : '';
                 return '<div class="chp-sr-row">'
                     + '<span class="chp-sr-name"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(s.Ten || s.Key || '') + '</span>'
                     + '<span class="chp-sr-stock" style="color:' + sc + ';">' + escapeHtml(s.SoLuong) + ' xe</span>'
-                    + '</div>';
+                    + '</div>'
+                    + subHtml;
             }).join('') + '</div>'
             : '';
 

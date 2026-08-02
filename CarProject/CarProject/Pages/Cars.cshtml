@@ -111,8 +111,22 @@
                         var showroomGroups = (d.item.PhienBanXes ?? new List<PhienBanXe>())
                             .SelectMany(p => Model.TonKhoTheoPhienBan.TryGetValue(p.MaPhienBan, out var tl) ? tl : new List<TonKhoTheoChiNhanh>())
                             .GroupBy(t => t.MaChiNhanh)
-                            .Select(g => new { g.Key, SoLuong = g.Sum(x => x.SoLuong), Ten = Model.TenChiNhanhLut.TryGetValue(g.Key, out var tn) ? tn : g.Key })
-                            .OrderByDescending(x => x.SoLuong);
+                            .Select(g => new
+                            {
+                                g.Key,
+                                SoLuong = g.Sum(x => x.SoLuong),
+                                Ten = Model.TenChiNhanhLut.TryGetValue(g.Key, out var tn) ? tn : g.Key,
+                                PhienBans = g.GroupBy(x => x.MaPhienBan)
+                                    .Select(pg => new
+                                    {
+                                        TenPhienBan = d.item.PhienBanXes?.FirstOrDefault(p => p.MaPhienBan == pg.Key)?.TenPhienBan ?? pg.Key.ToString(),
+                                        SoLuong = pg.Sum(x => x.SoLuong)
+                                    })
+                                    .OrderByDescending(x => x.SoLuong)
+                                    .ToList()
+                            })
+                            .OrderByDescending(x => x.SoLuong)
+                            .ToList();
                         var showroomJson = System.Text.Json.JsonSerializer.Serialize(showroomGroups);
                         <div class="car-card-premium reveal admin-edit-trigger" style="transition-delay:@(delay)s;position:relative;"
                              data-car-name="@d.item.TenDong"
@@ -226,6 +240,14 @@
                             </select></div>
                             <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="carsEditModelImage" class="form-control form-control-dark" placeholder="https://..." /></div>
                             <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="carsEditModelFile" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('carsEditModelFile','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('carsEditModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                            <div class="col-12">
+                                <label class="form-label small text-secondary">Bộ sưu tập ảnh xe (slide)</label>
+                                <div id="carsEditModelImagesList" class="d-flex flex-wrap gap-2 mb-2"></div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="flex-grow-1"><input type="file" id="carsEditModelImagesFiles" class="form-control form-control-dark" accept="image/*" multiple onchange="carsUploadModelImages(this.files)" /></div>
+                                </div>
+                                <div class="text-muted mt-1" style="font-size:0.68rem;"><i class="fas fa-info-circle me-1"></i>Ảnh đầu tiên sẽ là ảnh chính hiển thị ngoài danh sách xe. Chọn ảnh và bấm <strong>Đặt chính</strong> để thay đổi.</div>
+                            </div>
                         </div>
                         <button onclick="carsSaveModelFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Dòng Xe</button>
                     </div>
@@ -299,6 +321,7 @@
 <script src="~/js/car-hover-preview.js" asp-append-version="true"></script>
 <script>
 let _carsVersions = [];
+let _carsImages = [];
 let _carsPage = 1;
 const _carsPerPage = 8;
 
@@ -570,11 +593,69 @@ async function carsApiPost(url, payload) {
     if (!res.ok || data.error) throw new Error(data.error || res.statusText);
     return data;
 }
+
+function renderCarsModelImages() {
+    const list = document.getElementById('carsEditModelImagesList');
+    if (!list) return;
+    if (!_carsImages.length) {
+        list.innerHTML = '<span class="text-muted" style="font-size:0.72rem;">Chưa có ảnh nào.</span>';
+        return;
+    }
+    list.innerHTML = _carsImages.map(function (img) {
+        return '<div class="position-relative" style="width:80px;height:56px;border-radius:8px;overflow:hidden;border:2px solid ' + (img.laChinh ? 'var(--brand-gold)' : 'rgba(255,255,255,0.1)') + ';">'
+            + '<img src="' + img.duongDanAnh + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.visibility=\'hidden\';" />'
+            + (img.laChinh ? '<span style="position:absolute;top:2px;left:2px;background:var(--brand-gold);color:#000;font-size:0.6rem;padding:0 4px;border-radius:4px;font-weight:700;"><i class="fas fa-star"></i></span>' : '')
+            + '<div class="d-flex" style="position:absolute;bottom:2px;right:2px;gap:3px;">'
+            + (img.laChinh ? '' : '<button type="button" class="btn btn-dark btn-sm p-0" style="width:20px;height:20px;font-size:0.6rem;border-radius:4px;opacity:0.9;" title="Đặt ảnh chính" onclick="carsSetMainImage(' + img.maHinhAnh + ')"><i class="fas fa-star"></i></button>')
+            + '<button type="button" class="btn btn-danger btn-sm p-0" style="width:20px;height:20px;font-size:0.6rem;border-radius:4px;opacity:0.9;" title="Xoá ảnh" onclick="carsDeleteImage(' + img.maHinhAnh + ')"><i class="fas fa-trash"></i></button>'
+            + '</div></div>';
+    }).join('');
+}
+
+async function carsUploadModelImages(files) {
+    if (!files || !files.length) return;
+    const maDong = parseInt(document.getElementById('carsEditModelId').value);
+    if (!maDong) { showToast('Chưa có mã dòng xe', 'error'); return; }
+    try {
+        const formData = new FormData();
+        for (const f of files) formData.append('files', f);
+        const res = await fetch('/api/admin/dongxe/images/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.urls || !data.urls.length) throw new Error(data.error || 'Upload thất bại');
+        const existing = _carsImages.map(i => ({ duongDanAnh: i.duongDanAnh, laChinh: i.laChinh }));
+        for (const url of data.urls) existing.push({ duongDanAnh: url, laChinh: false });
+        const saved = await carsApiPost('/api/admin/dongxe/images/save', { maDong: maDong, images: existing });
+        _carsImages = saved.images || [];
+        document.getElementById('carsEditModelImagesFiles').value = '';
+        renderCarsModelImages();
+        showToast('Đã thêm ' + data.urls.length + ' ảnh!');
+    } catch (e) { showToast('Lỗi upload ảnh: ' + e.message, 'error'); }
+}
+
+async function carsSetMainImage(maHinhAnh) {
+    try {
+        const res = await carsApiPost('/api/admin/dongxe/images/setmain', { maHinhAnh: maHinhAnh });
+        _carsImages = res.images || _carsImages.map(i => ({ ...i, laChinh: i.maHinhAnh === maHinhAnh }));
+        renderCarsModelImages();
+        showToast('Đã đặt ảnh chính!');
+    } catch (e) { showToast('Lỗi: ' + e.message, 'error'); }
+}
+
+async function carsDeleteImage(maHinhAnh) {
+    if (!confirm('Xoá ảnh này?')) return;
+    try {
+        const res = await carsApiPost('/api/admin/dongxe/images/delete', { maHinhAnh: maHinhAnh });
+        _carsImages = res.images || [];
+        renderCarsModelImages();
+        showToast('Đã xoá ảnh!');
+    } catch (e) { showToast('Lỗi xoá ảnh: ' + e.message, 'error'); }
+}
 /* ======================================== */
 
 function openCarsEditorFull(id) {
     fetch('/api/admin/dongxe/' + id).then(r=>r.json()).then(d=>{
         _carsVersions = d.versions || [];
+        _carsImages = d.images || [];
         if (d.brand) {
             document.getElementById('carsEditBrandId').value = d.brand.maHang;
             document.getElementById('carsEditBrandName').value = d.brand.tenHang;
@@ -586,6 +667,7 @@ function openCarsEditorFull(id) {
         document.getElementById('carsEditModelBrand').value = d.maHang;
         document.getElementById('carsEditModelStyle').value = d.kieuDang;
         document.getElementById('carsEditModelImage').value = d.duongDanAnh || '';
+        renderCarsModelImages();
         const sel = document.getElementById('carsEditVersionSelect');
         sel.innerHTML = '';
         _carsVersions.forEach((v,i) => {

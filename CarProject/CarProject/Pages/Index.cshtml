@@ -374,6 +374,14 @@
                             </select></div>
                             <div class="col-12"><label class="form-label small text-secondary">Ảnh URL</label><input type="url" id="editModelImage" class="form-control form-control-dark" placeholder="https://..." /></div>
                             <div class="col-12 d-flex gap-2 align-items-end"><div class="flex-grow-1"><label class="form-label small text-secondary">Hoặc upload file</label><input type="file" id="editModelFile" class="form-control form-control-dark" accept="image/*" onchange="openCropModal('editModelFile','16:9')" /></div><button type="button" class="btn btn-sm btn-outline-light" style="white-space:nowrap;padding:0.55rem 0.8rem;border-radius:10px;font-size:0.7rem;" onclick="openCropModal('editModelFile','16:9')"><i class="fas fa-crop-alt me-1"></i>Chỉnh sửa</button></div>
+                            <div class="col-12">
+                                <label class="form-label small text-secondary">Bộ sưu tập ảnh xe (slide)</label>
+                                <div id="editModelImagesList" class="d-flex flex-wrap gap-2 mb-2"></div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="flex-grow-1"><input type="file" id="editModelImagesFiles" class="form-control form-control-dark" accept="image/*" multiple onchange="uploadModelImages(this.files)" /></div>
+                                </div>
+                                <div class="text-muted mt-1" style="font-size:0.68rem;"><i class="fas fa-info-circle me-1"></i>Ảnh đầu tiên sẽ là ảnh chính hiển thị ngoài danh sách xe. Chọn ảnh và bấm <strong>Đặt chính</strong> để thay đổi.</div>
+                            </div>
                         </div>
                         <button onclick="saveModelFull()" class="btn btn-premium btn-premium-solid w-100 mt-3"><i class="fas fa-save me-2"></i> Lưu Dòng Xe</button>
                     </div>
@@ -447,6 +455,7 @@
 @section Scripts {
 <script>
 let _carVersions = [];
+let _carImages = [];
 
 /* ========== IMAGE CROP SYSTEM ========== */
 let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };
@@ -769,6 +778,7 @@ function openBrandEditor(id, name, country, logo) {
 function openCarEditorFull(id) {
     fetch('/api/admin/dongxe/' + id).then(r=>r.json()).then(d=>{
         _carVersions = d.versions || [];
+        _carImages = d.images || [];
         if (d.brand) {
             document.getElementById('editBrandId').value = d.brand.maHang;
             document.getElementById('editBrandName').value = d.brand.tenHang;
@@ -780,6 +790,7 @@ function openCarEditorFull(id) {
         document.getElementById('editModelBrand').value = d.maHang;
         document.getElementById('editModelStyle').value = d.kieuDang;
         document.getElementById('editModelImage').value = d.duongDanAnh || '';
+        renderModelImages();
         const sel = document.getElementById('editVersionSelect');
         sel.innerHTML = '';
         _carVersions.forEach((v,i) => {
@@ -832,6 +843,63 @@ async function apiPost(url, payload) {
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || res.statusText);
     return data;
+}
+
+function renderModelImages() {
+    const list = document.getElementById('editModelImagesList');
+    if (!list) return;
+    if (!_carImages.length) {
+        list.innerHTML = '<span class="text-muted" style="font-size:0.72rem;">Chưa có ảnh nào.</span>';
+        return;
+    }
+    list.innerHTML = _carImages.map(function (img) {
+        return '<div class="position-relative" style="width:80px;height:56px;border-radius:8px;overflow:hidden;border:2px solid ' + (img.laChinh ? 'var(--brand-gold)' : 'rgba(255,255,255,0.1)') + ';">'
+            + '<img src="' + img.duongDanAnh + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.visibility=\'hidden\';" />'
+            + (img.laChinh ? '<span style="position:absolute;top:2px;left:2px;background:var(--brand-gold);color:#000;font-size:0.6rem;padding:0 4px;border-radius:4px;font-weight:700;"><i class="fas fa-star"></i></span>' : '')
+            + '<div class="d-flex" style="position:absolute;bottom:2px;right:2px;gap:3px;">'
+            + (img.laChinh ? '' : '<button type="button" class="btn btn-dark btn-sm p-0" style="width:20px;height:20px;font-size:0.6rem;border-radius:4px;opacity:0.9;" title="Đặt ảnh chính" onclick="setMainCarImage(' + img.maHinhAnh + ')"><i class="fas fa-star"></i></button>')
+            + '<button type="button" class="btn btn-danger btn-sm p-0" style="width:20px;height:20px;font-size:0.6rem;border-radius:4px;opacity:0.9;" title="Xoá ảnh" onclick="deleteCarImage(' + img.maHinhAnh + ')"><i class="fas fa-trash"></i></button>'
+            + '</div></div>';
+    }).join('');
+}
+
+async function uploadModelImages(files) {
+    if (!files || !files.length) return;
+    const maDong = parseInt(document.getElementById('editModelId').value);
+    if (!maDong) { showToast('Chưa có mã dòng xe', 'error'); return; }
+    try {
+        const formData = new FormData();
+        for (const f of files) formData.append('files', f);
+        const res = await fetch('/api/admin/dongxe/images/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.urls || !data.urls.length) throw new Error(data.error || 'Upload thất bại');
+        const existing = _carImages.map(i => ({ duongDanAnh: i.duongDanAnh, laChinh: i.laChinh }));
+        for (const url of data.urls) existing.push({ duongDanAnh: url, laChinh: false });
+        const saved = await apiPost('/api/admin/dongxe/images/save', { maDong: maDong, images: existing });
+        _carImages = saved.images || [];
+        document.getElementById('editModelImagesFiles').value = '';
+        renderModelImages();
+        showToast('Đã thêm ' + data.urls.length + ' ảnh!');
+    } catch (e) { showToast('Lỗi upload ảnh: ' + e.message, 'error'); }
+}
+
+async function setMainCarImage(maHinhAnh) {
+    try {
+        const res = await apiPost('/api/admin/dongxe/images/setmain', { maHinhAnh: maHinhAnh });
+        _carImages = res.images || _carImages.map(i => ({ ...i, laChinh: i.maHinhAnh === maHinhAnh }));
+        renderModelImages();
+        showToast('Đã đặt ảnh chính!');
+    } catch (e) { showToast('Lỗi: ' + e.message, 'error'); }
+}
+
+async function deleteCarImage(maHinhAnh) {
+    if (!confirm('Xoá ảnh này?')) return;
+    try {
+        const res = await apiPost('/api/admin/dongxe/images/delete', { maHinhAnh: maHinhAnh });
+        _carImages = res.images || [];
+        renderModelImages();
+        showToast('Đã xoá ảnh!');
+    } catch (e) { showToast('Lỗi xoá ảnh: ' + e.message, 'error'); }
 }
 
 async function saveBanner() {

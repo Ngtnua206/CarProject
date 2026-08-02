@@ -1644,6 +1644,80 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.5rem 1rem 0;
 }
 
+.car-hover-preview .chp-showrooms {
+    margin: 0.6rem 0.6rem 0;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    max-height: 128px;
+    overflow-y: auto;
+}
+
+.car-hover-preview .chp-showrooms::-webkit-scrollbar { width: 5px; }
+.car-hover-preview .chp-showrooms::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 3px; }
+
+.car-hover-preview .chp-sr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.28rem 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    font-size: 0.72rem;
+}
+
+.car-hover-preview .chp-sr-row:last-child { border-bottom: none; }
+
+.car-hover-preview .chp-sr-name {
+    flex: 1;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.car-hover-preview .chp-sr-name i {
+    color: var(--brand-silver);
+    margin-right: 0.3rem;
+    width: 12px;
+}
+
+.car-hover-preview .chp-sr-stock {
+    font-weight: 700;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.car-hover-preview .chp-sr-vers {
+    margin: 0.15rem 0 0 1.15rem;
+    padding: 0.15rem 0 0.2rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    padding-left: 0.55rem;
+}
+
+.car-hover-preview .chp-sr-ver {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    padding: 0.08rem 0;
+}
+
+.car-hover-preview .chp-sr-ver-name {
+    flex: 1;
+    color: var(--text-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.car-hover-preview .chp-sr-ver-stock {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .car-hover-preview .chp-versions {
     margin: 0.6rem 0.6rem 0;
     padding: 0.35rem 0.6rem;
@@ -1912,6 +1986,102 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 5.5rem;
     padding-bottom: 2rem;
     align-items: center;
+}
+
+.car-gallery {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 900px;
+}
+
+.car-gallery .car-gallery-stage {
+    position: relative;
+    min-height: 320px;
+}
+
+.car-gallery .car-gallery-slide {
+    display: none;
+    animation: carGalleryFade 0.35s ease;
+}
+
+.car-gallery .car-gallery-slide.active {
+    display: block;
+}
+
+.car-gallery .car-gallery-thumbs {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.car-gallery .car-gallery-thumb {
+    width: 72px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.12);
+    opacity: 0.6;
+    transition: all 0.25s ease;
+}
+
+.car-gallery .car-gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.car-gallery .car-gallery-thumb:hover {
+    opacity: 0.9;
+}
+
+.car-gallery .car-gallery-thumb.active {
+    border-color: var(--brand-gold);
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(212,175,55,0.25);
+}
+
+.car-gallery-nav {
+    position: absolute;
+    top: 42%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(0,0,0,0.45);
+    color: var(--brand-silver);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.car-gallery-nav:hover {
+    background: var(--brand-gold);
+    border-color: var(--brand-gold);
+    color: #000;
+}
+
+.car-gallery-prev {
+    left: -6px;
+}
+
+.car-gallery-next {
+    right: -6px;
+}
+
+@keyframes carGalleryFade {
+    from { opacity: 0; transform: scale(0.985); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .detail-premium .info-panel {
