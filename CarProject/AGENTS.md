@@ -16,6 +16,14 @@
 
 ## Progress
 ### Done
+- **Brand scroll tự động + quản lý thương hiệu** (yêu cầu người dùng):
+  - Bỏ nút mũi tên `brand-scroll-left/right` + hàm `scrollBrands()`; brand-scroll giờ là **marquee tự động** trái→phải: `brand-track` (display:flex, width:max-content) chứa **2 bản sao** `brand-group` (lặp `@for copy 0..1`), animation CSS `brandMarquee` translateX 0→-50% 45s linear infinite, pause khi hover; thêm CSS `.brand-track`/`.brand-group`/`@keyframes brandMarquee`
+  - **Bút chì duy nhất góc trên phải** `.brand-manage-btn` (chỉ admin view) → mở modal `brandListModal` "Quản lý Thương Hiệu": liệt kê từng hàng giống banner editor (tên thương hiệu + nút Sửa + nút Xoá), nút "Thêm Thương Hiệu Mới" link `/Admin/HangXe/Create`; xoá bỏ overlay sửa/xoá per-item trên từng brand card cũ
+  - Endpoint mới **`POST /api/admin/hangxe/delete`** (Program.cs): JSON `{maHang}` → nếu hãng có dòng xe trả 400 `{success:false,error:"...có dòng xe thuộc hãng..."}` (chặn FK), không có thì xoá + trả `{success:true}`; lỗi khác ghi `%TEMP%\hangxe_delete_error.log`
+  - JS mới: `openBrandListEditor()`, `deleteBrand(id,name)` (confirm + apiPost + toast + reload)
+  - **Giới hạn xe nổi bật trang chủ**: `Index.cshtml.cs` lấy NoiBat rồi cắt xuống **bội số 12** (`(count/12)*12`, chia hết cho 2/3/4 cột; 25 → 24 xe) để hàng cuối không thiếu xe trên mọi cỡ màn hình
+  - E2E verified (build 0 lỗi, HTTP 200): homepage anon = 2 bản sao brand (30 item), 24 car-card, không có bút chì; admin login (`e2e_admin_test`/`test123`) = 1 bút chì + modal list 15 brand + `deleteBrand`/`openBrandEditor` render đúng; delete brand có xe → 400, brand không xe → `{"success":true}`; test data đã xoá khỏi DB
+- **Banner homepage thành slideshow + upload/crop** (chi tiết đầy đủ ở các mục trước)
 - Added `Models/NhatKyHeThong` entity for activity logging with fields: MaTaiKhoan, TenDangNhap, VaiTro, HanhDong, ChiTiet, DiaChiIP, TrinhDuyet, DuongDan, ThoiGian
 - Added `NhatKyHeThong` DbSet and table mapping in AppDbContext
 - Created migration `AddNhatKyHeThong` for new log table

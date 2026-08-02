@@ -1207,32 +1207,56 @@ h1, h2, h3, h4, h5, h6 {
 .brand-scroll {
     display: flex;
     gap: 1.5rem;
-    overflow-x: auto;
-    scroll-behavior: smooth;
+    overflow: hidden;
+    width: 100%;
     padding: 0.5rem 0;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 .brand-scroll::-webkit-scrollbar { display: none; }
 
-.brand-scroll-btn {
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
+.brand-track {
+    display: flex;
+    flex: 0 0 auto;
+    width: max-content;
+    animation: brandMarquee 45s linear infinite;
+    will-change: transform;
+}
+.brand-scroll:hover .brand-track { animation-play-state: paused; }
+
+.brand-group {
+    display: flex;
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+@keyframes brandMarquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.brand-manage-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: var(--brand-gray);
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.65);
     color: var(--brand-white);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 2;
+    z-index: 5;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
-.brand-scroll-btn:hover {
+.brand-manage-btn:hover {
     background: var(--brand-light-gray);
-    border-color: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.4);
+    transform: scale(1.08);
 }
 
 .brand-item {
@@ -4654,3 +4678,8 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
 [data-theme="light"] .ql-header h1 { color: #1a1a1a !important; }
 [data-theme="light"] .ql-header p { color: #555 !important; }
 [data-theme="light"] .ql-card { background: #fff !important; box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important; }
+
+/* Modal stacking: brand editor opens ON TOP of brand list modal */
+.modal.modal-stack-above { z-index: 1080; }
+.modal.modal-stack-above + .modal-backdrop { z-index: 1070; }
+

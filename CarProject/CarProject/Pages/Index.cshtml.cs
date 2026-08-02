@@ -26,9 +26,11 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         HangXeList = await _db.HangXe.ToListAsync();
-        DongXeList = await _db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes)
+        var featured = await _db.DongXe.Include(d => d.HangXe).Include(d => d.PhienBanXes)
             .Where(d => d.NoiBat)
             .ToListAsync();
+        var takeCount = (featured.Count / 12) * 12;
+        DongXeList = takeCount >= 12 ? featured.Take(takeCount).ToList() : featured;
         BannerList = await _db.QuangCaoBanner.OrderBy(b => b.ThuTuHienThi).ToListAsync();
         TotalBrands = HangXeList.Count;
         TotalModels = DongXeList.Count;

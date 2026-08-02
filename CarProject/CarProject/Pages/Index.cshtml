@@ -97,35 +97,37 @@
             <p class="section-desc mx-auto text-center">Hợp tác với những nhà sản xuất ô tô hàng đầu thế giới</p>
         </div>
         <div class="brand-scroll-wrap">
-            <button class="brand-scroll-btn brand-scroll-left" onclick="scrollBrands(-1)"><i class="fas fa-chevron-left"></i></button>
+            @if (isAdminView)
+            {
+                <button class="brand-manage-btn" onclick="openBrandListEditor()" title="Quản lý thương hiệu"><i class="fas fa-pen"></i></button>
+            }
             <div class="brand-scroll" id="brandScroll">
-                @foreach (var brand in Model.HangXeList)
-                {
-                    var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
-                    <div class="brand-item reveal admin-edit-trigger" style="position:relative;flex:0 0 auto;">
-                        @if (isAdminView)
-                        {
-                            <div class="admin-edit-overlay start-0-override">
-                                <a href="javascript:void(0)" onclick="openBrandEditor(@brand.MaHang,'@brand.TenHang','@brand.QuocGia','@(brand.DuongDanLogo ?? "")')" class="admin-edit-btn btn-edit" title="Sửa"><i class="fas fa-pen"></i></a>
-                                <a asp-page="/Admin/HangXe/Delete" asp-route-id="@brand.MaHang" class="admin-edit-btn btn-delete" title="Xóa"><i class="fas fa-trash"></i></a>
-                            </div>
-                        }
-                        <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
-                            @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
+                <div class="brand-track">
+                    @for (int copy = 0; copy < 2; copy++)
+                    {
+                        <div class="brand-group" @(copy == 1 ? "aria-hidden=\"true\"" : "")>
+                            @foreach (var brand in Model.HangXeList)
                             {
-                                <img src="@brand.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
-                            }
-                            else
-                            {
-                                @brand.TenHang[0]
+                                var grad = brandGradients.GetValueOrDefault(brand.TenHang, "linear-gradient(135deg, #333, #111)");
+                                <div class="brand-item" data-mahang="@brand.MaHang" style="position:relative;flex:0 0 auto;">
+                                    <div class="brand-letter" style="background: @(string.IsNullOrEmpty(brand.DuongDanLogo) ? grad : "transparent");">
+                                        @if (!string.IsNullOrEmpty(brand.DuongDanLogo))
+                                        {
+                                            <img src="@brand.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@brand.TenHang" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
+                                        }
+                                        else
+                                        {
+                                            @brand.TenHang[0]
+                                        }
+                                    </div>
+                                    <h6>@brand.TenHang</h6>
+                                    <p>@brand.QuocGia</p>
+                                </div>
                             }
                         </div>
-                        <h6>@brand.TenHang</h6>
-                        <p>@brand.QuocGia</p>
-                    </div>
-                }
+                    }
+                </div>
             </div>
-            <button class="brand-scroll-btn brand-scroll-right" onclick="scrollBrands(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 </section>
@@ -285,7 +287,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="brandEditorModal" tabindex="-1">
+<div class="modal fade modal-stack-above" id="brandEditorModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
             <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-tag me-2"></i> Sửa Thương Hiệu</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
@@ -296,6 +298,39 @@
                 <div class="mb-3"><label class="form-label small text-secondary">Logo URL</label><input type="url" id="brandEditLogo" class="form-control form-control-dark" placeholder="https://..." /></div>
                 <div class="mb-3"><label class="form-label small text-secondary">Or upload file</label><input type="file" id="brandEditFile" class="form-control form-control-dark" accept="image/*" /></div>
                 <button onclick="saveBrandEdit()" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-save me-2"></i>Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="brandListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-0 shadow-lg" style="border-radius:16px;">
+            <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold"><i class="fas fa-tag me-2"></i> Quản lý Thương Hiệu</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small text-secondary">Thương hiệu hiện có (@Model.HangXeList.Count)</label>
+                    <div class="d-flex flex-column gap-2" style="max-height:260px;overflow-y:auto;" id="brandListContainer">
+                        @foreach (var b in Model.HangXeList)
+                        {
+                            <div class="banner-row" data-id="@b.MaHang" data-ten="@b.TenHang">
+                                @if (!string.IsNullOrEmpty(b.DuongDanLogo))
+                                {
+                                    <img src="@b.DuongDanLogo?v=@DateTime.Now.Ticks" alt="@b.TenHang" onerror="this.style.visibility='hidden';" style="width:40px;height:40px;object-fit:contain;border-radius:50%;" />
+                                }
+                                else
+                                {
+                                    <span class="brand-row-letter" style="width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:var(--brand-gray);color:var(--brand-white);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;">@b.TenHang[0]</span>
+                                }
+                                <span class="brand-name" title="@b.TenHang" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@b.TenHang</span>
+                                <a href="javascript:void(0)" onclick="openBrandEditor(@b.MaHang,'@b.TenHang','@b.QuocGia','@(b.DuongDanLogo ?? "")')" class="btn btn-sm btn-outline-light me-1" style="border-radius:8px;font-size:0.7rem;padding:0.3rem 0.6rem;" title="Sửa"><i class="fas fa-pen me-1"></i>Sửa</a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius:8px;font-size:0.7rem;padding:0.3rem 0.6rem;" onclick="deleteBrand(@b.MaHang,'@b.TenHang')"><i class="fas fa-trash me-1"></i>Xoá</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <hr class="border-secondary opacity-25">
+                <a asp-page="/Admin/HangXe/Create" class="btn btn-premium btn-premium-solid w-100"><i class="fas fa-plus me-2"></i>Thêm Thương Hiệu Mới</a>
             </div>
         </div>
     </div>
@@ -412,14 +447,6 @@
 @section Scripts {
 <script>
 let _carVersions = [];
-let _brandScrollInterval;
-
-function scrollBrands(dir) {
-    const el = document.getElementById('brandScroll');
-    if (!el) return;
-    const amount = el.clientWidth * 0.6;
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
-}
 
 /* ========== IMAGE CROP SYSTEM ========== */
 let _cropState = { targetInputId: null, zoom: 1, ratio: 'free', drag: {x:0,y:0}, isDragging: false, imgW: 0, imgH: 0 };
@@ -680,6 +707,17 @@ function fileOrCrop(fileInput, inputId) {
 
 function openBannerEditor() { new bootstrap.Modal(document.getElementById('bannerEditorModal')).show(); }
 
+function openBrandListEditor() { new bootstrap.Modal(document.getElementById('brandListModal')).show(); }
+
+async function deleteBrand(id, name) {
+    if (!confirm('Xoá thương hiệu "' + name + '"?')) return;
+    try {
+        const res = await apiPost('/api/admin/hangxe/delete', { maHang: id });
+        showToast('Đã xoá thương hiệu!');
+        setTimeout(() => location.reload(true), 1200);
+    } catch (e) { showToast('Lỗi xoá thương hiệu: ' + e.message, 'error'); }
+}
+
 /* ===== Hero banner slideshow ===== */
 let _heroSlideIdx = 0;
 let _heroSlideTimer = null;
@@ -830,8 +868,51 @@ async function saveBrandEdit() {
         const res = await apiPost('/api/admin/hangxe/save', payload);
         console.log('Brand save response:', res);
         showToast('Đã lưu hãng xe!');
-        setTimeout(() => location.reload(true), 1500);
+        bootstrap.Modal.getInstance(document.getElementById('brandEditorModal')).hide();
+        refreshBrandUi(id, payload.tenHang, payload.quocGia, url || '');
     } catch (e) { showToast('Lỗi lưu hãng xe: ' + e.message, 'error'); console.error(e); }
+}
+
+function refreshBrandUi(id, tenHang, quocGia, logoUrl) {
+    var esc = function (s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+    var brandItems = document.querySelectorAll('.brand-item[data-mahang="' + id + '"]');
+    brandItems.forEach(function (item) {
+        var letter = item.querySelector('.brand-letter');
+        if (letter) {
+            if (logoUrl) {
+                letter.style.background = 'transparent';
+                letter.innerHTML = '<img src="' + esc(logoUrl) + '?v=' + Date.now() + '" alt="' + esc(tenHang) + '" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />';
+            } else {
+                letter.style.background = '';
+                letter.innerHTML = esc(tenHang.charAt(0));
+            }
+        }
+        var h6 = item.querySelector('h6');
+        if (h6) h6.textContent = tenHang;
+        var p = item.querySelector('p');
+        if (p) p.textContent = quocGia;
+    });
+    var row = document.querySelector('#brandListContainer .banner-row[data-id="' + id + '"]');
+    if (row) {
+        row.setAttribute('data-ten', tenHang);
+        var img = row.querySelector('img');
+        if (logoUrl) {
+            if (img) {
+                img.src = logoUrl + '?v=' + Date.now();
+                img.style.visibility = 'visible';
+            } else {
+                var letterSpan = row.querySelector('.brand-row-letter');
+                if (letterSpan) letterSpan.outerHTML = '<img src="' + esc(logoUrl) + '?v=' + Date.now() + '" alt="' + esc(tenHang) + '" onerror="this.style.visibility=\'hidden\';" style="width:40px;height:40px;object-fit:contain;border-radius:50%;" />';
+            }
+        } else {
+            if (img) {
+                var nameSpan = row.querySelector('.brand-name');
+                img.outerHTML = '<span class="brand-row-letter" style="width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:var(--brand-gray);color:var(--brand-white);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;">' + esc(tenHang.charAt(0)) + '</span>';
+            }
+        }
+        var nameEl = row.querySelector('.brand-name');
+        if (nameEl) { nameEl.textContent = tenHang; nameEl.title = tenHang; }
+    }
 }
 
 async function saveBrandFull() {

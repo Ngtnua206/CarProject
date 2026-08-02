@@ -587,6 +587,32 @@ try
         return Results.Ok(new { success = true });
     });
 
+    app.MapPost("/api/admin/hangxe/delete", async (HttpContext ctx, AppDbContext db) =>
+    {
+        var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+        if (!body.TryGetProperty("maHang", out var mh)) return Results.BadRequest(new { success = false, error = "Thiếu mã hãng xe" });
+        var maHang = mh.GetInt32();
+        var hangXe = await db.HangXe.FindAsync(maHang);
+        if (hangXe == null) return Results.NotFound(new { success = false, error = "Không tìm thấy hãng xe" });
+        var tenHang = hangXe.TenHang;
+        var hasDongXe = await db.DongXe.AnyAsync(d => d.MaHang == maHang);
+        if (hasDongXe)
+            return Results.BadRequest(new { success = false, error = $"Không thể xoá \"{tenHang}\" vì có dòng xe thuộc hãng này. Vui lòng xoá các dòng xe liên quan trước." });
+        try
+        {
+            db.HangXe.Remove(hangXe);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), "hangxe_delete_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
     app.MapPost("/api/admin/dongxe/save", async (HttpContext ctx, AppDbContext db) =>
     {
         var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
