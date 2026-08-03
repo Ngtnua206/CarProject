@@ -8,7 +8,7 @@
 - Bootstrap 5 grid + custom CSS; no Tailwind
 - Session-based auth (no ASP.NET Identity); roles: Admin / Quản Lý / User
 - SQL Server via Docker (localhost:1433, SA password `Iumaioanhh@2024`)
-- App runs on `http://0.0.0.0:5001` HTTP; accessed via LAN IP `192.168.1.5:5001`
+- App runs on `http://0.0.0.0:5001` HTTP + `https://localhost:7185` HTTPS (profile `http`); accessed via LAN IP `192.168.1.5:5001`
 - Run from: `dotnet run --project CarProject\CarProject\CarProject.csproj` in `D:\Code\Code\WebMVC`
 - Registration is Google-only (no manual form); password field has eye toggle
 - User wants to use **Aspire** hosting (VS default), not just cmd
@@ -26,6 +26,11 @@
   - **UI admin**: Index.cshtml (`editModelImagesList`, input multiple, `_carImages`, `renderModelImages/uploadModelImages/setMainCarImage/deleteCarImage`) + Cars.cshtml (`carsEditModelImagesList`, `_carsImages`, `renderCarsModelImages/carsUploadModelImages/carsSetMainImage/carsDeleteImage`); cả hai `open*EditorFull` gán `d.images`
   - E2E verified (port 5002, app HTTP): bảng HinhAnhXe tồn tại; save/setmain/delete/upload qua curl hoạt động; Details hiện slideshow + thumbs khi có nhiều ảnh; Details "Phân bổ" không còn showroom stock 0; Cars + Showroom hover JSON có `PhienBans` (VD `A3 35 TFSI:3`); Cars card-image + `data-car-img` dùng ảnh chính mới khi lưu HinhAnhXe (sync DongXe.DuongDanAnh); build Release 0 lỗi; test data đã xoá (HinhAnhXe 0 rows, DongXe.DuongDanAnh xe 5/28 restore NULL)
   - **Ghi chú toolchain**: `dotnet ef migrations add` bắt buộc `--configuration Release` (Debug bin bị lock bởi CarProject cũ); build Release cũng phải dừng mọi instance CarProject đang chạy (MSB3027 lock DLL)
+- **Fix hover panel biến mất + khôi phục localhost:7185** (feedback người dùng):
+  - `car-hover-preview.js`: hover panel trước bị ẩn khi di chuột từ card sang panel (mouseleave card → scheduleHide ẩn trong lúc chuột còn ở khoảng trống 14px giữa card-panel); thêm `inHoverZone()` gộp rect card + panel + padding 12px, theo dõi `mouseX/mouseY` trên mousemove, `scheduleHide` chỉ ẩn khi chuột ra ngoài zone; thêm biến `overCard`/`activeCard`
+  - `launchSettings.json` profile `http`: `applicationUrl` từ `http://0.0.0.0:5001` → `https://localhost:7185;http://0.0.0.0:5001` (mở lại HTTPS 7185 khi chạy profile http; không có UseHttpsRedirection trong Program.cs nên HTTP 5001/LAN vẫn hoạt động)
+  - E2E verified (curl): 7185 HTTPS 200 + 5001 HTTP 200 cùng listen; JS hover mới có `inHoverZone`/`overCard` được serve; build Release 0 lỗi
+  - **Ghi chú**: process CarProject cũ chạy Session 0 (service) giữ port 5001 không kill được bằng Stop-Process/taskkill thường → phải `Start-Process taskkill.exe -Verb RunAs` (UAC) để kill; nếu cổng 5001 vẫn bị chiếm kiểm tra `Get-CimInstance Win32_Process` SessionId
 - **Brand scroll tự động + quản lý thương hiệu** (yêu cầu người dùng):
   - Bỏ nút mũi tên `brand-scroll-left/right` + hàm `scrollBrands()`; brand-scroll giờ là **marquee tự động** trái→phải: `brand-track` (display:flex, width:max-content) chứa **2 bản sao** `brand-group` (lặp `@for copy 0..1`), animation CSS `brandMarquee` translateX 0→-50% 45s linear infinite, pause khi hover; thêm CSS `.brand-track`/`.brand-group`/`@keyframes brandMarquee`
   - **Bút chì duy nhất góc trên phải** `.brand-manage-btn` (chỉ admin view) → mở modal `brandListModal` "Quản lý Thương Hiệu": liệt kê từng hàng giống banner editor (tên thương hiệu + nút Sửa + nút Xoá), nút "Thêm Thương Hiệu Mới" link `/Admin/HangXe/Create`; xoá bỏ overlay sửa/xoá per-item trên từng brand card cũ

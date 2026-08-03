@@ -6,7 +6,33 @@
     var hideTimer = null;
     var showTimer = null;
     var overPanel = false;
+    var overCard = false;
+    var activeCard = null;
+    var activeImg = null;
     var pointerActive = false;
+    var mouseX = -1, mouseY = -1;
+
+    function inHoverZone() {
+        var anchor = activeImg || activeCard;
+        if (!anchor || !panel || panel.style.display === 'none') return false;
+        var cr = anchor.getBoundingClientRect();
+        var pr = panel.getBoundingClientRect();
+        var pad = 6;
+        function inside(r) {
+            return mouseX >= r.left - pad && mouseX <= r.right + pad
+                && mouseY >= r.top - pad && mouseY <= r.bottom + pad;
+        }
+        if (inside(cr) || inside(pr)) return true;
+        var gL, gR;
+        if (pr.right <= cr.left) { gL = pr.left; gR = cr.left; }              // panel bên trái card
+        else if (pr.left >= cr.right) { gL = cr.right; gR = pr.left; }      // panel bên phải card
+        else return false;
+        if (gR - gL > 60) return false; // gap quá xa -> không phải cầu nối
+        var gT = Math.max(cr.top, pr.top) - pad;
+        var gB = Math.min(cr.bottom, pr.bottom) + pad;
+        if (gB - gT <= 0) return false;
+        return mouseX >= gL - pad && mouseX <= gR + pad && mouseY >= gT && mouseY <= gB;
+    }
 
     function ensurePanel() {
         if (!panel) {
@@ -21,6 +47,22 @@
             panel.addEventListener('mouseleave', function () {
                 overPanel = false;
                 scheduleHide();
+            });
+            panel.addEventListener('wheel', function (e) {
+                var scroller = e.target.closest ? e.target.closest('.chp-showrooms, .chp-versions') : null;
+                var d = e.deltaY;
+                if (scroller) {
+                    var dir = d > 0 ? 1 : -1;
+                    var canScroll = dir < 0
+                        ? scroller.scrollTop > 0
+                        : scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1;
+                    if (canScroll) return; // vùng còn cuộn được -> lăn mặc định trong panel
+                    e.preventDefault(); // chạm biên -> khoá, không kéo trang theo
+                    return;
+                }
+                e.preventDefault();
+                var scrollable = document.scrollingElement || document.documentElement;
+                window.scrollTo(0, scrollable.scrollTop + d);
             });
         }
         return panel;
@@ -118,8 +160,8 @@
             + '<a class="chp-link" href="' + detail + '">Xem chi tiết <i class="fas fa-chevron-right"></i></a>';
     }
 
-    function positionPanel(card) {
-        var rect = card.getBoundingClientRect();
+    function positionPanel(anchor) {
+        var rect = anchor.getBoundingClientRect();
         var pw = 310, gap = 14, margin = 8;
         var vw = window.innerWidth, vh = window.innerHeight;
         var ph = panel.offsetHeight || 320;
@@ -155,41 +197,71 @@
         panel.style.top = top + 'px';
     }
 
-    function show(card) {
+    function show(img, card) {
         clearTimeout(hideTimer);
         clearTimeout(showTimer);
+        activeCard = card;
+        activeImg = img;
+        overCard = true;
         var p = ensurePanel();
         p.innerHTML = buildContent(card);
         p.style.display = 'block';
-        positionPanel(card);
+        positionPanel(img);
     }
 
-    function scheduleShow(card) {
+    function scheduleShow(img, card) {
         clearTimeout(showTimer);
+        overCard = true;
+        activeCard = card;
+        activeImg = img;
         showTimer = setTimeout(function () {
-            if (pointerActive) show(card);
+            if (pointerActive) show(img, card);
         }, 220);
     }
 
     function cancelShow() {
         clearTimeout(showTimer);
-        scheduleHide();
+        overCard = false;
+        hideNow();
+    }
+
+    function hideNow() {
+        clearTimeout(hideTimer);
+        if (panel && !overPanel && !inHoverZone()) panel.style.display = 'none';
     }
 
     function scheduleHide() {
         clearTimeout(hideTimer);
         hideTimer = setTimeout(function () {
-            if (!overPanel && panel) panel.style.display = 'none';
-        }, 120);
+            if (overCard || overPanel || inHoverZone()) return;
+            if (panel) panel.style.display = 'none';
+        }, 80);
     }
 
     function init() {
-        document.addEventListener('mousemove', function () { pointerActive = true; }, { once: true });
-        var cards = document.querySelectorAll('.car-card-premium[data-car-name]');
-        if (!cards.length) return;
-        [].forEach.call(cards, function (card) {
-            card.addEventListener('mouseenter', function () { scheduleShow(card); });
-            card.addEventListener('mouseleave', cancelShow);
+        document.addEventListener('mousemove', function (e) {
+            pointerActive = true;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            if (panel && panel.style.display !== 'none' && !overCard && !overPanel) {
+                if (inHoverZone()) {
+                    clearTimeout(hideTimer);
+                } else {
+                    clearTimeout(hideTimer);
+                    hideTimer = setTimeout(function () {
+                        if (overCard || overPanel || inHoverZone()) return;
+                        if (panel) panel.style.display = 'none';
+                    }, 80);
+                }
+            }
+        });
+        var images = document.querySelectorAll('.car-card-premium[data-car-name] .card-image');
+        if (!images.length) return;
+        [].forEach.call(images, function (img) {
+            var card = img.closest ? img.closest('.car-card-premium[data-car-name]') : null;
+            if (!card) return;
+            img.addEventListener('mouseenter', function () { scheduleShow(img, card); });
+            img.addEventListener('mouseleave', cancelShow);
         });
     }
 
