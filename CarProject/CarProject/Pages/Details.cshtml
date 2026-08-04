@@ -161,9 +161,18 @@
     onclick="addToCart(parseInt(this.dataset.maphienban), this.dataset.tenphienban, this.dataset.tendong, parseInt(this.dataset.gianiemyet), this.dataset.mausac, this.dataset.dongco, this.dataset.hopso, this.dataset.duongdananh)">
     <i class="fas fa-shopping-bag"></i> Thêm giỏ hàng
 </button>
-                            <a asp-page="/Orders/DepositForm" asp-route-id="@Model.Dong?.MaDong" class="btn-cta btn-deposit">
-                                <i class="fas fa-credit-card"></i> Đặt cọc ngay
-                            </a>
+                            @if (pbAvailable <= 0)
+                            {
+                                <a asp-page="/Orders/DepositForm" asp-route-id="@Model.Dong?.MaDong" class="btn-cta btn-deposit">
+                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="#" class="btn-cta btn-deposit btn-deposit-disabled" onclick="showToast('Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua.', true); return false;">
+                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                </a>
+                            }
                             <a asp-page="/TestDrive" class="btn-cta btn-testdrive">
                                 <i class="fas fa-calendar-check"></i> Đăng ký lái thử
                             </a>

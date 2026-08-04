@@ -25,6 +25,9 @@ public class DepositFormModel : PageModel
     public decimal TotalDeposit { get; set; }
     public int TongXe { get; set; }
 
+    public DateTime NgayHenToiThieu => DateTime.Today.AddDays(4);
+    public DateTime NgayHenToiDa => DateTime.Today.AddMonths(1).AddDays(-1);
+
     [BindProperty]
     public string HoTen { get; set; } = "";
     [BindProperty]
@@ -37,6 +40,12 @@ public class DepositFormModel : PageModel
     public string? GhiChu { get; set; }
     [BindProperty]
     public string MaChiNhanh { get; set; } = "";
+
+    [BindProperty]
+    public string LichHenNgay { get; set; } = "";
+
+    [BindProperty]
+    public string LichHenGio { get; set; } = "";
 
     [BindProperty]
     public int SoLuongPhienBan { get; set; } = 1;
@@ -98,7 +107,7 @@ public class DepositFormModel : PageModel
                 GiaNiemYet = p.GiaNiemYet,
                 SoLuongTrongKho = p.SoLuongTrongKho,
                 DaDatCoc = reserved,
-                ConLai = Math.Max(0, p.SoLuongTrongKho - reserved),
+                ConLai = Math.Max(0, p.SoLuongTrongKho),
                 IsPreOrder = p.SoLuongTrongKho <= 0,
                 MauSac = p.MauSac ?? "",
                 DongCo = p.DongCo ?? "",
@@ -113,30 +122,39 @@ public class DepositFormModel : PageModel
             .Where(c => c.TrangThai == "Active" || c.TrangThai == "Hoạt động")
             .ToListAsync();
 
-        // Showroom có xe (còn đủ số chưa đặt cọc) cho bất kỳ phiên bản nào của dòng xe
-        var maPbs = PhienBans.Select(p => p.MaPhienBan).ToList();
-        var tonKho = await _db.TonKhoTheoChiNhanh
-            .Where(t => maPbs.Contains(t.MaPhienBan))
-            .ToListAsync();
+        // Hiển thị tất cả showroom đang hoạt động để khách có thể chọn showroom phù hợp.
+        DanhSachChiNhanh = all;
+    }
 
-        var daDatCoc = await _db.DonDatCocChiTiet
-            .Where(c => maPbs.Contains(c.MaPhienBan)
+    private async Task<List<string>> GetOtherReservationsAsync(List<int> selectedPbIds, string currentUser)
+    {
+        var cartReserved = await _db.GioHang
+            .Where(g => g.MaTaiKhoan != currentUser && selectedPbIds.Contains(g.MaPhienBan))
+            .GroupBy(g => g.MaPhienBan)
+            .ToDictionaryAsync(g => g.Key, g => g.Sum(x => x.SoLuong));
+
+        var depositReserved = await _db.DonDatCocChiTiet
+            .Where(c => selectedPbIds.Contains(c.MaPhienBan)
                 && c.DonDatCoc != null
-                && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán")
-            .ToListAsync();
+                && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
+            .GroupBy(c => c.MaPhienBan)
+            .ToDictionaryAsync(g => g.Key, g => g.Sum(x => x.SoLuong));
 
-        var daDatCocLut = daDatCoc
-            .GroupBy(c => c.MaPhienBan + "|" + (c.MaChiNhanh ?? ""))
-            .ToDictionary(g => g.Key, g => g.Sum(x => x.SoLuong));
+        var messages = new List<string>();
+        foreach (var kv in selectedPbIds)
+        {
+            var cartQty = cartReserved.TryGetValue(kv, out var cart) ? cart : 0;
+            var depositQty = depositReserved.TryGetValue(kv, out var dep) ? dep : 0;
+            if (cartQty + depositQty > 0)
+            {
+                messages.Add($"Phiên bản {kv}: đã có {cartQty + depositQty} xe đang được giữ bởi người khác trong giỏ hàng hoặc đơn cọc.");
+            }
+        }
 
-        var maCoXe = tonKho
-            .Where(t => t.SoLuong - (daDatCocLut.TryGetValue(t.MaPhienBan + "|" + t.MaChiNhanh, out var r) ? r : 0) > 0)
-            .Select(t => t.MaChiNhanh)
-            .Distinct()
-            .ToHashSet();
-
-        var filtered = all.Where(c => maCoXe.Contains(c.MaChiNhanh)).ToList();
-        DanhSachChiNhanh = filtered.Any() ? filtered : all;
+        return messages;
     }
 
     public async Task<IActionResult> OnPostAsync(int id)
@@ -174,26 +192,41 @@ public class DepositFormModel : PageModel
             return Page();
         }
 
-        // Quy tắc: số phiên bản được chọn phải khớp "Số lượng phiên bản" đã khai báo
-        if (selected.Count != SoLuongPhienBan)
+        var wantVersionCount = Math.Max(1, SoLuongPhienBan);
+        if (selected.Count > wantVersionCount)
         {
-            if (IsAjaxSubmit) return JsonError($"Bạn đã chọn {selected.Count} phiên bản nhưng yêu cầu {SoLuongPhienBan}. Vui lòng tích chọn đúng số phiên bản.");
-            ModelState.AddModelError("", $"Bạn đã chọn {selected.Count} phiên bản nhưng yêu cầu {SoLuongPhienBan}. Vui lòng tích chọn đúng số phiên bản.");
+            if (IsAjaxSubmit) return JsonError($"Bạn đã chọn {selected.Count} phiên bản nhưng tối đa chỉ được chọn {wantVersionCount} phiên bản.");
+            ModelState.AddModelError("", $"Bạn đã chọn {selected.Count} phiên bản nhưng tối đa chỉ được chọn {wantVersionCount} phiên bản.");
             await LoadShowroomsAsync();
             return Page();
         }
 
-        // Quy tắc: nếu tổng xe >= 2 thì phải có ít nhất 2 phiên bản khác nhau
+        if (wantVersionCount == 1 && selected.Count != 1)
+        {
+            if (IsAjaxSubmit) return JsonError("Nếu chọn 1 phiên bản, vui lòng tích chọn đúng 1 phiên bản xe.");
+            ModelState.AddModelError("", "Nếu chọn 1 phiên bản, vui lòng tích chọn đúng 1 phiên bản xe.");
+            await LoadShowroomsAsync();
+            return Page();
+        }
+
+        if (wantVersionCount >= 2 && selected.Count < 2)
+        {
+            if (IsAjaxSubmit) return JsonError("Nếu chọn từ 2 phiên bản trở lên, vui lòng chọn ít nhất 2 phiên bản khác nhau.");
+            ModelState.AddModelError("", "Nếu chọn từ 2 phiên bản trở lên, vui lòng chọn ít nhất 2 phiên bản khác nhau.");
+            await LoadShowroomsAsync();
+            return Page();
+        }
+
         var totalXe = selected.Sum(kv => kv.Value);
-        if (totalXe >= 2 && selected.Count < 2)
-        {
-            if (IsAjaxSubmit) return JsonError("Khi đặt từ 2 xe trở lên phải chọn ít nhất 2 phiên bản khác nhau.");
-            ModelState.AddModelError("", "Khi đặt từ 2 xe trở lên phải chọn ít nhất 2 phiên bản khác nhau.");
-            await LoadShowroomsAsync();
-            return Page();
-        }
+        var currentUser = User.GetJwtUserName() ?? "";
+        var selectedPbIds = selected.Select(kv => kv.Key).ToList();
+        var stockRows = await _db.TonKhoTheoChiNhanh
+            .Where(t => selectedPbIds.Contains(t.MaPhienBan) && t.MaChiNhanh == MaChiNhanh)
+            .ToListAsync();
+        var stockByPb = stockRows
+            .GroupBy(t => t.MaPhienBan)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.SoLuong));
 
-        // Kiểm tra tồn kho còn đủ theo từng phiên bản (số xe CHƯA đặt cọc)
         foreach (var kv in selected)
         {
             var opt = PhienBans.FirstOrDefault(p => p.MaPhienBan == kv.Key);
@@ -204,9 +237,24 @@ public class DepositFormModel : PageModel
                 await LoadShowroomsAsync();
                 return Page();
             }
-            if (!opt.IsPreOrder && kv.Value > opt.ConLai)
+
+            var stockInShowroom = stockByPb.TryGetValue(kv.Key, out var tk) ? tk : 0;
+            var cartReserved = await _db.GioHang
+                .Where(g => g.MaTaiKhoan != currentUser && g.MaPhienBan == kv.Key)
+                .SumAsync(g => (int?)g.SoLuong) ?? 0;
+            var depositReserved = await _db.DonDatCocChiTiet
+                .Where(c => c.MaPhienBan == kv.Key
+                    && c.DonDatCoc != null
+                    && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
+                .SumAsync(c => (int?)c.SoLuong) ?? 0;
+            var available = Math.Max(0, stockInShowroom - cartReserved - depositReserved);
+
+            if (kv.Value > available)
             {
-                var msg = $"Phiên bản \"{opt.TenPhienBan}\" chỉ còn {opt.ConLai} xe chưa đặt cọc, không đủ cho {kv.Value} xe.";
+                var msg = $"Phiên bản \"{opt.TenPhienBan}\" đã có người đặt cọc hoặc đang có người khác thêm vào giỏ hàng. Hiện chỉ còn {available} xe chưa bị đặt cọc ở showroom này.";
                 if (IsAjaxSubmit) return JsonError(msg);
                 ModelState.AddModelError("", msg);
                 await LoadShowroomsAsync();
@@ -214,13 +262,59 @@ public class DepositFormModel : PageModel
             }
         }
 
+        // Ngày hẹn nhận xe: TRÊN 3 ngày và DƯỚI 1 tháng kể từ hôm nay
+        DateTime? ngayHen = null;
+        var fromDate = NgayHenToiThieu.Date;
+        var toDate = NgayHenToiDa.Date;
+        if (string.IsNullOrEmpty(LichHenNgay) || !DateTime.TryParse(LichHenNgay, out var dn))
+        {
+            var msgDate = $"Vui lòng chọn ngày hẹn nhận xe (từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}).";
+            if (IsAjaxSubmit) return JsonError(msgDate);
+            ModelState.AddModelError("", msgDate);
+            await LoadShowroomsAsync();
+            return Page();
+        }
+        if (dn.Date < fromDate || dn.Date > toDate)
+        {
+            var msgDate = $"Ngày hẹn nhận xe phải TRÊN 3 ngày và DƯỚI 1 tháng (từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}).";
+            if (IsAjaxSubmit) return JsonError(msgDate);
+            ModelState.AddModelError("", msgDate);
+            await LoadShowroomsAsync();
+            return Page();
+        }
+        ngayHen = dn.Date;
+
+        // Giờ hẹn nhận xe: giờ hành chính 08:00 - 17:00
+        var gioHen = "";
+        if (string.IsNullOrEmpty(LichHenGio) || !TimeOnly.TryParse(LichHenGio, out var gio))
+        {
+            var msgGio = "Vui lòng chọn giờ hẹn nhận xe trong giờ hành chính (08:00 - 17:00).";
+            if (IsAjaxSubmit) return JsonError(msgGio);
+            ModelState.AddModelError("", msgGio);
+            await LoadShowroomsAsync();
+            return Page();
+        }
+        var gioStart = new TimeOnly(8, 0);
+        var gioEnd = new TimeOnly(17, 0);
+        if (gio < gioStart || gio > gioEnd)
+        {
+            var msgGio = "Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).";
+            if (IsAjaxSubmit) return JsonError(msgGio);
+            ModelState.AddModelError("", msgGio);
+            await LoadShowroomsAsync();
+            return Page();
+        }
+        gioHen = gio.ToString("HH:mm");
+
+        var depositRate = totalXe <= 2 ? DepositCalculator.PreOrderRate : DepositCalculator.InStockRate;
         TotalDeposit = selected.Sum(kv =>
         {
             var opt = PhienBans.First(p => p.MaPhienBan == kv.Key);
-            return DepositCalculator.Compute(opt.GiaNiemYet, opt.IsPreOrder) * kv.Value;
+            return DepositCalculator.ComputeByQuantity(opt.GiaNiemYet, totalXe) * kv.Value;
         });
         TongXe = totalXe;
         var hasPreOrder = selected.Any(kv => PhienBans.First(p => p.MaPhienBan == kv.Key).IsPreOrder);
+        var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
         // ===== Transaction + khoá dòng để chống bán vượt tồn kho =====
         await using var tx = await _db.Database.BeginTransactionAsync();
@@ -246,9 +340,10 @@ public class DepositFormModel : PageModel
             MaChiNhanh = MaChiNhanh,
             SoTienCoc = TotalDeposit,
             PhuongThucThanhToan = string.IsNullOrEmpty(PhuongThucThanhToan) ? "Chuyển khoản" : PhuongThucThanhToan,
-            TrangThaiThanhToan = "Chưa thanh toán",
-            TrangThaiDonHang = hasPreOrder ? "Chờ xử lý" : "Chờ xác nhận",
+            TrangThaiThanhToan = isCashPayment ? "Chờ thanh toán" : "Chưa thanh toán",
+            TrangThaiDonHang = isCashPayment ? "Chờ thanh toán" : (hasPreOrder ? "Chờ xử lý" : "Chờ xác nhận"),
             NgayTaoDon = DateTime.Now,
+            NgayHenNhanXe = ngayHen.Value.Add(gio.ToTimeSpan()),
             HoTen = HoTen,
             SoDienThoai = SoDienThoai,
             DiaChi = DiaChi ?? "",
@@ -268,13 +363,54 @@ public class DepositFormModel : PageModel
                 MaPhienBan = kv.Key,
                 MaChiNhanh = MaChiNhanh,
                 SoLuong = kv.Value,
-                SoTienCocPhanBo = DepositCalculator.Compute(opt.GiaNiemYet, isPreOrder) * kv.Value,
+                SoTienCocPhanBo = DepositCalculator.ComputeByQuantity(opt.GiaNiemYet, totalXe) * kv.Value,
                 SoLuongThieu = soLuongThieu
             });
         }
 
         _db.DonDatCoc.Add(deposit);
         await _db.SaveChangesAsync();
+
+        if (isCashPayment)
+        {
+            var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
+            var showroomName = showroom?.TenChiNhanh ?? MaChiNhanh;
+            await _notif.SendToRoleAsync("Admin", "Đơn đặt cọc mới - chờ thanh toán",
+                $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Đơn #{deposit.MaDonCoc} đang chờ thanh toán tại {showroomName}.",
+                $"/Admin/DonCoc/Index");
+
+            if (!string.IsNullOrEmpty(MaChiNhanh))
+            {
+                var managerMaQuanLy = showroom?.MaQuanLy;
+                if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
+                {
+                    var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
+                    if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+                    {
+                        await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - chờ thanh toán",
+                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                            $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                    }
+                }
+            }
+        }
+
+        // Tạo lịch hẹn nhận xe tại showroom nguồn
+        var lichHen = new LichHenLaiThu
+        {
+            MaKhachHang = User.GetJwtUserName() ?? "",
+            MaDong = Dong.MaDong,
+            MaChiNhanh = MaChiNhanh,
+            HoTenNguoiLai = HoTen,
+            SoDienThoai = SoDienThoai,
+            SoBangLaiXe = "",
+            NgayHen = ngayHen.Value,
+            GioHen = gioHen,
+            TrangThai = "Chờ xác nhận",
+            YKienKhachHang = GhiChu ?? ""
+        };
+        _db.LichHenLaiThu.Add(lichHen);
+
         await tx.CommitAsync();
 
         var listXe = string.Join(", ", selected.Select(kv =>
@@ -326,11 +462,16 @@ public class DepositFormModel : PageModel
                 bankName = $"{_sepay.BankAccount} ({_sepay.BankName})",
                 bankNumber = _sepay.BankNumber,
                 accountName = _sepay.AccountName,
-                qrUrl
+                paymentMethod = isCashPayment ? "Tiền mặt" : "Chuyển khoản",
+                showQr = !isCashPayment,
+                qrUrl = isCashPayment ? "" : qrUrl,
+                message = isCashPayment
+                    ? "Đơn đặt cọc đã được ghi nhận và đang chờ thanh toán. Admin/showroom sẽ xác nhận trong thời gian sớm nhất."
+                    : "Đơn đặt cọc đã được ghi nhận. Vui lòng chuyển khoản để hoàn tất."
             });
         }
 
-        return RedirectToPage("/Orders/Payment", new { maDonCoc = deposit.MaDonCoc });
+        return RedirectToPage("/Orders/DepositResult", new { maDonCoc = deposit.MaDonCoc });
     }
 
     public class PhienBanOption

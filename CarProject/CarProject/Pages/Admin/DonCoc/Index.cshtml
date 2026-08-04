@@ -68,6 +68,21 @@
                             var visibleJson = System.Text.Json.JsonSerializer.Serialize(visibleCt);
                             var hiddenJson = System.Text.Json.JsonSerializer.Serialize(hiddenCt);
                             var showroomName = d.ChiNhanh?.TenChiNhanh ?? "—";
+                            var paymentDisplay = (d.TrangThaiThanhToan == "Đã thanh toán" || d.TrangThaiThanhToan == "Đã đặt cọc" || d.TrangThaiDonHang == "Đã duyệt" || d.TrangThaiDonHang == "Đã xác nhận" || d.TrangThaiDonHang == "Hoàn tất") ? "Đã đặt cọc" : "Chờ xác nhận";
+                            var paymentClass = paymentDisplay == "Đã đặt cọc" ? "green" : "yellow";
+                            var orderDisplay = d.TrangThaiDonHang switch
+                            {
+                                "Đã duyệt" => "Đã đặt cọc",
+                                "Đã xác nhận" => "Đã đặt cọc",
+                                "Hoàn tất" => "Đã đặt cọc",
+                                "Chờ thanh toán" => "Chờ xác nhận",
+                                "Chờ xử lý" => "Chờ xác nhận",
+                                "Chờ xác nhận" => "Chờ xác nhận",
+                                "Đã hủy" or "Đã từ chối" => "Đã hủy",
+                                _ => d.TrangThaiDonHang ?? "Chờ xác nhận"
+                            };
+                            var orderClass = orderDisplay == "Đã đặt cọc" ? "green" : (orderDisplay == "Đã hủy" ? "red" : "gray");
+                            var canMarkPaid = d.TrangThaiDonHang != "Đã duyệt" && d.TrangThaiDonHang != "Đã xác nhận" && d.TrangThaiDonHang != "Hoàn tất" && d.TrangThaiDonHang != "Đã hủy" && d.TrangThaiDonHang != "Đã từ chối";
 
                             <tr>
                                 <td><span class="db-id">#@d.MaDonCoc</span></td>
@@ -124,26 +139,23 @@
                                 <td><span class="db-money">@d.SoTienCoc.ToString("N0")đ</span></td>
 
                                 <td>
-                                    <span class="db-badge @(d.TrangThaiThanhToan == "Đã thanh toán" ? "green" : "yellow")">@d.TrangThaiThanhToan</span>
+                                    <span class="db-badge @(paymentClass)">@paymentDisplay</span>
                                 </td>
 
                                 <td>
-                                    @switch (d.TrangThaiDonHang)
+                                    @switch (orderDisplay)
                                     {
-                                        case "Chờ xử lý":
-                                            <span class="db-badge blue">@d.TrangThaiDonHang</span>
+                                        case "Chờ xác nhận":
+                                            <span class="db-badge gray">@orderDisplay</span>
                                             break;
-                                        case "Đã duyệt":
-                                        case "Đã xác nhận":
-                                        case "Hoàn tất":
-                                            <span class="db-badge green">@d.TrangThaiDonHang</span>
+                                        case "Đã đặt cọc":
+                                            <span class="db-badge green">@orderDisplay</span>
                                             break;
                                         case "Đã hủy":
-                                        case "Đã từ chối":
-                                            <span class="db-badge red">@d.TrangThaiDonHang</span>
+                                            <span class="db-badge red">@orderDisplay</span>
                                             break;
                                         default:
-                                            <span class="db-badge gray">@d.TrangThaiDonHang</span>
+                                            <span class="db-badge gray">@orderDisplay</span>
                                             break;
                                     }
                                 </td>
@@ -154,15 +166,19 @@
 
                                 <td>
                                     <div class="db-actions">
-                                        @if (d.TrangThaiDonHang == "Chờ xử lý" && d.TrangThaiThanhToan == "Đã thanh toán")
+                                        @if (d.TrangThaiDonHang == "Chờ xử lý" && (d.TrangThaiThanhToan == "Đã thanh toán" || d.TrangThaiThanhToan == "Đã đặt cọc") && canMarkPaid)
                                         {
                                             <button type="button" class="db-act ok" title="Duyệt đơn"
                                                     onclick='openApproveModal(@d.MaDonCoc, "@(System.Text.Json.JsonEncodedText.Encode(d.HoTen ?? ""))", "@(System.Text.Json.JsonEncodedText.Encode(string.Join(", ", d.ChiTiets.Select(c => c.PhienBan?.TenPhienBan))))")'>
                                                 <i class="fas fa-check"></i>
                                             </button>
-                                            <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc?');">
+                                            <button type="button" class="db-act no" title="Từ chối" onclick='openRejectModal(@d.MaDonCoc, "@(System.Text.Json.JsonEncodedText.Encode(d.HoTen ?? ""))")'><i class="fas fa-times"></i></button>
+                                        }
+                                        @if (canMarkPaid && (d.TrangThaiDonHang == "Chờ thanh toán" || d.TrangThaiDonHang == "Chờ xử lý" || d.TrangThaiDonHang == "Chờ xác nhận"))
+                                        {
+                                            <form method="post" asp-page-handler="MarkPaid" style="display:inline" onsubmit="return confirm('Xác nhận đã thanh toán cho đơn cọc #@d.MaDonCoc?');">
                                                 <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                                <button type="submit" class="db-act no" title="Từ chối"><i class="fas fa-times"></i></button>
+                                                <button type="submit" class="db-act ok" title="Xác nhận đã thanh toán"><i class="fas fa-money-bill-wave"></i></button>
                                             </form>
                                         }
                                         @if (d.TrangThaiDonHang == "Đã xác nhận")
@@ -192,7 +208,7 @@
 <!-- Modal duyệt đơn: chuyển showroom + gửi lịch hẹn -->
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content bg-dark">
             <form method="post" asp-page-handler="Approve">
                 <div class="modal-header">
                     <h5 class="modal-title">Duyệt đơn cọc</h5>
@@ -242,10 +258,39 @@
     </div>
 </div>
 
+<!-- Modal từ chối đơn -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <form method="post" asp-page-handler="Reject">
+                <div class="modal-header">
+                    <h5 class="modal-title">Từ chối đơn cọc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="maDonCoc" id="rejectMaDonCoc" />
+                    <div class="mb-3">
+                        <label class="form-label">Khách hàng</label>
+                        <input type="text" class="form-control" id="rejectHoTen" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                        <textarea name="lyDoTuChoi" class="form-control" rows="4" required placeholder="Nhập lý do từ chối..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Từ chối đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal xem tất cả xe trong đơn -->
 <div class="modal fade" id="carsModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content bg-dark">
             <div class="modal-header">
                 <h5 class="modal-title">Chi tiết xe · Đơn cọc</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -268,6 +313,12 @@
         document.getElementById('approveHoTen').value = hoTen;
         document.getElementById('approveXe').value = tenXe;
         new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+
+    function openRejectModal(maDonCoc, hoTen) {
+        document.getElementById('rejectMaDonCoc').value = maDonCoc;
+        document.getElementById('rejectHoTen').value = hoTen;
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
     }
 
     function openCarsModal(maDonCoc, cars, more, total, hoTen) {

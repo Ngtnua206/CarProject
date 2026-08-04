@@ -107,7 +107,7 @@
                                 <div style="display: flex; flex-direction: column; gap: 0.5rem;" id="versionRows">
                                     @foreach (var pb in Model.PhienBans) 
                                     {
-                                        <div class="version-row" data-maphienban="@pb.MaPhienBan" data-deposit="@DepositCalculator.Compute(pb.GiaNiemYet, pb.IsPreOrder)">
+                                        <div class="version-row" data-maphienban="@pb.MaPhienBan" data-tenphienban="@pb.TenPhienBan" data-conlai="@pb.ConLai" data-stock="@pb.SoLuongTrongKho" data-deposit="@DepositCalculator.Compute(pb.GiaNiemYet, pb.IsPreOrder)">
                                             <label style="display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.7rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer;">
                                                 <input type="checkbox" class="version-check mt-1" value="@pb.MaPhienBan" onchange="updateSelection()" />
                                                 <span style="flex:1;min-width:0;">
@@ -126,8 +126,21 @@
                                                     </span>
                                                 </span>
                                                 <span style="flex-shrink:0; display:flex; align-items:center; gap:0.4rem;">
-                                                    <span style="color: var(--text-muted); font-size: 0.72rem;">@(pb.IsPreOrder ? "hết hàng" : "còn " + pb.ConLai + " xe")</span>
-                                                    <input type="number" name="SoLuongByPhienBan[@pb.MaPhienBan]" value="1" min="1" max="@(pb.IsPreOrder ? 10 : pb.ConLai)" disabled
+                                                    <span style="color: var(--text-muted); font-size: 0.72rem;">
+                                                    @if (pb.ConLai > 0)
+                                                    {
+                                                        <text>còn @pb.ConLai xe · mua qua giỏ hàng</text>
+                                                    }
+                                                    else if (pb.IsPreOrder)
+                                                    {
+                                                        <text>hết hàng · đặt trước</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>đã cọc hết · đặt trước</text>
+                                                    }
+                                                </span>
+                                                    <input type="number" name="SoLuongByPhienBan[@pb.MaPhienBan]" value="1" min="1" max="@(pb.ConLai <= 0 ? 10 : pb.ConLai)" disabled
                                                            class="form-control version-qty" style="width: 64px; font-size: 0.82rem; padding: 0.25rem 0.5rem;" onchange="updateTotal()" />
                                                 </span>
                                                             </label>
@@ -146,8 +159,12 @@
                                     <input asp-for="SoDienThoai" class="form-control" required placeholder="Nhập số điện thoại" />
                                 </div>
                                 <div class="col-12">
-                                    <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
-                                    <input asp-for="DiaChi" class="form-control" required placeholder="Nhập địa chỉ" />
+                                    <label asp-for="DiaChi" class="form-label">Địa chỉ liên hệ / nơi nhận xe</label>
+                                    <div class="d-flex gap-2">
+                                        <input asp-for="DiaChi" class="form-control" required placeholder="Nhập địa chỉ" />
+                                        <button type="button" class="btn-premium btn-premium-outline" onclick="openGoogleMaps(event)" style="white-space:nowrap;">Google Maps</button>
+                                    </div>
+                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Đối với phương thức tiền mặt, địa chỉ giúp showroom liên hệ và định vị nhanh hơn.</small>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="MaChiNhanh" class="form-label">Showroom nguồn <span style="color:var(--text-faint);">(nơi chuẩn bị/giữ xe)</span></label>
@@ -169,6 +186,18 @@
                                         <option value="Thẻ tín dụng">Thẻ tín dụng</option>
                                     </select>
                                 </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LichHenNgay" class="form-label">Ngày hẹn nhận xe <span style="color: var(--brand-gold);">*</span></label>
+                                    <input asp-for="LichHenNgay" type="date" class="form-control" required
+                                           min="@Model.NgayHenToiThieu.ToString("yyyy-MM-dd")"
+                                           max="@Model.NgayHenToiDa.ToString("yyyy-MM-dd")" />
+                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Trên 3 ngày và dưới 1 tháng kể từ hôm nay (@Model.NgayHenToiThieu.ToString("dd/MM") – @Model.NgayHenToiDa.ToString("dd/MM/yyyy")).</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LichHenGio" class="form-label">Giờ hẹn nhận xe <span style="color: var(--brand-gold);">*</span></label>
+                                    <input asp-for="LichHenGio" type="time" class="form-control" required min="08:00" max="17:00" step="900" />
+                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Giờ hành chính 08:00 – 17:00.</small>
+                                </div>
                                 <div class="col-12">
                                     <label asp-for="GhiChu" class="form-label">Ghi chú</label>
                                     <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
@@ -176,9 +205,11 @@
                             </div>
 
                             <div class="d-flex gap-3 mt-4">
-                                <button type="submit" class="btn-premium btn-premium-solid" style="flex: 1; justify-content: center; padding: 0.7rem;">
-                                    <i class="fas fa-check"></i> Xác nhận đặt cọc
-                                </button>
+                                <div style="flex:1;">
+                                    <button type="submit" id="depositSubmitBtn" class="btn-premium btn-premium-solid" style="width: 100%; justify-content: center; padding: 0.7rem;">
+                                        <i class="fas fa-check"></i> Xác nhận đặt cọc
+                                    </button>
+                                </div>
                                 <a asp-page="/Details" asp-route-id="@Model.Dong.MaDong" class="btn-premium btn-premium-outline" style="flex: 0 0 auto; padding: 0.7rem 1.5rem;">
                                     Hủy
                                 </a>
@@ -213,8 +244,6 @@
             q.disabled = true;
             q.value = '1';
         });
-        // Nếu chọn 1 phiên bản: mặc định tíc phiên bản đầu/dòng xe
-        checks.forEach(function(c, i) { if (i < n) c.checked = true; });
         updateSelection();
     }
 
@@ -294,12 +323,35 @@
         var checkedCount = selectedVersions().length;
         var want = Number(form.querySelector('[name="SoLuongPhienBan"]').value || '1');
         var total = computeTotal();
-        if (checkedCount !== want) {
-            alert('Bạn đã chọn ' + checkedCount + ' phiên bản nhưng phải chọn đủ ' + want + ' phiên bản.');
+        if (checkedCount > want) {
+            alert('Bạn chỉ có thể chọn tối đa ' + want + ' phiên bản.');
             return;
         }
-        if (total.count >= 2 && checkedCount < 2) {
-            alert('Khi đặt từ 2 xe trở lên phải chọn ít nhất 2 phiên bản khác nhau.');
+        if (want === 1 && checkedCount !== 1) {
+            alert('Nếu chọn 1 phiên bản, vui lòng tích chọn đúng 1 phiên bản xe.');
+            return;
+        }
+        if (want >= 2 && checkedCount < 2) {
+            alert('Nếu chọn từ 2 phiên bản trở lên, vui lòng chọn ít nhất 2 phiên bản khác nhau.');
+            return;
+        }
+
+        // Ngày hẹn: TRÊN 3 ngày và DƯỚI 1 tháng
+        var ngayEl = form.querySelector('[name="LichHenNgay"]');
+        var gioEl = form.querySelector('[name="LichHenGio"]');
+        var ngay = ngayEl ? new Date(ngayEl.value + 'T00:00:00') : null;
+        var toiThieu = new Date(); toiThieu.setDate(toiThieu.getDate() + 4);
+        var toiDa = new Date(); toiDa.setMonth(toiDa.getMonth() + 1); toiDa.setDate(toiDa.getDate() - 1);
+        if (!ngay || isNaN(ngay.getTime())) { alert('Vui lòng chọn ngày hẹn nhận xe.'); return; }
+        if (ngay < toiThieu || ngay > toiDa) {
+            alert('Ngày hẹn nhận xe phải TRÊN 3 ngày và DƯỚI 1 tháng kể từ hôm nay.');
+            return;
+        }
+        // Giờ hẹn: giờ hành chính 08:00 - 17:00
+        if (!gioEl || !gioEl.value) { alert('Vui lòng chọn giờ hẹn nhận xe.'); return; }
+        var gioVal = gioEl.value;
+        if (('08:00' > gioVal) || (gioVal > '17:00')) {
+            alert('Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).');
             return;
         }
 
@@ -327,24 +379,48 @@
         });
     });
 
+    function openGoogleMaps(event) {
+        event.preventDefault();
+        var address = document.querySelector('[name="DiaChi"]').value;
+        if (!address) {
+            alert('Vui lòng nhập địa chỉ trước khi mở Google Maps.');
+            return;
+        }
+        window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address), '_blank', 'noopener,noreferrer');
+    }
+
     function showPaymentModal(data) {
+        var isCash = (data.paymentMethod || '').toLowerCase() === 'tiền mặt' || (data.paymentMethod || '').toLowerCase() === 'tien mat';
+        var bodyHtml = isCash
+            ? '<div style="padding:0.75rem 0 0.25rem;text-align:left;">' +
+              '<div style="display:flex;align-items:center;gap:0.6rem;padding:0.8rem 1rem;border-radius:10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);margin-bottom:0.9rem;">' +
+              '<i class="fas fa-money-bill-wave" style="color:#22c55e;font-size:1rem;"></i>' +
+              '<div><div style="color:var(--brand-white);font-weight:600;">Đơn của bạn đang chờ thanh toán</div><div style="color:var(--text-muted);font-size:0.78rem;">Admin và showroom sẽ kiểm tra đơn để xác nhận.</div></div></div>' +
+              '<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;color:var(--text-muted);">' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Tổng tiền cọc</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Mã đơn</span><span style="color:var(--brand-white);font-weight:700;">#' + data.maDonCoc + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Trạng thái</span><span style="color:#22c55e;font-weight:700;">Chờ thanh toán</span></div>' +
+              '</div>' +
+              '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;">Đơn đã được ghi nhận. Chúng tôi sẽ gửi thông tin cho admin/showroom để xử lý sớm nhất.</p>' +
+              '</div>'
+            : '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;">' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Tổng tiền gốc</span><span style="color:var(--brand-white);">' + formatMoney(data.tongTienGoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền cọc (' + (data.cocRateText || '20%') + ')</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Ngân hàng</span><span style="color:var(--brand-white);">' + data.bankName + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">STK</span><span style="color:var(--brand-white);font-weight:700;">' + data.bankNumber + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Nội dung CK</span><span style="font-family:monospace;background:rgba(255,255,255,0.05);padding:0.1rem 0.3rem;border-radius:4px;color:var(--brand-gold);">' + data.maGiaoDich + '</span></div>' +
+              '</div>' +
+              '<div style="background:white;border-radius:12px;padding:8px;display:inline-block;margin-top:0.8rem;">' +
+              '<img src="' + (data.qrUrl || '') + '" alt="QR" style="width:200px;height:200px;border-radius:8px;" /></div>' +
+              '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;" id="paymentStatus">Đang chờ thanh toán...</p>';
         var modalHtml = '<div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static">' +
             '<div class="modal-dialog modal-dialog-centered modal-sm">' +
             '<div class="modal-content" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;">' +
-            '<div class="modal-header border-0"><h5 class="modal-title" style="color:var(--brand-white);"><i class="fas fa-qrcode me-2" style="color:var(--brand-gold);"></i> Quét QR thanh toán</h5>' +
+            '<div class="modal-header border-0"><h5 class="modal-title" style="color:var(--brand-white);"><i class="fas ' + (isCash ? 'fa-money-bill-wave' : 'fa-qrcode') + ' me-2" style="color:var(--brand-gold);"></i> ' + (isCash ? 'Đơn chờ thanh toán' : 'Quét QR thanh toán') + '</h5>' +
             '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>' +
             '<div class="modal-body text-center pb-4">' +
-            '<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">Quét mã QR để thanh toán <strong>đơn cọc</strong></p>' +
-            '<div style="background:white;border-radius:12px;padding:8px;display:inline-block;margin-bottom:0.8rem;">' +
-            '<img src="' + data.qrUrl + '" alt="QR" style="width:200px;height:200px;border-radius:8px;" /></div>' +
-            '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;">' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Tổng tiền gốc</span><span style="color:var(--brand-white);">' + formatMoney(data.tongTienGoc) + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền cọc (' + (data.cocRateText || '20%') + ')</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Ngân hàng</span><span style="color:var(--brand-white);">' + data.bankName + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">STK</span><span style="color:var(--brand-white);font-weight:700;">' + data.bankNumber + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Nội dung CK</span><span style="font-family:monospace;background:rgba(255,255,255,0.05);padding:0.1rem 0.3rem;border-radius:4px;color:var(--brand-gold);">' + data.maGiaoDich + '</span></div>' +
-            '</div>' +
-            '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;" id="paymentStatus">Đang chờ thanh toán...</p>' +
+            '<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">' + (isCash ? 'Đơn cọc đã được ghi nhận để admin/showroom kiểm tra' : 'Quét mã QR để thanh toán <strong>đơn cọc</strong>') + '</p>' +
+            bodyHtml +
             '</div></div></div></div>';
 
         var div = document.createElement('div');

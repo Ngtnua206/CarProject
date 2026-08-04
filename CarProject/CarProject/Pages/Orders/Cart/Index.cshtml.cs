@@ -39,10 +39,26 @@ public class IndexModel : PageModel
         if (soLuong > 0)
         {
             var phienBan = await _db.PhienBanXe.FindAsync(maPhienBan);
-            if (phienBan != null && soLuong > phienBan.SoLuongTrongKho)
+            if (phienBan != null)
             {
-                TempData["CartError"] = $"Xe này chỉ còn {phienBan.SoLuongTrongKho} xe trong kho.";
-                return RedirectToPage();
+                var currentUser = User.GetJwtUserName() ?? "";
+                var reservedByOthers = await _db.GioHang
+                    .Where(g => g.MaTaiKhoan != currentUser && g.MaPhienBan == maPhienBan)
+                    .SumAsync(g => (int?)g.SoLuong) ?? 0;
+                var depositReserved = await _db.DonDatCocChiTiet
+                    .Where(c => c.MaPhienBan == maPhienBan
+                        && c.DonDatCoc != null
+                        && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                        && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                        && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                        && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
+                    .SumAsync(c => (int?)c.SoLuong) ?? 0;
+                var available = Math.Max(0, phienBan.SoLuongTrongKho - reservedByOthers - depositReserved);
+                if (soLuong > available)
+                {
+                    TempData["CartError"] = $"Số lượng không đủ cho xe này. Hàng tồn của xe là: {available} xe.";
+                    return RedirectToPage();
+                }
             }
         }
         await _cart.UpdateQuantityAsync(maPhienBan, soLuong);
@@ -64,6 +80,32 @@ public class IndexModel : PageModel
             TempData["CartError"] = "Cần ít nhất 3 xe để tiến hành đặt cọc theo giỏ hàng.";
             return RedirectToPage();
         }
+
+        var currentUser = User.GetJwtUserName() ?? "";
+        foreach (var item in items)
+        {
+            var phienBan = await _db.PhienBanXe.FindAsync(item.MaPhienBan);
+            if (phienBan == null) continue;
+
+            var reservedByOthers = await _db.GioHang
+                .Where(g => g.MaTaiKhoan != currentUser && g.MaPhienBan == item.MaPhienBan)
+                .SumAsync(g => (int?)g.SoLuong) ?? 0;
+            var depositReserved = await _db.DonDatCocChiTiet
+                .Where(c => c.MaPhienBan == item.MaPhienBan
+                    && c.DonDatCoc != null
+                    && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
+                .SumAsync(c => (int?)c.SoLuong) ?? 0;
+            var available = Math.Max(0, phienBan.SoLuongTrongKho - reservedByOthers - depositReserved);
+            if (item.SoLuong > available)
+            {
+                TempData["CartError"] = $"Số lượng không đủ cho xe \"{item.TenPhienBan}\". Hàng tồn của xe là: {available} xe.";
+                return RedirectToPage();
+            }
+        }
+
         return RedirectToPage("/Orders/Cart/Checkout");
     }
 }

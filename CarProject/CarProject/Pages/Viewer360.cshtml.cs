@@ -9,12 +9,10 @@ namespace CarProject.Pages;
 
 public class Viewer360Model : PageModel
 {
-    private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
 
-    public Viewer360Model(AppDbContext db, IActivityLogService log)
+    public Viewer360Model(IActivityLogService log)
     {
-        _db = db;
         _log = log;
     }
 
@@ -22,17 +20,9 @@ public class Viewer360Model : PageModel
     public DongXe? SelectedXe { get; set; }
     public int SelectedId { get; set; }
 
-    public async Task OnGetAsync(int? id)
+    public async Task<IActionResult> OnGetAsync(int? id)
     {
-        DanhSachXe = await _db.DongXe.Include(d => d.HangXe).ToListAsync();
-
-        if (id.HasValue)
-        {
-            SelectedXe = await _db.DongXe.Include(d => d.HangXe)
-                .FirstOrDefaultAsync(d => d.MaDong == id.Value);
-            SelectedId = id.Value;
-        }
-
-        await _log.LogAsync($"Xem 360: {(SelectedXe?.TenDong ?? "không chọn")}");
+        await _log.LogAsync("Truy cập trang xem 360 đã bị loại bỏ");
+        return RedirectToPage("/Cars");
     }
 }

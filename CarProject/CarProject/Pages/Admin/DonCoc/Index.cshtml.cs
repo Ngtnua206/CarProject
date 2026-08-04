@@ -50,6 +50,7 @@ public class IndexModel : PageModel
         if (don == null) return NotFound();
 
         don.TrangThaiDonHang = "Đã duyệt";
+        don.TrangThaiThanhToan = "Đã đặt cọc";
         don.MaQuanLyDuyet = User.GetJwtUserName();
 
         if (!string.IsNullOrEmpty(maChiNhanhMoi))
@@ -96,13 +97,20 @@ var lichHen = new LichHenLaiThu
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostRejectAsync(int maDonCoc)
+    public async Task<IActionResult> OnPostRejectAsync(int maDonCoc, string? lyDoTuChoi)
     {
         var don = await _db.DonDatCoc.FindAsync(maDonCoc);
         if (don == null) return NotFound();
 
+        if (string.IsNullOrWhiteSpace(lyDoTuChoi))
+        {
+            TempData["Error"] = "Vui lòng nhập lý do từ chối.";
+            return RedirectToPage();
+        }
+
         don.TrangThaiDonHang = "Đã hủy";
         don.MaQuanLyDuyet = User.GetJwtUserName();
+        don.GhiChu = string.IsNullOrWhiteSpace(don.GhiChu) ? $"Từ chối: {lyDoTuChoi.Trim()}" : $"{don.GhiChu}\nTừ chối: {lyDoTuChoi.Trim()}";
 
         // Hoàn tiền cọc: trừ doanh thu cọc đã cộng cho các showroom trong đơn
         await _revenue.RevertDepositRevenueAsync(maDonCoc);
@@ -112,12 +120,62 @@ var lichHen = new LichHenLaiThu
         if (don.MaKhachHang != null)
         {
             await _notif.SendAsync(don.MaKhachHang, "Đơn cọc bị từ chối",
-                $"Đơn cọc #{maDonCoc} đã bị từ chối. Vui lòng liên hệ showroom để biết chi tiết.",
+                $"Đơn cọc #{maDonCoc} đã bị từ chối. Lý do: {lyDoTuChoi.Trim()}",
                 "");
         }
 
-        await _log.LogAsync($"Admin từ chối đơn cọc #{maDonCoc}");
+        await _notif.SendToRoleAsync("Admin", "Đơn cọc bị từ chối",
+            $"Đơn cọc #{maDonCoc} đã bị từ chối. Lý do: {lyDoTuChoi.Trim()}",
+            $"/Admin/DonCoc/Edit/{maDonCoc}");
+
+        await _log.LogAsync($"Admin từ chối đơn cọc #{maDonCoc}", lyDoTuChoi.Trim());
         TempData["Error"] = $"Đã từ chối đơn cọc #{maDonCoc}.";
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostMarkPaidAsync(int maDonCoc)
+    {
+        var don = await _db.DonDatCoc
+            .Include(d => d.ChiTiets)
+            .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
+        if (don == null) return NotFound();
+
+        var wasPaid = don.TrangThaiThanhToan == "Đã thanh toán" || don.TrangThaiThanhToan == "Đã đặt cọc";
+        don.TrangThaiThanhToan = "Đã đặt cọc";
+        don.TrangThaiDonHang = don.TrangThaiDonHang == "Chờ thanh toán" || don.TrangThaiDonHang == "Chờ xử lý" || string.IsNullOrWhiteSpace(don.TrangThaiDonHang)
+            ? "Đã xác nhận"
+            : don.TrangThaiDonHang;
+
+        if (!wasPaid)
+        {
+            await _revenue.AllocateDepositRevenueAsync(don);
+        }
+
+        await _db.SaveChangesAsync();
+
+        if (don.MaKhachHang != null)
+        {
+            await _notif.SendAsync(don.MaKhachHang, "Thanh toán thành công",
+                $"Đơn cọc #{don.MaDonCoc} đã được xác nhận thanh toán. Chúng tôi sẽ tiếp tục xử lý đơn của bạn.",
+                $"/Orders/DepositResult?maDonCoc={don.MaDonCoc}");
+        }
+
+        if (!string.IsNullOrEmpty(don.MaChiNhanh))
+        {
+            var showroom = await _db.ChiNhanhShowroom.FindAsync(don.MaChiNhanh);
+            if (!string.IsNullOrWhiteSpace(showroom?.MaQuanLy))
+            {
+                await _notif.SendAsync(showroom.MaQuanLy, "Đơn cọc đã xác nhận thanh toán",
+                    $"Đơn cọc #{don.MaDonCoc} đã được Admin xác nhận thanh toán.",
+                    $"/QuanLy/DonCoc?highlight={don.MaDonCoc}");
+            }
+        }
+
+        await _notif.SendToRoleAsync("Admin", "Đơn cọc đã được xác nhận thanh toán",
+            $"Đơn cọc #{don.MaDonCoc} đã được Admin ghi nhận thanh toán.",
+            $"/Admin/DonCoc/Edit/{don.MaDonCoc}");
+
+        TempData["Success"] = $"Đã xác nhận thanh toán cho đơn cọc #{maDonCoc}.";
         return RedirectToPage();
     }
 

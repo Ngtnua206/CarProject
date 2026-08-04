@@ -161,10 +161,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ====== Nav container: logo | menu | actions ====== */
-.nav-container {
+/* Note: Bootstrap `.navbar > .container` sets `flex-wrap: inherit` (=wrap from .navbar);
+   we must force nowrap here or the header breaks into two rows on desktop. */
+.navbar-premium .nav-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: nowrap;
     gap: 1rem;
     height: 100%;
     min-width: 0;
@@ -910,15 +913,15 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.65rem;
 }
 
-/* ====== Mobile / tablet layout ====== */
-@media (max-width: 991.98px) {
-    /* Two-row header: row1 = logo + actions, row2 = scrollable menu */
+/* ====== Mobile-only layout (<768px): two-row header ====== */
+@media (max-width: 767.98px) {
+    /* On phones: row1 = logo + actions, row2 = scrollable menu */
     html { --nav-height: 114px; }
 
     .navbar-premium {
         height: auto;
     }
-    .nav-container {
+    .navbar-premium .nav-container {
         flex-wrap: wrap;
         height: auto;
         padding: 0.5rem 0.75rem 0;
@@ -966,6 +969,15 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+/* Tablet & laptop keep the single-row header; hide any leftover drawer */
+@media (min-width: 768px) {
+    .mobile-nav-backdrop,
+    .mobile-nav-panel {
+        display: none !important;
+    }
+}
+
+/* Very small phones: icon-only action group */
 @media (max-width: 575.98px) {
     .nav-actions { gap: 6px; }
     .nav-auth .btn-auth {
@@ -985,13 +997,6 @@ h1, h2, h3, h4, h5, h6 {
     }
     .nav-menu-scroll .navbar-nav {
         gap: 18px;
-    }
-}
-
-@media (min-width: 992px) {
-    .mobile-nav-backdrop,
-    .mobile-nav-panel {
-        display: none !important;
     }
 }
 

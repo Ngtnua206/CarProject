@@ -26,6 +26,7 @@ public class DepositResultModel : PageModel
     public string TenPhienBan { get; set; } = "";
     public string HoTen { get; set; } = "";
     public bool ShowQr { get; set; }
+    public bool IsCashPayment { get; set; }
     public string DongCo { get; set; } = "";
     public string HopSo { get; set; } = "";
     public string MauSac { get; set; } = "";
@@ -61,6 +62,7 @@ public class DepositResultModel : PageModel
             TransferContent = root.GetProperty("transferContent").GetString() ?? "";
             TenPhienBan = root.GetProperty("tenPhienBan").GetString() ?? "";
             HoTen = root.GetProperty("hoTen").GetString() ?? "";
+            IsCashPayment = root.TryGetProperty("paymentMethod", out var paymentMethod) && string.Equals(paymentMethod.GetString(), "Tiền mặt", StringComparison.OrdinalIgnoreCase);
             SoDienThoai = root.TryGetProperty("soDienThoai", out var sdt) ? sdt.GetString() ?? "" : "";
             DongCo = root.TryGetProperty("dongCo", out var dc) ? dc.GetString() ?? "" : "";
             HopSo = root.TryGetProperty("hopSo", out var hs) ? hs.GetString() ?? "" : "";
@@ -93,6 +95,7 @@ public class DepositResultModel : PageModel
             HoTen = don.HoTen ?? "";
             SoDienThoai = don.SoDienThoai ?? "";
             TrangThaiDonHang = don.TrangThaiDonHang ?? "";
+            IsCashPayment = string.Equals(don.PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
             var firstPb = don.ChiTiets.Select(c => c.PhienBan).FirstOrDefault(p => p != null) ?? don.PhienBan;
             if (firstPb != null)
             {
@@ -126,7 +129,8 @@ public class DepositResultModel : PageModel
         if (rateItems.Count == 0) rateItems.Add("20%");
         CocRateText = rateItems.Count == 1 ? rateItems[0] : "15%/20%";
 
-        if (!string.IsNullOrEmpty(MaGiaoDich))
+        var isCashPending = IsCashPayment || string.Equals(TrangThaiDonHang, "Chờ thanh toán", StringComparison.OrdinalIgnoreCase);
+        if (!isCashPending && !string.IsNullOrEmpty(MaGiaoDich))
         {
             var bin = "970422"; // MB Bank BIN
             QrImageUrl = CarProject.Services.VietQr.BuildDataUri(bin, _sepay.BankNumber, 10000, MaGiaoDich);

@@ -228,23 +228,39 @@
     });
 
     function showPaymentModal(data) {
+        var isCash = (data.paymentMethod || '').toLowerCase() === 'tiền mặt' || (data.paymentMethod || '').toLowerCase() === 'tien mat';
+        var bodyHtml = isCash
+            ? '<div style="padding:0.75rem 0 0.25rem;text-align:left;">' +
+              '<div style="display:flex;align-items:center;gap:0.6rem;padding:0.8rem 1rem;border-radius:10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);margin-bottom:0.9rem;">' +
+              '<i class="fas fa-money-bill-wave" style="color:#22c55e;font-size:1rem;"></i>' +
+              '<div><div style="color:var(--brand-white);font-weight:600;">Đơn của bạn đang chờ thanh toán</div><div style="color:var(--text-muted);font-size:0.78rem;">Admin và showroom sẽ kiểm tra đơn để xác nhận.</div></div></div>' +
+              '<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;color:var(--text-muted);">' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Tổng tiền cọc</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Mã đơn</span><span style="color:var(--brand-white);font-weight:700;">#' + data.maDonCoc + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>Trạng thái</span><span style="color:#22c55e;font-weight:700;">' + (data.orderStatus || 'Chờ thanh toán') + '</span></div>' +
+              '</div>' +
+              '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;">Đơn đã được ghi nhận. Chúng tôi sẽ gửi thông tin cho admin/showroom để xử lý sớm nhất.</p>' +
+              '<div style="margin-top:0.9rem;text-align:center;"><a href="' + (data.orderUrl || '/Profile') + '" class="btn-premium btn-premium-solid" style="display:inline-flex;align-items:center;justify-content:center;padding:0.6rem 1rem;">' +
+              '<i class="fas fa-eye me-1"></i> Xem trạng thái đơn</a></div>' +
+              '</div>'
+            : '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;">' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Tổng tiền gốc</span><span style="color:var(--brand-white);">' + formatMoney(data.tongTienGoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền cọc (' + (data.cocRateText || '20%') + ')</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Ngân hàng</span><span style="color:var(--brand-white);">' + data.bankName + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">STK</span><span style="color:var(--brand-white);font-weight:700;">' + data.bankNumber + '</span></div>' +
+              '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Nội dung CK</span><span style="font-family:monospace;background:rgba(255,255,255,0.05);padding:0.1rem 0.3rem;border-radius:4px;color:var(--brand-gold);">' + data.maGiaoDich + '</span></div>' +
+              '</div>' +
+              '<div style="background:white;border-radius:12px;padding:8px;display:inline-block;margin-top:0.8rem;">' +
+              '<img src="' + (data.qrUrl || '') + '" alt="QR" style="width:200px;height:200px;border-radius:8px;" /></div>' +
+              '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;" id="paymentStatus">Đang chờ thanh toán...</p>';
         var modalHtml = '<div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static">' +
             '<div class="modal-dialog modal-dialog-centered modal-sm">' +
             '<div class="modal-content" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;">' +
-            '<div class="modal-header border-0"><h5 class="modal-title" style="color:var(--brand-white);"><i class="fas fa-qrcode me-2" style="color:var(--brand-gold);"></i> Quét QR thanh toán</h5>' +
+            '<div class="modal-header border-0"><h5 class="modal-title" style="color:var(--brand-white);"><i class="fas ' + (isCash ? 'fa-money-bill-wave' : 'fa-qrcode') + ' me-2" style="color:var(--brand-gold);"></i> ' + (isCash ? 'Đơn chờ thanh toán' : 'Quét QR thanh toán') + '</h5>' +
             '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>' +
             '<div class="modal-body text-center pb-4">' +
-            '<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">Quét mã QR để thanh toán <strong>đơn cọc</strong></p>' +
-            '<div style="background:white;border-radius:12px;padding:8px;display:inline-block;margin-bottom:0.8rem;">' +
-            '<img src="' + data.qrUrl + '" alt="QR" style="width:200px;height:200px;border-radius:8px;" /></div>' +
-            '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;">' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Tổng tiền gốc</span><span style="color:var(--brand-white);">' + formatMoney(data.tongTienGoc) + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền cọc (' + (data.cocRateText || '20%') + ')</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Ngân hàng</span><span style="color:var(--brand-white);">' + data.bankName + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">STK</span><span style="color:var(--brand-white);font-weight:700;">' + data.bankNumber + '</span></div>' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Nội dung CK</span><span style="font-family:monospace;background:rgba(255,255,255,0.05);padding:0.1rem 0.3rem;border-radius:4px;color:var(--brand-gold);">' + data.maGiaoDich + '</span></div>' +
-            '</div>' +
-            '<p style="color:var(--text-faint);font-size:0.72rem;margin-top:0.8rem;" id="paymentStatus">Đang chờ thanh toán...</p>' +
+            '<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">' + (isCash ? 'Đơn cọc đã được ghi nhận để admin/showroom kiểm tra' : 'Quét mã QR để thanh toán <strong>đơn cọc</strong>') + '</p>' +
+            bodyHtml +
             '</div></div></div></div>';
 
         var div = document.createElement('div');

@@ -153,7 +153,7 @@ public class SepayService : ISepayService
     {
         if (string.IsNullOrEmpty(content)) return "";
 
-        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)\d{6,}");
+        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC|LD)\d{6,}");
         if (match.Success)
             return match.Value;
 

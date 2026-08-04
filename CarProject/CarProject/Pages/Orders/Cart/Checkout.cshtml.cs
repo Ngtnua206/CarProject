@@ -76,9 +76,35 @@ public class CheckoutModel : PageModel
             return RedirectToPage("/Orders/Cart/Index");
         }
 
+        var currentUser = User.GetJwtUserName() ?? "";
+        foreach (var item in CartItems)
+        {
+            var phienBan = await _db.PhienBanXe.FindAsync(item.MaPhienBan);
+            if (phienBan == null) continue;
+
+            var reservedByOthers = await _db.GioHang
+                .Where(g => g.MaTaiKhoan != currentUser && g.MaPhienBan == item.MaPhienBan)
+                .SumAsync(g => (int?)g.SoLuong) ?? 0;
+            var depositReserved = await _db.DonDatCocChiTiet
+                .Where(c => c.MaPhienBan == item.MaPhienBan
+                    && c.DonDatCoc != null
+                    && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                    && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                    && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
+                .SumAsync(c => (int?)c.SoLuong) ?? 0;
+            var available = Math.Max(0, phienBan.SoLuongTrongKho - reservedByOthers - depositReserved);
+            if (item.SoLuong > available)
+            {
+                TempData["CartError"] = $"Số lượng không đủ cho xe \"{item.TenPhienBan}\". Hàng tồn của xe là: {available} xe.";
+                return RedirectToPage("/Orders/Cart/Index");
+            }
+        }
+
         await LoadShowrooms();
         await LoadTonKhoAsync();
-        await LoadReservedAsync();
+        await LoadReservedAsync(User.GetJwtUserName() ?? "");
         TotalDeposit = await _cart.GetTotalDepositAsync();
         QuantityInput = CartItems.ToDictionary(c => c.MaPhienBan, c => c.SoLuong);
         return Page();
@@ -113,6 +139,23 @@ public class CheckoutModel : PageModel
         var userName = User.GetJwtUserName();
         var groupCode = $"DH{DateTime.Now:yyMMddHHmmss}";
 
+        if (string.IsNullOrEmpty(LichHenNgay) || !DateTime.TryParse(LichHenNgay, out var ngayHen))
+        {
+            return Fail("Vui lòng chọn ngày hẹn nhận xe.");
+        }
+
+        if (string.IsNullOrEmpty(LichHenGio) || !TimeOnly.TryParse(LichHenGio, out var gio))
+        {
+            return Fail("Vui lòng chọn giờ hẹn nhận xe trong giờ hành chính (08:00 - 17:00).");
+        }
+
+        var gioStart = new TimeOnly(8, 0);
+        var gioEnd = new TimeOnly(17, 0);
+        if (gio < gioStart || gio > gioEnd)
+        {
+            return Fail("Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).");
+        }
+
         // Áp dụng số lượng người dùng đã chọn
         foreach (var item in CartItems)
         {
@@ -138,7 +181,7 @@ public class CheckoutModel : PageModel
 
         // Sau khi đã khoá, đọc lại tồn kho + số lượng đã đặt cọc
         await LoadTonKhoLutAsync(pbIds);
-        await LoadReservedLutAsync(pbIds);
+        await LoadReservedLutAsync(pbIds, userName ?? "");
         await LoadTenChiNhanhLutAsync();
 
         // ===== Phân bổ showroom nguồn: ưu tiên showroom đã chọn / showroom hẹn gặp trước, sau đó mới sang showroom khác =====
@@ -157,6 +200,17 @@ public class CheckoutModel : PageModel
             var userSource = SourceChiNhanh.TryGetValue(item.MaPhienBan, out var sc) && !string.IsNullOrEmpty(sc)
                 ? sc
                 : null;
+
+            var reservedTotal = _reservedLut.Where(k => k.Key.Item1 == item.MaPhienBan).Sum(k => k.Value);
+            var availableOverall = Math.Max(0, phienBan.SoLuongTrongKho - reservedTotal);
+            if (item.SoLuong > availableOverall)
+            {
+                ErrorMessage = $"Phần xe \"{item.TenPhienBan}\" đã có người đặt cọc hoặc đang có người khác thêm vào giỏ hàng. Hiện còn {availableOverall} xe chưa bị đặt cọc.";
+                await tx.RollbackAsync();
+                await LoadShowrooms();
+                await LoadTonKhoAsync();
+                return Page();
+            }
 
             var parts = AllocateSource(phienBan, item.SoLuong, userSource, MaChiNhanh);
             if (parts.Count == 0)
@@ -177,17 +231,18 @@ public class CheckoutModel : PageModel
 
         var totalXe = CartItems.Sum(c => c.SoLuong);
         var hasPreOrder = CartItems.Any(c => c.SoLuongTrongKho <= 0);
+        var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
         // ===== Tạo MỘT đơn cọc duy nhất =====
-        // Xe hết hàng (đặt trước) -> Chờ xử lý; xe còn hàng -> Chờ xác nhận
+        // Tiền mặt -> chờ thanh toán; xe hết hàng -> chờ xử lý; xe còn hàng -> chờ xác nhận
         var deposit = new DonDatCoc
         {
             MaKhachHang = userName ?? "",
             MaChiNhanh = MaChiNhanh,
             SoTienCoc = TotalDeposit,
             PhuongThucThanhToan = PhuongThucThanhToan,
-            TrangThaiThanhToan = "Chưa thanh toán",
-            TrangThaiDonHang = hasPreOrder ? "Chờ xử lý" : "Chờ xác nhận",
+            TrangThaiThanhToan = isCashPayment ? "Chờ thanh toán" : "Chưa thanh toán",
+            TrangThaiDonHang = isCashPayment ? "Chờ thanh toán" : (hasPreOrder ? "Chờ xử lý" : "Chờ xác nhận"),
             NgayTaoDon = DateTime.Now,
             HoTen = HoTen,
             SoDienThoai = SoDienThoai,
@@ -219,7 +274,33 @@ foreach (var (item, parts) in allocated)
 
         _db.DonDatCoc.Add(deposit);
         await _db.SaveChangesAsync();
+
+        if (isCashPayment)
+        {
+            var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
+            var showroomName = showroom?.TenChiNhanh ?? MaChiNhanh;
+            await _notif.SendToRoleAsync("Admin", "Đơn đặt cọc mới - chờ thanh toán",
+                $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Đơn #{deposit.MaDonCoc} đang chờ thanh toán tại {showroomName}.",
+                $"/Admin/DonCoc/Index");
+
+            if (!string.IsNullOrWhiteSpace(MaChiNhanh))
+            {
+                var managerMaQuanLy = showroom?.MaQuanLy;
+                if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
+                {
+                    var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
+                    if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+                    {
+                        await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - chờ thanh toán",
+                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                            $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                    }
+                }
+            }
+        }
+
         await tx.CommitAsync();
+        await _cart.ClearCartAsync();
 
         // Tạo lịch hẹn nhận xe tại showroom hẹn gặp nếu có chọn
         if (!string.IsNullOrEmpty(LichHenNgay) && !string.IsNullOrEmpty(LichHenGio))
@@ -232,7 +313,7 @@ foreach (var (item, parts) in allocated)
                 HoTenNguoiLai = HoTen,
                 SoDienThoai = SoDienThoai,
                 SoBangLaiXe = "",
-                NgayHen = DateTime.Parse(LichHenNgay),
+                NgayHen = ngayHen,
                 GioHen = LichHenGio,
                 TrangThai = "Chờ xác nhận",
                 YKienKhachHang = GhiChu ?? ""
@@ -244,7 +325,7 @@ foreach (var (item, parts) in allocated)
         await _log.LogAsync("Đặt cọc giỏ hàng",
             $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Nhận tại: {MaChiNhanh}");
 
-        // Giữ nguyên giỏ hàng; chỉ xoá khi thanh toán thành công hoặc người dùng tự xoá
+        // Xoá giỏ hàng ngay sau khi tạo đơn đặt cọc thành công
         if (IsAjaxSubmit)
         {
             var sepay = HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<CarProject.Services.SepaySettings>>();
@@ -265,7 +346,14 @@ foreach (var (item, parts) in allocated)
                 bankName = $"{s.BankAccount} ({s.BankName})",
                 bankNumber = s.BankNumber,
                 accountName = s.AccountName,
-                qrUrl
+                paymentMethod = PhuongThucThanhToan,
+                showQr = !isCashPayment,
+                qrUrl = isCashPayment ? "" : qrUrl,
+                orderStatus = isCashPayment ? "Chờ thanh toán" : "Chờ xác nhận",
+                orderUrl = $"/Orders/DepositResult?maDonCoc={deposit.MaDonCoc}",
+                message = isCashPayment
+                    ? "Đơn đặt cọc đã được ghi nhận và đang chờ thanh toán. Admin/showroom sẽ xác nhận trong thời gian sớm nhất."
+                    : "Đơn đặt cọc đã được ghi nhận. Vui lòng chuyển khoản để hoàn tất."
             });
         }
 
@@ -329,10 +417,10 @@ foreach (var (item, parts) in allocated)
             .ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private async Task LoadReservedAsync()
+    private async Task LoadReservedAsync(string currentUser)
     {
         var maPhienBans = CartItems.Select(c => c.MaPhienBan).ToList();
-        await LoadReservedLutAsync(maPhienBans);
+        await LoadReservedLutAsync(maPhienBans, currentUser);
         foreach (var kv in _reservedLut)
         {
             if (!DaDatCocTheoPhienBanVaChiNhanh.ContainsKey(kv.Key.Item1))
@@ -347,19 +435,34 @@ foreach (var (item, parts) in allocated)
         }
     }
 
-    private async Task LoadReservedLutAsync(List<int> pbIds)
+    private async Task LoadReservedLutAsync(List<int> pbIds, string currentUser)
     {
-        // Chỉ đếm 'đã đặt cọc' (giữ xe) cho những đơn ĐÃ THANH TOÁN.
-        var rows = await _db.DonDatCocChiTiet
+        var depositRows = await _db.DonDatCocChiTiet
             .Where(c => pbIds.Contains(c.MaPhienBan)
                 && c.DonDatCoc != null
-                && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán")
+                && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán"
+                && c.DonDatCoc!.TrangThaiDonHang != "Đã hủy"
+                && c.DonDatCoc!.TrangThaiDonHang != "Đã huỷ"
+                && c.DonDatCoc!.TrangThaiDonHang != "Từ chối")
             .Select(c => new { c.MaPhienBan, c.MaChiNhanh, c.SoLuong })
             .ToListAsync();
+
+        var cartRows = await _db.GioHang
+            .Where(g => pbIds.Contains(g.MaPhienBan) && !string.IsNullOrEmpty(currentUser) && g.MaTaiKhoan != currentUser)
+            .Select(g => new { g.MaPhienBan, MaChiNhanh = (string?)null, g.SoLuong })
+            .ToListAsync();
+
         _reservedLut = new Dictionary<(int, string), int>();
-        foreach (var r in rows)
+        foreach (var r in depositRows)
         {
             var key = (r.MaPhienBan, r.MaChiNhanh ?? "");
+            _reservedLut.TryGetValue(key, out var cur);
+            _reservedLut[key] = cur + r.SoLuong;
+        }
+
+        foreach (var r in cartRows)
+        {
+            var key = (r.MaPhienBan, "");
             _reservedLut.TryGetValue(key, out var cur);
             _reservedLut[key] = cur + r.SoLuong;
         }

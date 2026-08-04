@@ -53,11 +53,29 @@ public class LichHenModel : PageModel
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
 
+        Showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (Showroom == null)
+        {
+            ErrorMessage = "Bạn chưa được phân công quản lý showroom nào.";
+            return RedirectToPage();
+        }
+
         var lichHen = await _db.LichHenLaiThu.FindAsync(maLichHen);
         if (lichHen == null) return NotFound();
+        if (lichHen.MaChiNhanh != Showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền duyệt lịch hẹn này.";
+            return RedirectToPage();
+        }
 
+        var wasPending = lichHen.TrangThai == "Chờ xác nhận";
         lichHen.TrangThai = "Đã xác nhận";
         await _db.SaveChangesAsync();
+
+        if (wasPending)
+        {
+            await CapNhatDoanhThuLaiThuAsync(lichHen);
+        }
 
         await _notif.SendAsync(lichHen.MaKhachHang, "Lịch lái thử đã được xác nhận",
             $"Lịch lái thử xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã được xác nhận.", "/TestDrive");
@@ -67,13 +85,62 @@ public class LichHenModel : PageModel
         return RedirectToPage();
     }
 
+    private async Task CapNhatDoanhThuLaiThuAsync(LichHenLaiThu lichHen)
+    {
+        const long bookingRevenue = 1_000_000;
+        var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
+
+        var thongKe = await _db.ThongKeTongHop_Boss
+            .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == lichHen.MaChiNhanh);
+
+        if (thongKe == null)
+        {
+            thongKe = new ThongKeTongHop_Boss
+            {
+                KyBaoCao = kyBaoCao,
+                MaChiNhanh = lichHen.MaChiNhanh,
+                TongDoanhThu = bookingRevenue,
+                TongTienCocThuVe = 0,
+                TongSoXeDaBan = 0,
+                SoDonCocBiHuy = 0,
+                TongLuotXemWeb = 0,
+                TongLuotLaiThu = 1,
+                MaDongXeBanChayNhat = lichHen.MaDong
+            };
+            _db.ThongKeTongHop_Boss.Add(thongKe);
+        }
+        else
+        {
+            thongKe.TongDoanhThu += bookingRevenue;
+            thongKe.TongLuotLaiThu += 1;
+            if (thongKe.MaDongXeBanChayNhat == 0)
+            {
+                thongKe.MaDongXeBanChayNhat = lichHen.MaDong;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
     public async Task<IActionResult> OnPostRejectAsync(int maLichHen)
     {
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
 
+        Showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (Showroom == null)
+        {
+            ErrorMessage = "Bạn chưa được phân công quản lý showroom nào.";
+            return RedirectToPage();
+        }
+
         var lichHen = await _db.LichHenLaiThu.FindAsync(maLichHen);
         if (lichHen == null) return NotFound();
+        if (lichHen.MaChiNhanh != Showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền xử lý lịch hẹn này.";
+            return RedirectToPage();
+        }
 
         lichHen.TrangThai = "Từ chối";
         await _db.SaveChangesAsync();
@@ -91,8 +158,20 @@ public class LichHenModel : PageModel
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
 
+        Showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (Showroom == null)
+        {
+            ErrorMessage = "Bạn chưa được phân công quản lý showroom nào.";
+            return RedirectToPage();
+        }
+
         var lichHen = await _db.LichHenLaiThu.FindAsync(maLichHen);
         if (lichHen == null) return NotFound();
+        if (lichHen.MaChiNhanh != Showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền xử lý lịch hẹn này.";
+            return RedirectToPage();
+        }
 
         lichHen.TrangThai = "Hoàn thành";
         await _db.SaveChangesAsync();

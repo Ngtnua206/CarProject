@@ -188,19 +188,18 @@ else
                                         {
                                             case "Chờ xử lý":
                                             case "Chờ xác nhận":
-                                                <span class="badge bg-warning text-dark">@d.TrangThaiDonHang</span>
+                                            case "Chờ thanh toán":
+                                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                                                 break;
                                             case "Đã duyệt":
                                             case "Đã xác nhận":
-                                                <span class="badge bg-info">@d.TrangThaiDonHang</span>
-                                                break;
-                                            case "Đã thanh toán":
-                                                <span class="badge bg-success">@d.TrangThaiDonHang</span>
-                                                break;
                                             case "Hoàn tất":
-                                                <span class="badge bg-primary">@d.TrangThaiDonHang</span>
+                                            case "Đã thanh toán":
+                                            case "Đã đặt cọc":
+                                                <span class="badge bg-success">Đã đặt cọc</span>
                                                 break;
                                             case "Đã từ chối":
+                                            case "Đã hủy":
                                                 <span class="badge bg-danger">@d.TrangThaiDonHang</span>
                                                 break;
                                             default:

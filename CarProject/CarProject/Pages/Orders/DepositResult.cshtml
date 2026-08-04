@@ -42,7 +42,14 @@
         <div class="check-icon"><i class="fas fa-check"></i></div>
         <h4 style="color: var(--brand-white); margin-bottom: 0.3rem;">Đặt cọc thành công!</h4>
         <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Cảm ơn <strong>@Model.HoTen</strong>! Vui lòng chuyển khoản để hoàn tất đặt cọc.
+            @if (Model.IsCashPayment || Model.TrangThaiDonHang == "Chờ thanh toán")
+            {
+                <text>Đơn đặt cọc của <strong>@Model.HoTen</strong> đã được ghi nhận và đang chờ thanh toán. Admin/showroom sẽ kiểm tra và xác nhận sớm nhất.</text>
+            }
+            else
+            {
+                <text>Cảm ơn <strong>@Model.HoTen</strong>! Vui lòng chuyển khoản để hoàn tất đặt cọc.</text>
+            }
         </p>
 
         <div class="bank-card" style="text-align: left;">
@@ -92,25 +99,17 @@
             <div class="row-line">
                 <span class="label">Trạng thái</span>
                 <span class="value">
-                    @if (Model.TrangThaiDonHang == "Chờ xác nhận")
+                    @if (Model.TrangThaiDonHang == "Chờ xác nhận" || Model.TrangThaiDonHang == "Chờ thanh toán" || Model.TrangThaiDonHang == "Chờ xử lý")
                     {
-                        <span class="badge bg-warning text-dark">@Model.TrangThaiDonHang</span>
+                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                     }
-                    else if (Model.TrangThaiDonHang == "Đã duyệt")
+                    else if (Model.TrangThaiDonHang == "Đã duyệt" || Model.TrangThaiDonHang == "Đã xác nhận" || Model.TrangThaiDonHang == "Hoàn tất" || Model.TrangThaiDonHang == "Đã thanh toán")
                     {
-                        <span class="badge bg-info">@Model.TrangThaiDonHang</span>
+                        <span class="badge bg-success">Đã đặt cọc</span>
                     }
-                    else if (Model.TrangThaiDonHang == "Đã thanh toán")
-                    {
-                        <span class="badge bg-success">@Model.TrangThaiDonHang</span>
-                    }
-                    else if (Model.TrangThaiDonHang == "Đã từ chối")
+                    else if (Model.TrangThaiDonHang == "Đã từ chối" || Model.TrangThaiDonHang == "Đã hủy")
                     {
                         <span class="badge bg-danger">@Model.TrangThaiDonHang</span>
-                    }
-                    else if (Model.TrangThaiDonHang == "Hoàn tất")
-                    {
-                        <span class="badge bg-primary">@Model.TrangThaiDonHang</span>
                     }
                     else
                     {
@@ -118,32 +117,46 @@
                     }
                 </span>
             </div>
-            <div class="row-line">
-                <span class="label">Ngân hàng</span>
-                <span class="value">@Model.BankName</span>
-            </div>
-            @if (Model.ShowQr)
+            @if (!Model.IsCashPayment && Model.TrangThaiDonHang != "Chờ thanh toán")
             {
-                <div style="display:flex;justify-content:center;margin:0.8rem 0 0.6rem;">
-                    <div style="background:white;border-radius:12px;padding:8px;display:inline-block;">
-                        <img src="@Model.QrImageUrl" alt="QR thanh toán" style="width:200px;height:200px;border-radius:8px;" />
+                <div class="row-line">
+                    <span class="label">Ngân hàng</span>
+                    <span class="value">@Model.BankName</span>
+                </div>
+                @if (Model.ShowQr)
+                {
+                    <div style="display:flex;justify-content:center;margin:0.8rem 0 0.6rem;">
+                        <div style="background:white;border-radius:12px;padding:8px;display:inline-block;">
+                            <img src="@Model.QrImageUrl" alt="QR thanh toán" style="width:200px;height:200px;border-radius:8px;" />
+                        </div>
                     </div>
+                }
+                <div class="row-line">
+                    <span class="label">Số tài khoản</span>
+                    <span class="value" style="font-size: 1rem;">@Model.BankNumber</span>
+                </div>
+                <div class="row-line">
+                    <span class="label">Chủ tài khoản</span>
+                    <span class="value">@Model.AccountName</span>
+                </div>
+                <div class="row-line">
+                    <span class="label">Nội dung chuyển khoản</span>
+                    <span class="value" style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                        @Model.TransferContent
+                    </span>
                 </div>
             }
-            <div class="row-line">
-                <span class="label">Số tài khoản</span>
-                <span class="value" style="font-size: 1rem;">@Model.BankNumber</span>
-            </div>
-            <div class="row-line">
-                <span class="label">Chủ tài khoản</span>
-                <span class="value">@Model.AccountName</span>
-            </div>
-            <div class="row-line">
-                <span class="label">Nội dung chuyển khoản</span>
-                <span class="value" style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
-                    @Model.TransferContent
-                </span>
-            </div>
+            else
+            {
+                <div class="row-line">
+                    <span class="label">Phương thức</span>
+                    <span class="value">Tiền mặt · chờ thanh toán</span>
+                </div>
+                <div class="row-line">
+                    <span class="label">Ghi chú</span>
+                    <span class="value">Đơn sẽ được admin/showroom xử lý sau khi xác nhận thanh toán.</span>
+                </div>
+            }
         </div>
 
         @if (Model.ChiTiets.Any())

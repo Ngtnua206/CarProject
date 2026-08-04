@@ -109,6 +109,8 @@ public class LichHenLaiThu
     public string GioHen { get; set; }
     public string TrangThai { get; set; }
     public string YKienKhachHang { get; set; }
+    public string? MaGiaoDich { get; set; }
+    public long? SepayTransactionId { get; set; }
 
     [ForeignKey("MaKhachHang")]
     public TaiKhoan KhachHang { get; set; }
