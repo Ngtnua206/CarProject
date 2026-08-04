@@ -70,7 +70,7 @@
                                             <span>@d.PhienBan?.TenPhienBan <br><small>@d.PhienBan?.DongXe?.TenDong</small></span>
                                         }
                                     </td>
-                                    <td>@d.ChiNhanh?.TenChiNhanh ?? "—"</td>
+                                    <td>@(d.ChiNhanh?.TenChiNhanh ?? "—")</td>
                                     <td>@d.SoTienCoc.ToString("N0")đ</td>
                                     <td>
                                         <span class="badge @(d.TrangThaiThanhToan == "Đã thanh toán" ? "bg-success" : "bg-warning")">
@@ -117,7 +117,6 @@
                                         }
                                         <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
                                         <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
-                                        }
                                         @if (d.TrangThaiDonHang == "Đã xác nhận")
                                         {
                                             <form method="post" asp-page-handler="Sold" style="display:inline" onsubmit="return confirm('Xác nhận bán thành công?');">
