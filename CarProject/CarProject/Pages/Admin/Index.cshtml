@@ -6,11 +6,11 @@
     var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "Admin";
 }
 
-<div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid db-wrap">
+    <div class="db-toolbar">
         <div>
-            <h2 style="margin: 0;">Dashboard</h2>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">Xin chào, <strong style="color: var(--brand-white);">@userName</strong></p>
+            <h1 class="db-title">Dashboard</h1>
+            <div class="db-subtitle">Xin chào, <strong style="color:#fff;">@userName</strong> · Tổng quan hệ thống</div>
         </div>
     </div>
 
@@ -145,7 +145,7 @@
     </div>
 
     <!-- Quick Links -->
-    <div class="mt-4" style="background: #111; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem;">
+    <div class="db-card" style="padding:1.25rem;">
         <h5 style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">
             <i class="fas fa-bolt me-2"></i> Truy cập nhanh
         </h5>
