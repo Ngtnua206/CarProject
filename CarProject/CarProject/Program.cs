@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
+using System.Linq;
 using Serilog;
 using System.Text.Json;
 using System.Text;
@@ -222,6 +223,15 @@ try
         {
             if (!isLoggedIn)
             {
+                var isAjax = (context.Request.Headers.ContainsKey("X-Requested-With") && context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                             || (context.Request.Headers.ContainsKey("Accept") && context.Request.Headers["Accept"].Any(a => a != null && a.Contains("application/json")));
+                if (isAjax)
+                {
+                    context.Response.StatusCode = 401;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = "Unauthorized" }));
+                    return;
+                }
                 context.Response.Redirect("/Account/Login");
                 return;
             }
@@ -241,6 +251,15 @@ try
              path.StartsWith("/QuanLy", StringComparison.OrdinalIgnoreCase))
             && !isLoggedIn)
         {
+            var isAjax = (context.Request.Headers.ContainsKey("X-Requested-With") && context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                         || (context.Request.Headers.ContainsKey("Accept") && context.Request.Headers["Accept"].Any(a => a != null && a.Contains("application/json")));
+            if (isAjax)
+            {
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json; charset=utf-8";
+                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = "Unauthorized" }));
+                return;
+            }
             context.Response.Redirect("/Account/Login");
             return;
         }

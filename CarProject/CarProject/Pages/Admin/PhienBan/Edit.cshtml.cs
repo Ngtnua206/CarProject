@@ -16,6 +16,10 @@ public class EditModel : PageModel
     [BindProperty]
     public PhienBanXe PhienBan { get; set; }
 
+    [BindProperty]
+    public List<PhienBanStockInput> StockInputs { get; set; } = new();
+
+    public List<ChiNhanhShowroom> Showrooms { get; set; } = new();
     public SelectList DongList { get; set; }
     public SelectList KhuyenMaiList { get; set; }
 
@@ -35,6 +39,19 @@ public class EditModel : PageModel
         DongList = new SelectList(dongList, "MaDong", "TenDong", PhienBan.MaDong);
         var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
         KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe", PhienBan.MaKhuyenMai);
+
+        Showrooms = await _db.ChiNhanhShowroom.ToListAsync();
+        var existingStocks = await _db.TonKhoTheoChiNhanh
+            .Where(t => t.MaPhienBan == PhienBan.MaPhienBan)
+            .ToListAsync();
+
+        StockInputs = Showrooms.Select(c => new PhienBanStockInput
+        {
+            MaTonKho = existingStocks.FirstOrDefault(s => s.MaChiNhanh == c.MaChiNhanh)?.MaTonKho,
+            MaChiNhanh = c.MaChiNhanh,
+            SoLuong = existingStocks.FirstOrDefault(s => s.MaChiNhanh == c.MaChiNhanh)?.SoLuong ?? 0
+        }).ToList();
+
         return Page();
     }
 
@@ -50,6 +67,7 @@ public class EditModel : PageModel
             DongList = new SelectList(dongList, "MaDong", "TenDong", PhienBan.MaDong);
             var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
             KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe", PhienBan.MaKhuyenMai);
+            Showrooms = await _db.ChiNhanhShowroom.ToListAsync();
             return Page();
         }
 
@@ -64,10 +82,43 @@ public class EditModel : PageModel
         existing.DongCo = PhienBan.DongCo;
         existing.HopSo = PhienBan.HopSo;
         existing.LoaiNhietLieu = PhienBan.LoaiNhietLieu;
-        existing.SoLuongTrongKho = PhienBan.SoLuongTrongKho;
         existing.DuongDanAnh = PhienBan.DuongDanAnh;
         existing.MaKhuyenMai = PhienBan.MaKhuyenMai;
         existing.TrangThai = PhienBan.TrangThai;
+        existing.SoLuongTrongKho = StockInputs?.Sum(i => i.SoLuong) ?? existing.SoLuongTrongKho;
+
+        var currentStocks = await _db.TonKhoTheoChiNhanh
+            .Where(t => t.MaPhienBan == existing.MaPhienBan)
+            .ToDictionaryAsync(t => t.MaChiNhanh);
+
+        if (StockInputs != null)
+        {
+            foreach (var input in StockInputs.Where(i => !string.IsNullOrEmpty(i.MaChiNhanh)))
+            {
+                if (currentStocks.TryGetValue(input.MaChiNhanh, out var stockRow))
+                {
+                    if (input.SoLuong <= 0)
+                    {
+                        _db.TonKhoTheoChiNhanh.Remove(stockRow);
+                    }
+                    else
+                    {
+                        stockRow.SoLuong = input.SoLuong;
+                        stockRow.NgayCapNhat = DateTime.Now;
+                    }
+                }
+                else if (input.SoLuong > 0)
+                {
+                    _db.TonKhoTheoChiNhanh.Add(new TonKhoTheoChiNhanh
+                    {
+                        MaPhienBan = existing.MaPhienBan,
+                        MaChiNhanh = input.MaChiNhanh,
+                        SoLuong = input.SoLuong,
+                        NgayCapNhat = DateTime.Now
+                    });
+                }
+            }
+        }
 
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Sửa phiên bản", $"{existing.TenPhienBan} (ID={existing.MaPhienBan})");

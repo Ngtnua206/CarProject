@@ -60,11 +60,26 @@
                                 <td><span class="db-money">@pb.GiaNiemYet.ToString("N0")đ</span></td>
                                 <td><div class="db-sub">@pb.MauSac</div></td>
                                 <td>
-                                    @if (pb.SoLuongTrongKho <= 0)
+                                    @{ 
+                                        var stockSummary = Model.StockSummaryByPhienBan.ContainsKey(pb.MaPhienBan)
+                                            ? Model.StockSummaryByPhienBan[pb.MaPhienBan]
+                                            : null;
+                                        var totalStock = 0;
+                                        if (stockSummary != null)
+                                        {
+                                            totalStock = stockSummary.Split(',').Sum(x => int.Parse(x.Split(':').Last().Trim()));
+                                        }
+                                        else
+                                        {
+                                            totalStock = pb.SoLuongTrongKho;
+                                        }
+                                    }
+
+                                    @if (totalStock <= 0)
                                     {
                                         <span class="db-badge red">Hết hàng</span>
                                     }
-                                    else if (pb.SoLuongTrongKho <= 5)
+                                    else if (totalStock <= 5)
                                     {
                                         <span class="db-badge yellow">Sắp hết</span>
                                     }
@@ -72,7 +87,16 @@
                                     {
                                         <span class="db-badge green">Còn hàng</span>
                                     }
-                                    <div class="db-sub" style="margin-top:2px;">@pb.SoLuongTrongKho xe</div>
+                                    <div class="db-sub" style="margin-top:2px;">
+                                        @if (stockSummary != null)
+                                        {
+                                            <span>@stockSummary</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@pb.SoLuongTrongKho xe</span>
+                                        }
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="db-actions">

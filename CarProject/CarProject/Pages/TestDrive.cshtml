@@ -17,7 +17,7 @@
             <div class="col-lg-8">
                 <div class="deposit-card p-4">
                     <h4>Đặt lịch lái thử showroom</h4>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Đặt trước lịch lái thử có phí 1.000.000₫. Thanh toán tiền mặt hoặc chuyển khoản tại showroom, phòng vé để giữ chỗ.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Đặt trước lịch lái thử có phí 1.000.000₫. Thanh toán tiền mặt tại showroom để giữ chỗ.</p>
 
                     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
                     {
@@ -32,6 +32,8 @@
                             <i class="fas fa-exclamation-circle me-1"></i> @Model.ErrorMessage
                         </div>
                     }
+
+                    <div asp-validation-summary="All" class="text-danger" style="font-size:0.9rem;margin-bottom:1rem;"></div>
 
                     <form method="post">
                         <div class="row g-3">
@@ -73,11 +75,10 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Phương thức thanh toán</label>
-                                <select asp-for="PhuongThucThanhToan" class="form-control" required>
-                                    <option value="">-- Chọn phương thức --</option>
-                                    <option value="Chuyển khoản">Chuyển khoản</option>
-                                    <option value="Tiền mặt">Tiền mặt</option>
-                                </select>
+                                    <select asp-for="PhuongThucThanhToan" class="form-control" required>
+                                        <option value="">-- Chọn phương thức --</option>
+                                        <option value="Tiền mặt">Tiền mặt</option>
+                                    </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Ngày hẹn</label>
@@ -190,7 +191,10 @@
                     window.location.reload();
                 }
             } else {
-                alert(data.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
+                var msg = data.error || 'Có lỗi xảy ra. Vui lòng thử lại.';
+                if (data.detail) msg += '\nChi tiết: ' + data.detail;
+                console.error('Lỗi đặt lái thử:', data.detail || data.error);
+                alert(msg);
             }
         })
         .catch(function(err) {

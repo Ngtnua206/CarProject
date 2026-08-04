@@ -212,7 +212,13 @@
             body: new URLSearchParams(formData),
             headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' }
         })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            var ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') === -1) {
+                return r.text().then(function(t) { throw new Error('Server returned non-JSON response:\n' + t); });
+            }
+            return r.json();
+        })
         .then(function(data) {
             document.getElementById('checkoutLoadingOverlay').style.display = 'none';
             if (data.success) {

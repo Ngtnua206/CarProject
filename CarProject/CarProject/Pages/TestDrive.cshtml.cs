@@ -82,16 +82,54 @@ public class TestDriveModel : PageModel
         DanhSachXe = await _db.DongXe.Include(d => d.HangXe).ToListAsync();
         DanhSachChiNhanh = await _db.ChiNhanhShowroom.ToListAsync();
 
+        var isAjaxSubmit = IsAjaxSubmit || string.Equals(Request.Form["_ajax"], "true", StringComparison.OrdinalIgnoreCase);
+
+        if (string.IsNullOrWhiteSpace(HoTen))
+        {
+            ErrorMessage = "Vui lòng nhập họ và tên.";
+            return isAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (string.IsNullOrWhiteSpace(SoDienThoai))
+        {
+            ErrorMessage = "Vui lòng nhập số điện thoại.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
         if (string.IsNullOrWhiteSpace(SoBangLaiXe))
         {
             ErrorMessage = "Vui lòng nhập số bằng lái xe.";
-            return Page();
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
         }
 
         if (string.IsNullOrWhiteSpace(PhuongThucThanhToan))
         {
             ErrorMessage = "Vui lòng chọn phương thức thanh toán.";
-            return Page();
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (MaDong <= 0)
+        {
+            ErrorMessage = "Vui lòng chọn dòng xe.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (string.IsNullOrWhiteSpace(MaChiNhanh))
+        {
+            ErrorMessage = "Vui lòng chọn showroom.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (!DanhSachXe.Any(d => d.MaDong == MaDong))
+        {
+            ErrorMessage = "Dòng xe đã chọn không hợp lệ.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (!DanhSachChiNhanh.Any(c => c.MaChiNhanh == MaChiNhanh))
+        {
+            ErrorMessage = "Showroom đã chọn không hợp lệ.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
         }
 
         var minDate = DateTime.Today.AddDays(3);
@@ -99,14 +137,20 @@ public class TestDriveModel : PageModel
         if (NgayHen < minDate || NgayHen > maxDate)
         {
             ErrorMessage = "Ngày hẹn phải cách ít nhất 3 ngày và không quá 1 tháng.";
-            return Page();
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
         }
 
         var userId = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userId))
         {
             ErrorMessage = "Vui lòng đăng nhập để đặt lịch lái thử.";
-            return Page();
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        if (!await _db.TaiKhoan.AnyAsync(t => t.TenDangNhap == userId))
+        {
+            ErrorMessage = "Tài khoản không hợp lệ. Vui lòng đăng nhập lại.";
+            return IsAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
         }
 
         var maGiaoDich = $"LD{DateTime.Now:yyMMddHHmmss}";
@@ -114,6 +158,28 @@ public class TestDriveModel : PageModel
         if (string.Equals(PhuongThucThanhToan, "Chuyển khoản", StringComparison.OrdinalIgnoreCase))
         {
             note += $" | TX:{maGiaoDich}";
+        }
+
+        // Defensive checks: ensure referenced FK entities exist to avoid DbUpdateException
+        var dong = await _db.DongXe.FindAsync(MaDong);
+        if (dong == null)
+        {
+            ErrorMessage = "Dòng xe đã chọn không tồn tại trong hệ thống.";
+            return isAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
+        if (showroom == null)
+        {
+            ErrorMessage = "Showroom đã chọn không tồn tại trong hệ thống.";
+            return isAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
+        }
+
+        var taiKhoan = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == userId);
+        if (taiKhoan == null)
+        {
+            ErrorMessage = "Tài khoản không tồn tại trong hệ thống. Vui lòng đăng nhập lại.";
+            return isAjaxSubmit ? new JsonResult(new { success = false, error = ErrorMessage }) : Page();
         }
 
         var lichHen = new LichHenLaiThu
@@ -128,11 +194,31 @@ public class TestDriveModel : PageModel
             GioHen = GioHen,
             TrangThai = "Chờ xác nhận",
             YKienKhachHang = note,
-            MaGiaoDich = maGiaoDich
+            MaGiaoDich = maGiaoDich,
+            DongXe = dong,
+            ChiNhanh = showroom,
+            KhachHang = taiKhoan
         };
 
-        _db.LichHenLaiThu.Add(lichHen);
-        await _db.SaveChangesAsync();
+        try
+        {
+            _db.LichHenLaiThu.Add(lichHen);
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            var innerMessage = ex.InnerException?.Message ?? ex.Message;
+            // Log full exception for diagnostics
+            await _log.LogAsync($"Lỗi khi lưu LichHenLaiThu: {innerMessage} | Exception: {ex}");
+            ErrorMessage = "Không thể lưu lịch hẹn lái thử do dữ liệu không hợp lệ. Vui lòng thử lại.";
+            if (isAjaxSubmit)
+            {
+                return new JsonResult(new { success = false, error = ErrorMessage, detail = innerMessage });
+            }
+
+            ModelState.AddModelError(string.Empty, innerMessage);
+            return Page();
+        }
         await _log.LogAsync($"Đăng ký lái thử: {HoTen} - {SoDienThoai}");
 
         BankName = $"{_sepay.BankAccount} ({_sepay.BankName})";

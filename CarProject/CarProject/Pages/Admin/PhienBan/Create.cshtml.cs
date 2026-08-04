@@ -16,6 +16,10 @@ public class CreateModel : PageModel
     [BindProperty]
     public PhienBanXe PhienBan { get; set; }
 
+    [BindProperty]
+    public List<PhienBanStockInput> StockInputs { get; set; } = new();
+
+    public List<ChiNhanhShowroom> Showrooms { get; set; } = new();
     public SelectList DongList { get; set; }
     public SelectList KhuyenMaiList { get; set; }
 
@@ -31,6 +35,13 @@ public class CreateModel : PageModel
         DongList = new SelectList(dongList, "MaDong", "TenDong");
         var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
         KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe");
+
+        Showrooms = await _db.ChiNhanhShowroom.ToListAsync();
+        StockInputs = Showrooms.Select(c => new PhienBanStockInput
+        {
+            MaChiNhanh = c.MaChiNhanh,
+            SoLuong = 0
+        }).ToList();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -45,11 +56,31 @@ public class CreateModel : PageModel
             DongList = new SelectList(dongList, "MaDong", "TenDong");
             var kmList = await _db.ChuongTrinhKhuyenMai.ToListAsync();
             KhuyenMaiList = new SelectList(kmList, "MaKhuyenMai", "TieuDe");
+            Showrooms = await _db.ChiNhanhShowroom.ToListAsync();
             return Page();
         }
 
+        var totalStock = StockInputs?.Sum(i => i.SoLuong) ?? 0;
+        PhienBan.SoLuongTrongKho = totalStock;
+
         _db.PhienBanXe.Add(PhienBan);
         await _db.SaveChangesAsync();
+
+        if (StockInputs != null)
+        {
+            foreach (var input in StockInputs.Where(i => i.SoLuong > 0 && !string.IsNullOrEmpty(i.MaChiNhanh)))
+            {
+                _db.TonKhoTheoChiNhanh.Add(new TonKhoTheoChiNhanh
+                {
+                    MaPhienBan = PhienBan.MaPhienBan,
+                    MaChiNhanh = input.MaChiNhanh,
+                    SoLuong = input.SoLuong,
+                    NgayCapNhat = DateTime.Now
+                });
+            }
+            await _db.SaveChangesAsync();
+        }
+
         await _log.LogAsync("Admin Thêm phiên bản", $"{PhienBan.TenPhienBan} - {PhienBan.GiaNiemYet:N0} VNĐ");
         TempData["Success"] = $"Đã thêm phiên bản \"{PhienBan.TenPhienBan}\" thành công.";
         return RedirectToPage("Index");

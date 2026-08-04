@@ -109,7 +109,9 @@ public class LichHenLaiThu
     public string GioHen { get; set; }
     public string TrangThai { get; set; }
     public string YKienKhachHang { get; set; }
+    [NotMapped]
     public string? MaGiaoDich { get; set; }
+    [NotMapped]
     public long? SepayTransactionId { get; set; }
 
     [ForeignKey("MaKhachHang")]

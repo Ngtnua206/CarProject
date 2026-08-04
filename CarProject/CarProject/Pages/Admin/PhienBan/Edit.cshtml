@@ -71,15 +71,42 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label asp-for="PhienBan.SoLuongTrongKho" class="form-label">Số Lượng Kho</label>
-                                <input asp-for="PhienBan.SoLuongTrongKho" type="number" class="form-control" />
+                                <label class="form-label">Tồn kho theo showroom</label>
+                                @if (!Model.Showrooms.Any())
+                                {
+                                    <div class="alert alert-warning">Chưa có showroom nào. Vui lòng tạo showroom trước khi cấu hình kho showroom.</div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Showroom</th>
+                                                    <th class="text-end">Số lượng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (var i = 0; i < Model.StockInputs.Count; i++)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <input asp-for="StockInputs[@i].MaChiNhanh" type="hidden" />
+                                                            <input asp-for="StockInputs[@i].MaTonKho" type="hidden" />
+                                                            @Model.Showrooms.FirstOrDefault(s => s.MaChiNhanh == Model.StockInputs[i].MaChiNhanh)?.TenChiNhanh
+                                                        </td>
+                                                        <td>
+                                                            <input asp-for="StockInputs[@i].SoLuong" type="number" min="0" class="form-control form-control-sm text-end" />
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-text">Tổng kho: @Model.StockInputs.Sum(i => i.SoLuong) xe</div>
+                                }
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="PhienBan.DuongDanAnh" class="form-label">Đường Dẫn Ảnh</label>
-                        <input asp-for="PhienBan.DuongDanAnh" class="form-control" />
                     </div>
 
                     <div class="row">
