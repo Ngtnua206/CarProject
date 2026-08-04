@@ -20,31 +20,99 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Nav scroll arrows for desktop
+// Nav menu: centre active link on load, allow wheel-scroll hint
 (function() {
-    var wrap = document.getElementById('navScrollWrap');
-    var leftBtn = document.getElementById('scrollLeft');
-    var rightBtn = document.getElementById('scrollRight');
-    if (!wrap || !leftBtn || !rightBtn) return;
+    var scroll = document.getElementById('navMenuScroll');
+    if (!scroll) return;
 
-    function updateScrollButtons() {
-        var atStart = wrap.scrollLeft <= 2;
-        var atEnd = wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 2;
-        leftBtn.classList.toggle('visible', !atStart);
-        rightBtn.classList.toggle('visible', !atEnd);
+    // Bring the active (current page) link into view when the menu overflows
+    var activeLink = scroll.querySelector('.nav-link.active');
+    if (activeLink) {
+        window.addEventListener('load', function() {
+            if (scroll.scrollWidth > scroll.clientWidth) {
+                var target = activeLink.offsetLeft - (scroll.clientWidth - activeLink.offsetWidth) / 2;
+                scroll.scrollLeft = Math.max(0, Math.min(target, scroll.scrollWidth - scroll.clientWidth));
+            }
+        });
     }
 
-    leftBtn.addEventListener('click', function() {
-        wrap.scrollBy({ left: -250, behavior: 'smooth' });
-        setTimeout(updateScrollButtons, 150);
+    // Vertical wheel over the menu scrolls it horizontally (only when it overflows)
+    scroll.addEventListener('wheel', function(e) {
+        if (scroll.scrollWidth <= scroll.clientWidth) return;   // nothing to scroll
+        // Shift+wheel scrolls vertically in most browsers; translate to horizontal.
+        var delta = e.shiftKey ? (e.deltaY || e.deltaX) : (e.deltaY + e.deltaX);
+        if (!delta) return;
+        var next = scroll.scrollLeft + delta;
+        if (next === scroll.scrollLeft) return;
+        scroll.scrollLeft = Math.max(0, Math.min(next, scroll.scrollWidth - scroll.clientWidth));
+        e.preventDefault();
+    }, { passive: false });
+})();
+
+// "Giới thiệu" dropdown as a body-level portal (avoids clipping by the horizontal scroll container)
+(function() {
+    var trigger = document.getElementById('navAboutItem');
+    var toggle = document.getElementById('navAboutToggle');
+    if (!trigger) return;
+    var menu = trigger.querySelector('.nav-dropdown-menu');
+    if (!menu) return;
+
+    // Move the menu to <body> so the scroll container's overflow can't clip it
+    document.body.appendChild(menu);
+    menu.classList.add('nav-dropdown-fixed');
+
+    var open = false;
+
+    function position() {
+        var r = toggle.getBoundingClientRect();
+        var mw = menu.offsetWidth;
+        var left = r.left + r.width / 2 - mw / 2;
+        left = Math.max(12, Math.min(left, window.innerWidth - mw - 12));
+        menu.style.top = (r.bottom + 6) + 'px';
+        menu.style.left = left + 'px';
+    }
+
+    function show() {
+        position();
+        open = true;
+        menu.classList.add('open');
+    }
+    function hide() {
+        open = false;
+        menu.classList.remove('open');
+    }
+
+    function mouseInsideMenu(e) {
+        return menu.contains(e.relatedTarget);
+    }
+
+    trigger.addEventListener('mousemove', function() { if (!open) show(); });
+    trigger.addEventListener('mouseleave', function(e) { if (!mouseInsideMenu(e)) hide(); });
+    menu.addEventListener('mouseenter', show);
+    menu.addEventListener('mouseleave', hide);
+
+    toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        open ? hide() : show();
     });
-    rightBtn.addEventListener('click', function() {
-        wrap.scrollBy({ left: 250, behavior: 'smooth' });
-        setTimeout(updateScrollButtons, 150);
+
+    // Keep the caret rotation in sync with the open state
+    trigger.addEventListener('mouseenter', function() { trigger.classList.add('hover-open'); });
+    trigger.addEventListener('mouseleave', function(e) { if (!mouseInsideMenu(e)) trigger.classList.remove('hover-open'); });
+    menu.addEventListener('mouseenter', function() { trigger.classList.add('hover-open'); });
+    menu.addEventListener('mouseleave', function() { trigger.classList.remove('hover-open'); });
+    toggle.addEventListener('mouseenter', function() { trigger.classList.add('hover-open'); });
+    toggle.addEventListener('mouseleave', function(e) { if (!mouseInsideMenu(e)) trigger.classList.remove('hover-open'); });
+
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target) && open) hide();
     });
-    wrap.addEventListener('scroll', updateScrollButtons);
-    window.addEventListener('resize', updateScrollButtons);
-    updateScrollButtons();
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && open) hide();
+    });
+    window.addEventListener('resize', function() { if (open) position(); });
+    window.addEventListener('blur', hide);
 })();
 
 // Mobile hamburger toggle
@@ -136,12 +204,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 950);
     });
 })();
-
-// Mobile nav dropdown toggle (Giới thiệu → Về chúng tôi / Liên hệ)
-function toggleMobileDropdown(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.toggle('open');
-}
 
 // Scroll reveal animation (plays on every scroll-down, no reverse when scrolling up)
 (function() {

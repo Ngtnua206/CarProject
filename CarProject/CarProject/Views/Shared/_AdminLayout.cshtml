@@ -15,6 +15,10 @@
     @{
         var userName = User.GetJwtDisplayName() ?? User.GetJwtUserName() ?? "Admin";
         var avatarUrl = User.GetJwtAvatar();
+        var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+        string A(string page) => currentPage == page ? "active" : "";
+        string AFolder(string folder, string page) =>
+            currentPage == page || currentPage.StartsWith(folder + "/") ? "active" : "";
     }
 
     <div class="admin-wrapper">
@@ -27,29 +31,29 @@
 
             <nav class="sidebar-nav">
                 <div class="nav-section">Tổng quan</div>
-                <a asp-page="/Admin/Index" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a asp-page="/Admin/Index" class="nav-item @A("/Admin/Index")"><i class="fas fa-chart-pie"></i> Dashboard</a>
 
                 <div class="nav-section">Quản lý xe</div>
-                <a asp-page="/Admin/HangXe/Index" class="nav-item"><i class="fas fa-car"></i> Hãng xe</a>
-                <a asp-page="/Admin/DongXe/Index" class="nav-item"><i class="fas fa-car-side"></i> Dòng xe</a>
-                <a asp-page="/Admin/PhienBan/Index" class="nav-item"><i class="fas fa-tag"></i> Phiên bản</a>
+                <a asp-page="/Admin/HangXe/Index" class="nav-item @AFolder("/Admin/HangXe", "/Admin/HangXe/Index")"><i class="fas fa-car"></i> Hãng xe</a>
+                <a asp-page="/Admin/DongXe/Index" class="nav-item @AFolder("/Admin/DongXe", "/Admin/DongXe/Index")"><i class="fas fa-car-side"></i> Dòng xe</a>
+                <a asp-page="/Admin/PhienBan/Index" class="nav-item @AFolder("/Admin/PhienBan", "/Admin/PhienBan/Index")"><i class="fas fa-tag"></i> Phiên bản</a>
 
                 <div class="nav-section">Khách hàng</div>
-                <a asp-page="/Admin/Users/Index" class="nav-item"><i class="fas fa-users"></i> Người dùng</a>
-                <a asp-page="/Admin/DonCoc/Index" class="nav-item"><i class="fas fa-file-invoice"></i> Đơn cọc</a>
-                <a asp-page="/Admin/LichHen/Index" class="nav-item"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a>
+                <a asp-page="/Admin/Users/Index" class="nav-item @AFolder("/Admin/Users", "/Admin/Users/Index")"><i class="fas fa-users"></i> Người dùng</a>
+                <a asp-page="/Admin/DonCoc/Index" class="nav-item @AFolder("/Admin/DonCoc", "/Admin/DonCoc/Index")"><i class="fas fa-file-invoice"></i> Đơn cọc</a>
+                <a asp-page="/Admin/LichHen/Index" class="nav-item @AFolder("/Admin/LichHen", "/Admin/LichHen/Index")"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a>
 
                 <div class="nav-section">Tài chính</div>
-                <a asp-page="/Admin/HoaDon/Index" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
-                <a asp-page="/Admin/ThongKe/DoanhThu" class="nav-item"><i class="fas fa-chart-line"></i> Doanh thu</a>
-                <a asp-page="/Admin/ThongKe/Index" class="nav-item"><i class="fas fa-chart-bar"></i> Thống kê</a>
+                <a asp-page="/Admin/HoaDon/Index" class="nav-item @AFolder("/Admin/HoaDon", "/Admin/HoaDon/Index")"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
+                <a asp-page="/Admin/ThongKe/DoanhThu" class="nav-item @A("/Admin/ThongKe/DoanhThu")"><i class="fas fa-chart-line"></i> Doanh thu</a>
+                <a asp-page="/Admin/ThongKe/Index" class="nav-item @A("/Admin/ThongKe/Index")"><i class="fas fa-chart-bar"></i> Thống kê</a>
 
                 <div class="nav-section">Hệ thống</div>
-                <a asp-page="/Admin/ChiNhanh/Index" class="nav-item"><i class="fas fa-building"></i> Chi nhánh</a>
-                <a asp-page="/Admin/KhuyenMai/Index" class="nav-item"><i class="fas fa-gift"></i> Khuyến mãi</a>
-                <a asp-page="/Admin/KenhTuVan/Index" class="nav-item"><i class="fas fa-headset"></i> Kênh tư vấn</a>
-                <a asp-page="/Admin/Logs/Index" class="nav-item"><i class="fas fa-history"></i> Nhật ký</a>
-                <a asp-page="/Admin/Profile" class="nav-item"><i class="fas fa-user-cog"></i> Hồ sơ của tôi</a>
+                <a asp-page="/Admin/ChiNhanh/Index" class="nav-item @AFolder("/Admin/ChiNhanh", "/Admin/ChiNhanh/Index")"><i class="fas fa-building"></i> Chi nhánh</a>
+                <a asp-page="/Admin/KhuyenMai/Index" class="nav-item @AFolder("/Admin/KhuyenMai", "/Admin/KhuyenMai/Index")"><i class="fas fa-gift"></i> Khuyến mãi</a>
+                <a asp-page="/Admin/KenhTuVan/Index" class="nav-item @AFolder("/Admin/KenhTuVan", "/Admin/KenhTuVan/Index")"><i class="fas fa-headset"></i> Kênh tư vấn</a>
+                <a asp-page="/Admin/Logs/Index" class="nav-item @AFolder("/Admin/Logs", "/Admin/Logs/Index")"><i class="fas fa-history"></i> Nhật ký</a>
+                <a asp-page="/Admin/Profile" class="nav-item @A("/Admin/Profile")"><i class="fas fa-user-cog"></i> Hồ sơ của tôi</a>
             </nav>
 
             <div class="sidebar-footer">
