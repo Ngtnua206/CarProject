@@ -49,7 +49,7 @@ public interface ISepayService
 {
     Task<string> GenerateTransactionCodeAsync(int maDonCoc);
     Task<SepayQrResult?> GenerateQrAsync(decimal amount, string orderCode, string description);
-    bool VerifyWebhook(string requestBody, string signatureHeader);
+    bool VerifyWebhook(string requestBody, string signatureHeader, string timestampHeader);
     string ExtractTransactionCode(string content);
 }
 
@@ -118,20 +118,30 @@ public class SepayService : ISepayService
         }
     }
 
-    public bool VerifyWebhook(string requestBody, string signatureHeader)
+    public bool VerifyWebhook(string requestBody, string signatureHeader, string timestampHeader)
     {
         try
         {
             if (string.IsNullOrEmpty(_settings.WebhookSecret))
                 return true;
 
+            if (string.IsNullOrEmpty(signatureHeader))
+                return false;
+
+            // Header dang: sha256={hex_hash}
+            var sig = signatureHeader.Trim();
+            if (sig.StartsWith("sha256=", StringComparison.OrdinalIgnoreCase))
+                sig = sig.Substring(7).Trim();
+
+            // SePay ky: {timestamp}.{raw_body} bang HMAC-SHA256 voi Secret Key
+            var signedString = $"{timestampHeader}.{requestBody}";
             var keyBytes = Encoding.UTF8.GetBytes(_settings.WebhookSecret);
-            var bodyBytes = Encoding.UTF8.GetBytes(requestBody);
+            var bodyBytes = Encoding.UTF8.GetBytes(signedString);
             using var hmac = new HMACSHA256(keyBytes);
             var hash = hmac.ComputeHash(bodyBytes);
             var computed = Convert.ToHexString(hash).ToLower();
 
-            return computed == signatureHeader?.ToLower();
+            return computed == sig.ToLower();
         }
         catch
         {

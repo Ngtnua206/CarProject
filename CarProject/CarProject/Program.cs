@@ -823,7 +823,8 @@ try
             var body = await reader.ReadToEndAsync();
 
             var signature = ctx.Request.Headers["X-SePay-Signature"].FirstOrDefault() ?? "";
-            if (!sepay.VerifyWebhook(body, signature))
+            var timestamp = ctx.Request.Headers["X-SePay-Timestamp"].FirstOrDefault() ?? "";
+            if (!sepay.VerifyWebhook(body, signature, timestamp))
                 return Results.Json(new { success = false, message = "Invalid signature" }, statusCode: 400);
 
             var data = System.Text.Json.JsonSerializer.Deserialize<CarProject.Services.SepayWebhookData>(body);
