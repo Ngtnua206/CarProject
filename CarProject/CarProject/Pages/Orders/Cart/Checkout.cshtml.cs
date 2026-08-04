@@ -111,7 +111,7 @@ public class CheckoutModel : PageModel
         }
 
         var userName = User.GetJwtUserName();
-        var groupCode = $"MLC{DateTime.Now:yyMMddHHmmss}";
+        var groupCode = $"DH{DateTime.Now:yyMMddHHmmss}";
 
         // Áp dụng số lượng người dùng đã chọn
         foreach (var item in CartItems)

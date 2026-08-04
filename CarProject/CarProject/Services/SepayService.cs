@@ -74,7 +74,7 @@ public class SepayService : ISepayService
 
     public async Task<string> GenerateTransactionCodeAsync(int maDonCoc)
     {
-        var code = $"MLC{maDonCoc:D6}{DateTime.Now:yyMMddHHmm}";
+        var code = $"DH{maDonCoc:D6}{DateTime.Now:yyMMddHHmm}";
         return await Task.FromResult(code);
     }
 

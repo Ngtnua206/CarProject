@@ -239,7 +239,7 @@ public class DepositFormModel : PageModel
             .GroupBy(t => (t.MaPhienBan, t.MaChiNhanh))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.SoLuong));
 
-        var maGiaoDich = $"MLC{DateTime.Now:yyMMddHHmmss}{Dong.MaDong}";
+        var maGiaoDich = $"DH{DateTime.Now:yyMMddHHmmss}{Dong.MaDong}";
         var deposit = new DonDatCoc
         {
             MaKhachHang = User.GetJwtUserName() ?? "",
