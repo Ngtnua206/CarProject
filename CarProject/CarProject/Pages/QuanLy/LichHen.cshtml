@@ -12,6 +12,8 @@
     .badge-confirmed { background: #d1fae5; color: #065f46; }
     .badge-rejected { background: #fee2e2; color: #991b1b; }
     .badge-done { background: #e0e7ff; color: #3730a3; }
+    .badge-sold { background: #d1fae5; color: #065f46; }
+    .badge-not-sold { background: #fee2e2; color: #991b1b; }
 </style>
 
 <div class="ql-header">
@@ -83,6 +85,12 @@
                                         case "Hoàn thành":
                                             <span class="badge badge-done">Hoàn thành</span>
                                             break;
+                                        case "Hoàn thành - Bán":
+                                            <span class="badge badge-sold">Hoàn thành - Bán</span>
+                                            break;
+                                        case "Hoàn thành - Không bán":
+                                            <span class="badge badge-not-sold">Hoàn thành - Không bán</span>
+                                            break;
                                         default:
                                             <span class="badge bg-secondary">@l.TrangThai</span>
                                             break;
@@ -102,9 +110,15 @@
                                     }
                                     else if (l.TrangThai == "Đã xác nhận")
                                     {
+                                        <form method="post" asp-page-handler="Complete" style="display:inline; margin-right: 0.25rem;">
+                                            <input type="hidden" name="maLichHen" value="@l.MaLichHen" />
+                                            <input type="hidden" name="daBan" value="true" />
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-tag"></i> Bán</button>
+                                        </form>
                                         <form method="post" asp-page-handler="Complete" style="display:inline">
                                             <input type="hidden" name="maLichHen" value="@l.MaLichHen" />
-                                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check-double"></i> Hoàn tất</button>
+                                            <input type="hidden" name="daBan" value="false" />
+                                            <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-times-circle"></i> Không bán</button>
                                         </form>
                                     }
                                 </td>

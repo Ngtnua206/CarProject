@@ -15,12 +15,14 @@ public class TestDriveModel : PageModel
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
     private readonly SepaySettings _sepay;
+    private readonly CarProject.Services.INotificationService _notification;
 
-    public TestDriveModel(AppDbContext db, IActivityLogService log, IOptions<SepaySettings> sepay)
+    public TestDriveModel(AppDbContext db, IActivityLogService log, IOptions<SepaySettings> sepay, CarProject.Services.INotificationService notification)
     {
         _db = db;
         _log = log;
         _sepay = sepay.Value;
+        _notification = notification;
     }
 
     [BindProperty]
@@ -220,6 +222,27 @@ public class TestDriveModel : PageModel
             return Page();
         }
         await _log.LogAsync($"Đăng ký lái thử: {HoTen} - {SoDienThoai}");
+
+        // Notify showroom manager (if assigned)
+        try
+        {
+            var manager = showroom?.MaQuanLy;
+            if (!string.IsNullOrEmpty(manager))
+            {
+                var title = "Yêu cầu lái thử mới";
+                var content = $"Khách: {HoTen} ({SoDienThoai}) đã đặt lái thử {dong.TenDong} vào {NgayHen:yyyy-MM-dd} {GioHen}. Vui lòng kiểm tra và chấp nhận.";
+                var link = $"/Admin/Showroom/Bookings?ma={lichHen.MaLichHen}";
+                await _notification.SendAsync(manager, title, content, link);
+            }
+            // Also create a user notification
+            var userNotifTitle = "Đơn đặt lái thử đã được ghi nhận";
+            var userContent = SuccessMessage ?? "Chúng tôi đã ghi nhận yêu cầu lái thử của bạn.";
+            await _notification.SendAsync(taiKhoan.TenDangNhap, userNotifTitle, userContent, "/Profile");
+        }
+        catch
+        {
+            // Do not block main flow on notification errors
+        }
 
         BankName = $"{_sepay.BankAccount} ({_sepay.BankName})";
         BankNumber = _sepay.BankNumber;

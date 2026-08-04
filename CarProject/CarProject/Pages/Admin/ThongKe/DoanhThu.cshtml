@@ -141,27 +141,40 @@
         Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
         Chart.defaults.scale.grid.color = 'rgba(255,255,255,0.06)';
 
-        // Line chart
+        // Line chart with sales + deposit series
         const labels = @Html.Raw(Model.JsonLabels);
-        const data = @Html.Raw(Model.JsonData);
+        const dataObj = @Html.Raw(Model.JsonData);
+        const salesData = dataObj.sales || [];
+        const depositData = dataObj.deposits || [];
         new Chart(document.getElementById('revenueChart'), {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Doanh thu (VNĐ)',
-                    data: data,
-                    borderColor: '#74c0fc',
-                    backgroundColor: 'rgba(13, 110, 253, 0.15)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3
-                }]
+                datasets: [
+                    {
+                        label: 'Doanh thu bán xe (VNĐ)',
+                        data: salesData,
+                        borderColor: '#74c0fc',
+                        backgroundColor: 'rgba(13, 110, 253, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Tiền cọc (VNĐ)',
+                        data: depositData,
+                        borderColor: '#ffd43b',
+                        backgroundColor: 'rgba(255, 193, 7, 0.12)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { legend: { display: true } },
                 scales: {
                     y: {
                         beginAtZero: true,

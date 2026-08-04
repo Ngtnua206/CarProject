@@ -68,14 +68,8 @@ public class LichHenModel : PageModel
             return RedirectToPage();
         }
 
-        var wasPending = lichHen.TrangThai == "Chờ xác nhận";
         lichHen.TrangThai = "Đã xác nhận";
         await _db.SaveChangesAsync();
-
-        if (wasPending)
-        {
-            await CapNhatDoanhThuLaiThuAsync(lichHen);
-        }
 
         await _notif.SendAsync(lichHen.MaKhachHang, "Lịch lái thử đã được xác nhận",
             $"Lịch lái thử xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã được xác nhận.", "/TestDrive");
@@ -85,9 +79,8 @@ public class LichHenModel : PageModel
         return RedirectToPage();
     }
 
-    private async Task CapNhatDoanhThuLaiThuAsync(LichHenLaiThu lichHen)
+    private async Task CapNhatDoanhThuLaiThuAsync(LichHenLaiThu lichHen, bool daBan)
     {
-        const long bookingRevenue = 1_000_000;
         var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
 
         var thongKe = await _db.ThongKeTongHop_Boss
@@ -99,23 +92,26 @@ public class LichHenModel : PageModel
             {
                 KyBaoCao = kyBaoCao,
                 MaChiNhanh = lichHen.MaChiNhanh,
-                TongDoanhThu = bookingRevenue,
+                TongDoanhThu = 0,
                 TongTienCocThuVe = 0,
-                TongSoXeDaBan = 0,
+                TongSoXeDaBan = daBan ? 1 : 0,
                 SoDonCocBiHuy = 0,
-                TongLuotXemWeb = 0,
                 TongLuotLaiThu = 1,
-                MaDongXeBanChayNhat = lichHen.MaDong
+                TongLuotXemWeb = 0,
+                MaDongXeBanChayNhat = daBan ? lichHen.MaDong : 0
             };
             _db.ThongKeTongHop_Boss.Add(thongKe);
         }
         else
         {
-            thongKe.TongDoanhThu += bookingRevenue;
             thongKe.TongLuotLaiThu += 1;
-            if (thongKe.MaDongXeBanChayNhat == 0)
+            if (daBan)
             {
-                thongKe.MaDongXeBanChayNhat = lichHen.MaDong;
+                thongKe.TongSoXeDaBan += 1;
+                if (thongKe.MaDongXeBanChayNhat == 0)
+                {
+                    thongKe.MaDongXeBanChayNhat = lichHen.MaDong;
+                }
             }
         }
 
@@ -153,7 +149,7 @@ public class LichHenModel : PageModel
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostCompleteAsync(int maLichHen)
+    public async Task<IActionResult> OnPostCompleteAsync(int maLichHen, bool daBan = false)
     {
         var userName = User.GetJwtUserName();
         if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
@@ -173,12 +169,19 @@ public class LichHenModel : PageModel
             return RedirectToPage();
         }
 
-        lichHen.TrangThai = "Hoàn thành";
+        if (lichHen.TrangThai != "Đã xác nhận")
+        {
+            ErrorMessage = "Chỉ có thể hoàn thành lịch hẹn đã được xác nhận.";
+            return RedirectToPage();
+        }
+
+        lichHen.TrangThai = daBan ? "Hoàn thành - Bán" : "Hoàn thành - Không bán";
+        await CapNhatDoanhThuLaiThuAsync(lichHen, daBan);
         await _db.SaveChangesAsync();
 
-        await _log.LogAsync($"QL hoàn thành lịch hẹn #{maLichHen}");
+        await _log.LogAsync($"QL hoàn thành lịch hẹn #{maLichHen} - {(daBan ? "Bán" : "Không bán")}");
 
-        SuccessMessage = "Đã đánh dấu hoàn thành.";
+        SuccessMessage = daBan ? "Đã hoàn thành lịch hẹn và đánh dấu bán." : "Đã hoàn thành lịch hẹn (không bán).";
         return RedirectToPage();
     }
 }

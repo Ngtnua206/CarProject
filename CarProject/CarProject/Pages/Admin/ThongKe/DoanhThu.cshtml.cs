@@ -74,7 +74,25 @@ public class DoanhThuModel : PageModel
         }
 
         JsonLabels = JsonSerializer.Serialize(labels);
-        JsonData = JsonSerializer.Serialize(values);
+
+        // Include deposit (cọc) daily series alongside sales revenue
+        var depositData = await _db.DonDatCoc
+            .Where(d => d.NgayTaoDon >= TuNgay.Value && d.NgayTaoDon <= DenNgay.Value.AddDays(1)
+                && (string.IsNullOrEmpty(MaChiNhanh) || d.MaChiNhanh == MaChiNhanh)
+                && d.TrangThaiThanhToan == "Đã thanh toán")
+            .GroupBy(d => d.NgayTaoDon.Date)
+            .Select(g => new { Ngay = g.Key, Tong = g.Sum(d => d.SoTienCoc) })
+            .ToListAsync();
+
+        var depositDict = depositData.ToDictionary(d => d.Ngay, d => (long?)d.Tong ?? 0);
+        var depositValues = new List<long>();
+        for (var date = TuNgay.Value.Date; date <= DenNgay.Value.Date; date = date.AddDays(1))
+        {
+            depositValues.Add(depositDict.GetValueOrDefault(date, 0));
+        }
+
+        // Serialize an object with two series: sales and deposits
+        JsonData = JsonSerializer.Serialize(new { sales = values, deposits = depositValues });
 
         // Totals
         TongDoanhThu = await query.SumAsync(h => (long?)h.TongTienPhaiTra) ?? 0;

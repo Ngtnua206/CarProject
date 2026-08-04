@@ -400,6 +400,104 @@ try
         }
         catch (Exception ex)
         {
+            var logPath = Path.Combine(Path.GetTempPath(), "avatar_admin_error.log");
+            System.IO.File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
+    // Manager: accept a test-drive booking
+    app.MapPost("/api/testdrive/accept", async (HttpContext ctx) =>
+    {
+        var role = ctx.User.GetJwtRole();
+        if (string.IsNullOrEmpty(role) || !(role == "Admin" || role == "Quản Lý"))
+            return Results.Unauthorized();
+
+        var db = ctx.RequestServices.GetRequiredService<CarProject.Data.AppDbContext>();
+        var notif = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
+
+        try
+        {
+            var payload = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            if (!payload.TryGetProperty("maLichHen", out var idProp)) return Results.BadRequest(new { success = false, error = "Missing maLichHen" });
+            var ma = idProp.GetInt32();
+            var lich = await db.LichHenLaiThu.FindAsync(ma);
+            if (lich == null) return Results.Ok(new { success = false, error = "Booking not found" });
+
+            lich.TrangThai = "Đã chấp nhận";
+            await db.SaveChangesAsync();
+
+            // Notify user
+            var title = "Yêu cầu lái thử đã được chấp nhận";
+            var content = $"Đơn lái thử của bạn (ID {lich.MaLichHen}) đã được showroom chấp nhận. Vui lòng đến theo lịch.";
+            await notif.SendAsync(lich.MaKhachHang, title, content, "/Profile");
+
+            return Results.Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error accepting test drive");
+            return Results.Ok(new { success = false, error = ex.Message });
+        }
+    });
+
+    // Manager: mark test-drive as completed and update showroom stats
+    app.MapPost("/api/testdrive/complete", async (HttpContext ctx) =>
+    {
+        var role = ctx.User.GetJwtRole();
+        if (string.IsNullOrEmpty(role) || !(role == "Admin" || role == "Quản Lý"))
+            return Results.Unauthorized();
+
+        var db = ctx.RequestServices.GetRequiredService<CarProject.Data.AppDbContext>();
+        var notif = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
+
+        try
+        {
+            var payload = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            if (!payload.TryGetProperty("maLichHen", out var idProp)) return Results.BadRequest(new { success = false, error = "Missing maLichHen" });
+            var ma = idProp.GetInt32();
+            var lich = await db.LichHenLaiThu.FindAsync(ma);
+            if (lich == null) return Results.Ok(new { success = false, error = "Booking not found" });
+
+            lich.TrangThai = "Hoàn thành";
+
+            // Update monthly showroom statistics
+            var ky = DateTime.Now.ToString("yyyy-MM");
+            var thongKe = await db.ThongKeTongHop_Boss.FirstOrDefaultAsync(t => t.KyBaoCao == ky && t.MaChiNhanh == lich.MaChiNhanh);
+            if (thongKe == null)
+            {
+                thongKe = new CarProject.Models.ThongKeTongHop_Boss
+                {
+                    KyBaoCao = ky,
+                    MaChiNhanh = lich.MaChiNhanh,
+                    TongDoanhThu = 0,
+                    TongTienCocThuVe = 0,
+                    TongSoXeDaBan = 0,
+                    SoDonCocBiHuy = 0,
+                    TongLuotXemWeb = 0,
+                    TongLuotLaiThu = 1,
+                    MaDongXeBanChayNhat = lich.MaDong
+                };
+                db.ThongKeTongHop_Boss.Add(thongKe);
+            }
+            else
+            {
+                thongKe.TongLuotLaiThu += 1;
+            }
+
+            await db.SaveChangesAsync();
+
+            // Notify user
+            var title = "Lịch lái thử đã hoàn thành";
+            var content = $"Đơn lái thử (ID {lich.MaLichHen}) đã được đánh dấu hoàn thành. Cảm ơn bạn đã tham gia.";
+            await notif.SendAsync(lich.MaKhachHang, title, content, "/Profile");
+
+            return Results.Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error completing test drive");
             return Results.Ok(new { success = false, error = ex.Message });
         }
     });
