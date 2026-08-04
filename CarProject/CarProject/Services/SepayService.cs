@@ -141,11 +141,7 @@ public class SepayService : ISepayService
     {
         if (string.IsNullOrEmpty(content)) return "";
 
-        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)(\d{6})");
-        if (match.Success)
-            return match.Value;
-
-        match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)\d{6}\d{12}");
+        var match = System.Text.RegularExpressions.Regex.Match(content, @"(MGC|DH|MLC)\d{6,}");
         if (match.Success)
             return match.Value;
 

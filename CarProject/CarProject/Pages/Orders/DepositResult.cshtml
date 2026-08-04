@@ -82,7 +82,11 @@
                 <span class="value">#@Model.MaDonCoc</span>
             </div>
             <div class="row-line">
-                <span class="label">Số tiền đặt cọc</span>
+                <span class="label">Tổng tiền gốc</span>
+                <span class="value">@Model.TongTienGocStr</span>
+            </div>
+            <div class="row-line">
+                <span class="label">Tổng tiền đặt cọc @Model.CocRateText</span>
                 <span class="value" style="color: var(--brand-gold); font-size: 1.1rem;">@Model.SoTienCocStr</span>
             </div>
             <div class="row-line">
@@ -118,6 +122,14 @@
                 <span class="label">Ngân hàng</span>
                 <span class="value">@Model.BankName</span>
             </div>
+            @if (Model.ShowQr)
+            {
+                <div style="display:flex;justify-content:center;margin:0.8rem 0 0.6rem;">
+                    <div style="background:white;border-radius:12px;padding:8px;display:inline-block;">
+                        <img src="@Model.QrImageUrl" alt="QR thanh toán" style="width:200px;height:200px;border-radius:8px;" />
+                    </div>
+                </div>
+            }
             <div class="row-line">
                 <span class="label">Số tài khoản</span>
                 <span class="value" style="font-size: 1rem;">@Model.BankNumber</span>

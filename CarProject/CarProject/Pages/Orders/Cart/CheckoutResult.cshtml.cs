@@ -18,6 +18,8 @@ public class CheckoutResultModel : PageModel
     public int SoLuongXe { get; set; }
     public decimal TotalDeposit { get; set; }
     public string TotalDepositStr { get; set; } = "";
+    public string TongTienGocStr { get; set; } = "";
+    public string CocRateText { get; set; } = "20%";
     public string PhuongThucThanhToan { get; set; } = "";
     public List<int> MaDonCocs { get; set; } = new();
     public string MaGiaoDich { get; set; } = "";
@@ -66,6 +68,14 @@ public class CheckoutResultModel : PageModel
             PhuongThucThanhToan = don.PhuongThucThanhToan ?? "Chuyển khoản";
             MaGiaoDich = don.MaGiaoDich ?? "";
             MaDonCocs = new List<int> { don.MaDonCoc };
+            if (don.PhienBan != null)
+            {
+                var tongGoc = (long)don.PhienBan.GiaNiemYet;
+                TongTienGocStr = tongGoc >= 1_000_000_000
+                    ? $"{tongGoc / 1_000_000_000:N2} tỷ VNĐ"
+                    : $"{tongGoc / 1_000_000:N0} triệu VNĐ";
+                CocRateText = don.PhienBan.SoLuongTrongKho <= 0 ? "15%" : "20%";
+            }
         }
         else
         {
@@ -82,10 +92,8 @@ public class CheckoutResultModel : PageModel
 
         if (PhuongThucThanhToan == "Chuyển khoản" && !string.IsNullOrEmpty(MaGiaoDich))
         {
-            var bin = "970436";
-            var encodedInfo = Uri.EscapeDataString(MaGiaoDich);
-            var encodedName = Uri.EscapeDataString(_sepay.AccountName);
-            QrImageUrl = $"https://img.vietqr.io/image/{bin}-{_sepay.BankNumber}-compact2.jpg?amount=10000&addInfo={encodedInfo}&accountName={encodedName}";
+            var bin = "970422";
+            QrImageUrl = CarProject.Services.VietQr.BuildDataUri(bin, _sepay.BankNumber, 10000, MaGiaoDich);
             ShowQr = true;
         }
 

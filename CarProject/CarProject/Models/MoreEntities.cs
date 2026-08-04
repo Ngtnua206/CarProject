@@ -22,7 +22,8 @@ namespace CarProject.Models;
     public string? SoDienThoai { get; set; }
     public string? DiaChi { get; set; }
     public string? MaGiaoDich { get; set; }
-    public string? SepayTransactionId { get; set; }
+    public long? SepayTransactionId { get; set; }
+    public bool DaTinhDoanhThu { get; set; }
 
     [ForeignKey("MaKhachHang")]
     public TaiKhoan? KhachHang { get; set; }
@@ -37,6 +38,7 @@ namespace CarProject.Models;
     public ChiNhanhShowroom? ChiNhanh { get; set; }
 
     public ICollection<DonDatCocChiTiet> ChiTiets { get; set; } = new List<DonDatCocChiTiet>();
+    public ICollection<PhieuNhapXe> PhieuNhaps { get; set; } = new List<PhieuNhapXe>();
 }
 
 public class DonDatCocChiTiet
@@ -51,6 +53,10 @@ public class DonDatCocChiTiet
     public string? LyDoTuChoi { get; set; }
     public string? NguoiPhanHoi { get; set; }
     public DateTime? NgayPhanHoi { get; set; }
+    public decimal SoTienCocPhanBo { get; set; }
+    public int SoLuongThieu { get; set; }
+    public long SoTienNhapMoiXe { get; set; }
+    public bool DaNhapKho { get; set; }
 
     [ForeignKey("MaDonCoc")]
     public DonDatCoc? DonDatCoc { get; set; }
@@ -249,11 +255,34 @@ public class TonKhoTheoChiNhanh
     public ChiNhanhShowroom ChiNhanh { get; set; }
 }
 
+public class PhieuNhapXe
+{
+    [Key]
+    public int MaPhieuNhap { get; set; }
+    public int MaDonCoc { get; set; }
+    public int MaPhienBan { get; set; }
+    public string MaChiNhanh { get; set; }
+    public int SoLuongNhap { get; set; }
+    public long SoTienNhapMoiXe { get; set; }
+    public long TongSoTienNhap { get; set; }
+    public string NguoiNhap { get; set; }
+    public DateTime NgayNhap { get; set; }
+    public string? GhiChu { get; set; }
+
+    [ForeignKey("MaDonCoc")]
+    public DonDatCoc DonDatCoc { get; set; }
+
+    [ForeignKey("MaPhienBan")]
+    public PhienBanXe PhienBan { get; set; }
+
+    [ForeignKey("MaChiNhanh")]
+    public ChiNhanhShowroom ChiNhanh { get; set; }
+}
+
 public class GioHang
 {
     [Key]
-    public int MaGioHang { get; set; }
-    public string MaTaiKhoan { get; set; }
+    public int MaGioHang { get; set; }    public string MaTaiKhoan { get; set; }
     public int MaPhienBan { get; set; }
     public int SoLuong { get; set; }
     public DateTime NgayTao { get; set; }

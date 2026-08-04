@@ -30,6 +30,7 @@ public class EditModel : PageModel
         DonCoc = await _db.DonDatCoc
             .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
             .Include(d => d.ChiTiets).ThenInclude(c => c.ChiNhanh)
+            .Include(d => d.PhieuNhaps)
             .FirstOrDefaultAsync(d => d.MaDonCoc == id);
         if (DonCoc == null)
             return NotFound();
@@ -65,5 +66,76 @@ public class EditModel : PageModel
         await _db.SaveChangesAsync();
         await _log.LogAsync("Admin Sửa đơn cọc", $"Mã đơn={DonCoc.MaDonCoc}, tiền={DonCoc.SoTienCoc:N0}");
         return RedirectToPage("Index");
+    }
+
+    // ----- Nhập xe vào showroom cho đơn (popup nhập hàng) -----
+    public async Task<IActionResult> OnPostNhapXeAsync(int maChiTiet, int soLuongNhap, long soTienNhapMoiXe, string? ghiChu)
+    {
+        var chiTiet = await _db.DonDatCocChiTiet
+            .Include(c => c.PhienBan)
+            .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet);
+        if (chiTiet == null) return NotFound();
+
+        if (soLuongNhap <= 0)
+        {
+            TempData["Error"] = "Số lượng xe nhập phải lớn hơn 0.";
+            return RedirectToPage(new { id = chiTiet.MaDonCoc });
+        }
+
+        var maDonCoc = chiTiet.MaDonCoc;
+        var maChiNhanh = chiTiet.MaChiNhanh ?? "";
+
+        // 1. Tăng tồn kho của showroom nguồn
+        var tonKho = await _db.TonKhoTheoChiNhanh
+            .FirstOrDefaultAsync(t => t.MaPhienBan == chiTiet.MaPhienBan && t.MaChiNhanh == maChiNhanh);
+        if (tonKho == null)
+        {
+            tonKho = new TonKhoTheoChiNhanh
+            {
+                MaPhienBan = chiTiet.MaPhienBan,
+                MaChiNhanh = maChiNhanh,
+                SoLuong = soLuongNhap,
+                NgayCapNhat = DateTime.Now
+            };
+            _db.TonKhoTheoChiNhanh.Add(tonKho);
+        }
+        else
+        {
+            tonKho.SoLuong += soLuongNhap;
+            tonKho.NgayCapNhat = DateTime.Now;
+        }
+
+        // 2. Tăng tồn kho tổng của phiên bản
+        if (chiTiet.PhienBan != null)
+        {
+            chiTiet.PhienBan.SoLuongTrongKho += soLuongNhap;
+        }
+
+        // 3. Ghi phiếu nhập hàng
+        _db.PhieuNhapXe.Add(new PhieuNhapXe
+        {
+            MaDonCoc = maDonCoc,
+            MaPhienBan = chiTiet.MaPhienBan,
+            MaChiNhanh = maChiNhanh,
+            SoLuongNhap = soLuongNhap,
+            SoTienNhapMoiXe = soTienNhapMoiXe,
+            TongSoTienNhap = soLuongNhap * soTienNhapMoiXe,
+            NguoiNhap = User.GetJwtUserName() ?? "admin",
+            NgayNhap = DateTime.Now,
+            GhiChu = ghiChu
+        });
+
+        // 4. Cập nhật chi tiết đơn
+        chiTiet.DaNhapKho = true;
+        chiTiet.SoTienNhapMoiXe = soTienNhapMoiXe;
+        chiTiet.SoLuongThieu = Math.Max(0, chiTiet.SoLuongThieu - soLuongNhap);
+
+        await _db.SaveChangesAsync();
+
+        await _log.LogAsync("Admin nhập xe vào showroom",
+            $"Đơn #{maDonCoc}, chi tiết #{maChiTiet}, nhập {soLuongNhap} xe vào {maChiNhanh}, giá {soTienNhapMoiXe:N0}đ/xe");
+
+        TempData["Success"] = $"Đã nhập {soLuongNhap} xe vào showroom với giá {soTienNhapMoiXe:N0}đ/xe.";
+        return RedirectToPage(new { id = maDonCoc });
     }
 }

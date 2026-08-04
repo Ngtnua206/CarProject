@@ -77,6 +77,18 @@
             <div class="ql-card">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
+                        <div class="stat-label">Tiền cọc thu về tháng này</div>
+                        <div class="stat-value" style="color:#2a9d8f;">@Model.DoanhThuCocThangNay.ToString("N0")₫</div>
+                        <small class="text-muted">20%/15% cọc theo từng xe</small>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="ql-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
                         <div class="stat-label">Tổng đơn đã xử lý</div>
                         <div class="stat-value">@Model.TongDon</div>
                         <small class="text-muted">từ trước đến nay</small>

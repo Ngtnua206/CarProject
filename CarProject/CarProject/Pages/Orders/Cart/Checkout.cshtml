@@ -2,6 +2,9 @@
 @model CarProject.Pages.Orders.Cart.CheckoutModel
 @{
     ViewData["Title"] = "Xác nhận đặt cọc";
+    var cocRateText = (Model.CartItems.GroupBy(c => c.SoLuongTrongKho <= 0 ? "15%" : "20%").Count() == 1
+        ? Model.CartItems.Any(c => c.SoLuongTrongKho <= 0) ? "15%" : "20%"
+        : "15%/20%");
 }
 
 <div class="deposit-page">
@@ -35,45 +38,22 @@
                                         <div style="font-size: 0.75rem; color: var(--text-faint);">@item.TenDong - @item.MauSac</div>
                                     </div>
                                     <div style="text-align:right;flex-shrink:0;">
-                                        <div style="font-weight: 700; color: var(--brand-gold); font-size: 0.9rem;">
-                                            @{
-                                                var lineTotal = item.SoTienCoc * item.SoLuong;
-                                            }
-                                            @(lineTotal >= 1_000_000_000
-                                                ? $"{lineTotal / 1_000_000_000:N1} tỷ"
-                                                : $"{lineTotal / 1_000_000:N0} triệu")
-                                        </div>
-                                        <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ / xe @(isPreOrder ? "(15% cọc)" : "(20% cọc)")</div>
+                                        @{
+                                            var priceTotal = (long)item.GiaNiemYet * item.SoLuong;
+                                            var lineTotal = item.SoTienCoc * item.SoLuong;
+                                            var rate = isPreOrder ? "15%" : "20%";
+                                            var fmtT = (decimal v) => v >= 1_000_000_000 ? $"{v / 1_000_000_000:N2} tỷ" : $"{v / 1_000_000:N0} triệu";
+                                        }
+                                        <div style="font-size:0.68rem;color: var(--text-faint);">Giá gốc: @(item.GiaNiemYet >= 1_000_000_000 ? $"{item.GiaNiemYet / 1_000_000_000:N2} tỷ" : $"{item.GiaNiemYet / 1_000_000:N0} triệu") @(item.SoLuong > 1 ? $"x {item.SoLuong}" : "")</div>
+                                        <div style="font-size:0.72rem;color: var(--text-faint);">Tổng giá gốc: @fmtT(priceTotal)</div>
+                                        <div style="font-weight: 700; color: var(--brand-gold); font-size: 0.9rem;">Cọc @rate: @fmtT(lineTotal)</div>
+                                        <div style="font-size:0.68rem;color: var(--text-faint);">@item.SoTienCoc.ToString("N0")đ / xe @(isPreOrder ? "(15% cọc)" : "(20% cọc)")@(item.SoLuong > 1 ? $" x{item.SoLuong}" : "")</div>
                                     </div>
                                 </div>
                                 <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <label style="font-size: 0.72rem; color: var(--text-muted);">Số lượng:</label>
                                     <input type="number" name="QuantityInput[@item.MaPhienBan]" value="@item.SoLuong" min="1" max="@(isPreOrder ? 10 : item.SoLuong)"
                                            class="form-control" style="width: 70px; font-size: 0.82rem; padding: 0.25rem 0.5rem;" />
-                                </div>
-                                <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <label style="font-size: 0.72rem; color: var(--text-muted); flex-shrink:0;">Showroom khả dụng:</label>
-                                    <select name="SourceChiNhanh[@item.MaPhienBan]" class="form-control" style="font-size: 0.82rem; padding: 0.25rem 0.5rem;">
-                                        <option value="">-- Ưu tiên showroom hẹn gặp --</option>
-                                        @if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tkList) && tkList.Any())
-                                        {
-                                            foreach (var tk in tkList)
-                                            {
-                                                var avail = Model.TonKhoConLaiLut.TryGetValue((item.MaPhienBan, tk.MaChiNhanh), out var a) ? a : tk.SoLuong;
-                                                if (avail <= 0) continue;
-                                                <option value="@tk.MaChiNhanh" selected="@(Model.SourceChiNhanh.TryGetValue(item.MaPhienBan, out var v) && v == tk.MaChiNhanh)">
-                                                    @tk.ChiNhanh?.TenChiNhanh (còn @avail)
-                                                </option>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            foreach (var cn in Model.DanhSachChiNhanh)
-                                            {
-                                                <option value="@cn.MaChiNhanh">@cn.TenChiNhanh</option>
-                                            }
-                                        }
-                                    </select>
                                 </div>
                                 @if (isPreOrder)
                                 {
@@ -96,8 +76,17 @@
                             </div>
                         }
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.08);">
-                        <span style="color: var(--text-muted);">Tổng tiền cọc</span>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 0.3rem;">
+                        <span style="color: var(--text-muted);">Tổng tiền gốc (@Model.CartItems.Sum(c => c.SoLuong) xe)</span>
+                        <span style="font-weight: 600; color: var(--brand-gold); font-size: 1rem;">
+                            @{
+                                var totalGoc = Model.CartItems.Sum(c => (long)c.GiaNiemYet * c.SoLuong);
+                            }
+                            @(totalGoc >= 1_000_000_000
+                                ? $"{totalGoc / 1_000_000_000:N2} tỷ"
+                                : $"{totalGoc / 1_000_000:N0} triệu") VNĐ
+                        </span>
+                        <span style="color: var(--text-muted);">Tổng tiền cọc @cocRateText</span>
                         <span style="font-weight: 700; color: var(--brand-gold); font-size: 1.2rem;">
                             @(Model.TotalDeposit >= 1_000_000_000
                                 ? $"{Model.TotalDeposit / 1_000_000_000:N2} tỷ"
@@ -183,7 +172,7 @@
 
                         <div class="d-flex gap-3 mt-4">
                             <button type="submit" class="btn-premium btn-premium-solid" style="flex: 1; justify-content: center; padding: 0.7rem;">
-                                <i class="fas fa-check"></i> Xác nhận đặt cọc (@Model.CartItems.Count xe)
+                                <i class="fas fa-check"></i> Xác nhận đặt cọc @cocRateText
                             </button>
                             <a asp-page="/Orders/Cart/Index" class="btn-premium btn-premium-outline" style="flex: 0 0 auto; padding: 0.7rem 1.5rem;">
                                 Quay lại
@@ -249,7 +238,8 @@
             '<div style="background:white;border-radius:12px;padding:8px;display:inline-block;margin-bottom:0.8rem;">' +
             '<img src="' + data.qrUrl + '" alt="QR" style="width:200px;height:200px;border-radius:8px;" /></div>' +
             '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.8rem;font-size:0.78rem;">' +
-            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
+            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Tổng tiền gốc</span><span style="color:var(--brand-white);">' + formatMoney(data.tongTienGoc) + '</span></div>' +
+            '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Số tiền cọc (' + (data.cocRateText || '20%') + ')</span><span style="color:var(--brand-gold);font-weight:700;">' + formatMoney(data.soTienCoc) + '</span></div>' +
             '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Ngân hàng</span><span style="color:var(--brand-white);">' + data.bankName + '</span></div>' +
             '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">STK</span><span style="color:var(--brand-white);font-weight:700;">' + data.bankNumber + '</span></div>' +
             '<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:var(--text-muted);">Nội dung CK</span><span style="font-family:monospace;background:rgba(255,255,255,0.05);padding:0.1rem 0.3rem;border-radius:4px;color:var(--brand-gold);">' + data.maGiaoDich + '</span></div>' +
@@ -287,7 +277,7 @@
     }
 
     function formatMoney(n) {
-        if (n >= 1000000000) return (n / 1000000000).toFixed(1) + ' tỷ VNĐ';
+        if (n >= 1000000000) return (n / 1000000000).toFixed(2) + ' tỷ VNĐ';
         if (n >= 1000000) return (n / 1000000).toFixed(0) + ' triệu VNĐ';
         return n.toLocaleString('vi-VN') + ' VNĐ';
     }

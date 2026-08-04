@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
     public DbSet<ThongBao> ThongBao { get; set; }
     public DbSet<TonKhoTheoChiNhanh> TonKhoTheoChiNhanh { get; set; }
     public DbSet<HinhAnhXe> HinhAnhXe { get; set; }
+    public DbSet<PhieuNhapXe> PhieuNhapXe { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -146,6 +147,27 @@ public class AppDbContext : DbContext
             .HasOne(c => c.ChiNhanh)
             .WithMany()
             .HasForeignKey(c => c.MaChiNhanh)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PhieuNhapXe>().ToTable("PhieuNhapXe");
+        modelBuilder.Entity<PhieuNhapXe>().HasKey(p => p.MaPhieuNhap);
+
+        modelBuilder.Entity<PhieuNhapXe>()
+            .HasOne(p => p.DonDatCoc)
+            .WithMany(d => d.PhieuNhaps)
+            .HasForeignKey(p => p.MaDonCoc)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PhieuNhapXe>()
+            .HasOne(p => p.PhienBan)
+            .WithMany()
+            .HasForeignKey(p => p.MaPhienBan)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PhieuNhapXe>()
+            .HasOne(p => p.ChiNhanh)
+            .WithMany()
+            .HasForeignKey(p => p.MaChiNhanh)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<HoaDonMuaXe>()

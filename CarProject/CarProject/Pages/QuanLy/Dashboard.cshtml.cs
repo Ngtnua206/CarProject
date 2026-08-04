@@ -20,6 +20,7 @@ public class DashboardModel : PageModel
     public long DoanhThuThangNay { get; set; }
     public int SoDonThangNay { get; set; }
     public int TongDon { get; set; }
+    public long DoanhThuCocThangNay { get; set; }
 
     public List<DailyRevenue> DoanhThuTheoNgay { get; set; } = new();
     public string JsonLabels { get; set; }
@@ -72,6 +73,12 @@ public class DashboardModel : PageModel
             .CountAsync();
 
         TongDon = await donCocQuery.CountAsync();
+
+        // Tiền cọc thu về tháng này (doanh thu cọc phân bổ theo showroom -> ThongKeTongHop_Boss)
+        var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
+        var thongKe = await _db.ThongKeTongHop_Boss
+            .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == Showroom.MaChiNhanh);
+        DoanhThuCocThangNay = thongKe?.TongTienCocThuVe ?? 0;
 
         // Doanh thu 30 ngày gần nhất (cho biểu đồ)
         var dailyData = await donCocQuery

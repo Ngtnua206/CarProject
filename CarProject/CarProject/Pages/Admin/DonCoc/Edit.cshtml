@@ -5,6 +5,14 @@
     <div class="row">
         <div class="col-md-8">
             <h2>Sửa Đơn Cọc</h2>
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
             @if (Model.DonCoc == null)
             {
                 <div class="alert alert-danger">Không tìm thấy đơn cọc.</div>
@@ -25,22 +33,51 @@
                                         <div>
                                             <strong>@ctTen</strong> <small class="text-muted">x@(ct.SoLuong)</small><br>
                                             <small class="text-muted">Showroom nguồn: @(ct.ChiNhanh?.TenChiNhanh ?? ct.MaChiNhanh ?? "—")</small>
+                                            @if (ct.SoTienCocPhanBo > 0)
+                                            {
+                                                <br><small class="text-muted">Cọc phân bổ: @ct.SoTienCocPhanBo:N0đ</small>
+                                            }
+                                            @if (ct.SoLuongThieu > 0)
+                                            {
+                                                <br><small class="text-danger">Cần nhập: @ct.SoLuongThieu xe</small>
+                                            }
                                         </div>
-                                        @if (ct.TrangThaiTiepNhan == "Đã tiếp nhận")
-                                        {
-                                            <span class="badge bg-success">Đã tiếp nhận</span>
-                                        }
-                                        else if (ct.TrangThaiTiepNhan == "Từ chối")
-                                        {
-                                            <span class="badge bg-danger" title="@ct.LyDoTuChoi">Từ chối <small>@ct.LyDoTuChoi</small></span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
-                                        }
+                                        <div style="display:flex;align-items:center;gap:6px;">
+                                            @if (ct.TrangThaiTiepNhan == "Đã tiếp nhận")
+                                            {
+                                                <span class="badge bg-success">Đã tiếp nhận</span>
+                                            }
+                                            else if (ct.TrangThaiTiepNhan == "Từ chối")
+                                            {
+                                                <span class="badge bg-danger" title="@ct.LyDoTuChoi">Từ chối <small>@ct.LyDoTuChoi</small></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                            }
+                                            @if (ct.DaNhapKho)
+                                            {
+                                                <span class="badge bg-info text-dark">Đã nhập</span>
+                                            }
+                                            @if (ct.SoLuongThieu > 0 && !ct.DaNhapKho)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        onclick="openNhapXe(@ct.MaChiTiet, '@(System.Text.Json.JsonEncodedText.Encode(ctTen))', @ct.SoLuongThieu)">Nhập xe</button>
+                                            }
+                                        </div>
                                     </div>
                                 }
                             </div>
+                            @if (Model.DonCoc.PhieuNhaps.Any())
+                            {
+                                <div class="mt-2">
+                                    <strong class="small">Lịch sử phiếu nhập:</strong>
+                                    @foreach (var pn in Model.DonCoc.PhieuNhaps)
+                                    {
+                                        <div class="small text-muted">- @pn.NgayNhap.ToString("dd/MM HH:mm") · @pn.SoLuongNhap xe - giá @pn.SoTienNhapMoiXe:N0đ (tổng @pn.TongSoTienNhap:N0đ) - @pn.NguoiNhap</div>
+                                    }
+                                </div>
+                            }
                         }
                         else
                         {
@@ -117,3 +154,47 @@
         </div>
     </div>
 </div>
+
+<!-- Modal nhập xe -->
+<div class="modal fade" id="nhapXeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" asp-page-handler="NhapXe" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nhập xe vào showroom</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="maChiTiet" id="nhapXeMaChiTiet" />
+                <div class="mb-2" id="nhapXeTenXe"></div>
+                <div class="mb-3">
+                    <label class="form-label">Số lượng xe nhập</label>
+                    <input type="number" class="form-control" name="soLuongNhap" id="nhapXeSoLuong" min="1" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số tiền nhập mỗi xe (VNĐ)</label>
+                    <input type="number" class="form-control" name="soTienNhapMoiXe" id="nhapXeSoTien" min="0" step="100000" value="0" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" class="form-control" name="ghiChu" id="nhapXeGhiChu" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary">Xác nhận nhập xe</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openNhapXe(maChiTiet, tenXe, soLuongThieu) {
+        document.getElementById('nhapXeMaChiTiet').value = maChiTiet;
+        document.getElementById('nhapXeTenXe').innerHTML = '<strong>' + tenXe + '</strong> <span class="text-danger">(cần nhập ' + soLuongThieu + ' xe)</span>';
+        document.getElementById('nhapXeSoLuong').value = soLuongThieu;
+        document.getElementById('nhapXeSoTien').value = '';
+        document.getElementById('nhapXeGhiChu').value = '';
+        var modal = new bootstrap.Modal(document.getElementById('nhapXeModal'));
+        modal.show();
+    }
+</script>

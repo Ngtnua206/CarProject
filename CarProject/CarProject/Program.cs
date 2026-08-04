@@ -71,6 +71,7 @@ try
     builder.Services.Configure<CarProject.Services.SepaySettings>(builder.Configuration.GetSection("Sepay"));
     builder.Services.AddScoped<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
     builder.Services.AddHttpClient<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
+    builder.Services.AddScoped<CarProject.Services.IRevenueService, CarProject.Services.RevenueService>();
 
     // JWT config
     var jwtKey = builder.Configuration["Jwt:Key"] ?? "CarProjectSuperSecretKey2024@MustBe32CharsLong!";
@@ -837,28 +838,91 @@ try
             if (string.IsNullOrEmpty(maGiaoDich))
                 return Results.Ok(new { success = true });
 
-            var donCoc = await db.DonDatCoc.FirstOrDefaultAsync(d => d.MaGiaoDich == maGiaoDich);
+            var donCoc = await db.DonDatCoc
+                .Include(d => d.ChiTiets)
+                .FirstOrDefaultAsync(d => d.MaGiaoDich == maGiaoDich);
             if (donCoc == null)
                 return Results.Ok(new { success = true });
 
-            donCoc.SepayTransactionId = data.id.ToString();
+            donCoc.SepayTransactionId = data.id;
+            var wasPaid = donCoc.TrangThaiThanhToan == "Đã thanh toán";
             donCoc.TrangThaiThanhToan = "Đã thanh toán";
             if (string.IsNullOrEmpty(donCoc.TrangThaiDonHang))
                 donCoc.TrangThaiDonHang = "Chờ xác nhận";
-            await db.SaveChangesAsync();
 
-            if (!string.IsNullOrEmpty(donCoc.MaKhachHang))
+            // Cộng doanh thu cọc vào ThongKeTongHop_Boss theo showroom nguồn từng chi tiết
+            // (chỉ khi đây là lần đầu thanh toán / chưa tính doanh thu)
+            if (!wasPaid || !donCoc.DaTinhDoanhThu)
             {
-                var notifService = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
-                await notifService.SendAsync(donCoc.MaKhachHang, "Thanh toán thành công",
-                    $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
+                var revenueSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.IRevenueService>();
+                await revenueSvc.AllocateDepositRevenueAsync(donCoc);
             }
 
-            // Gửi thông báo cho Admin sau khi thanh toán thành công
+            await db.SaveChangesAsync();
+
             var notifSvc = ctx.RequestServices.GetRequiredService<CarProject.Services.INotificationService>();
-            await notifSvc.SendToRoleAsync("Admin", "Thanh toán đơn cọc",
-                $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {donCoc.SoTienCoc:N0}đ đã thanh toán thành công.",
-                $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
+
+            // Lần đầu thanh toán (chuyển từ chưa thanh toán sang đã thanh toán):
+            // báo khách + Admin + Quản lý showroom có xe trong đơn
+            if (!wasPaid)
+            {
+                var hnCn = donCoc.MaChiNhanh == null ? null
+                    : await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == donCoc.MaChiNhanh);
+                var hnName = hnCn?.TenChiNhanh ?? donCoc.MaChiNhanh ?? "";
+
+                var xeTextList = new List<string>();
+                foreach (var g in donCoc.ChiTiets.GroupBy(c => c.MaChiNhanh))
+                {
+                    var gCn = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == g.Key);
+                    xeTextList.Add($"- {g.Sum(x => x.SoLuong)} xe của {(gCn?.TenChiNhanh ?? g.Key ?? "")}");
+                }
+                var listText = string.Join("\n", xeTextList);
+                var totalXe = donCoc.ChiTiets.Sum(c => c.SoLuong);
+
+                if (!string.IsNullOrEmpty(donCoc.MaKhachHang))
+                {
+                    await notifSvc.SendAsync(donCoc.MaKhachHang, "Thanh toán thành công",
+                        $"Đơn cọc #{donCoc.MaDonCoc} đã được thanh toán {donCoc.SoTienCoc:N0}đ.", $"/Orders/DepositResult?maDonCoc={donCoc.MaDonCoc}");
+                }
+
+                // Thông báo chung cho Admin
+                await notifSvc.SendToRoleAsync("Admin", "Đơn đặt cọc mới",
+                    $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {totalXe} xe - Tổng cọc: {donCoc.SoTienCoc:N0}đ - Hẹn gặp tại {hnName}",
+                    $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
+
+                // Thông báo tới Quản lý từng showroom có xe trong đơn
+                foreach (var group in donCoc.ChiTiets.GroupBy(c => c.MaChiNhanh))
+                {
+                    var cn = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == group.Key);
+                    if (cn?.MaQuanLy == null) continue;
+
+                    string noiDung;
+                    if (group.Key == donCoc.MaChiNhanh)
+                    {
+                        // Showroom hẹn gặp: Tiếp nhận / Không tiếp nhận
+                        noiDung = $"Khách {donCoc.HoTen} muốn mua:\n{listText}\nĐịa điểm hẹn: {hnName}\n\nVui lòng chọn Tiếp nhận hoặc Không tiếp nhận.";
+                    }
+                    else
+                    {
+                        // Showroom nguồn: đồng ý vận chuyển tới showroom hẹn gặp không?
+                        noiDung = $"Khách {donCoc.HoTen} muốn mua:\n{listText}\nBạn có đồng ý vận chuyển xe tới {hnName}?\n\nTrả lời: Có hoặc Không.";
+                    }
+                    await notifSvc.SendAsync(cn.MaQuanLy, "Đơn đặt cọc mới - cần xác nhận",
+                        $"{noiDung} (Đơn cọc #{donCoc.MaDonCoc})",
+                        $"/QuanLy/DonCoc?highlight={donCoc.MaDonCoc}");
+                }
+
+                // Thanh toán xong → xoá các xe đã đặt khỏi giỏ hàng của khách
+                if (!string.IsNullOrEmpty(donCoc.MaKhachHang))
+                {
+                    var orderedPbIds = donCoc.ChiTiets.Select(c => c.MaPhienBan).Distinct().ToList();
+                    var cartRows = await db.GioHang
+                        .Where(g => g.MaTaiKhoan == donCoc.MaKhachHang && orderedPbIds.Contains(g.MaPhienBan))
+                        .ToListAsync();
+                    db.GioHang.RemoveRange(cartRows);
+                    await db.SaveChangesAsync();
+                }
+            }
 
             await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");
             return Results.Ok(new { success = true });

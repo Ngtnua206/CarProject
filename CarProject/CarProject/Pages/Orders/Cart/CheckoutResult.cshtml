@@ -23,7 +23,11 @@
                 <span style="color: var(--brand-white); font-weight: 600;">@Model.SoLuongXe xe</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
-                <span style="color: var(--text-muted);">Tổng tiền cọc</span>
+                <span style="color: var(--text-muted);">Tổng tiền gốc</span>
+                <span style="color: var(--brand-white); font-weight: 600;">@Model.TongTienGocStr</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Tổng tiền cọc @Model.CocRateText</span>
                 <span style="color: var(--brand-gold); font-weight: 700; font-size: 1.1rem;">@Model.TotalDepositStr</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
@@ -41,6 +45,14 @@
                 <span style="color: var(--text-muted);">Ngân hàng thụ hưởng</span>
                 <span style="color: var(--brand-white); font-weight: 600;">@Model.BankName</span>
             </div>
+            @if (Model.ShowQr)
+            {
+                <div style="display:flex;justify-content:center;margin:0.8rem 0 0.6rem;">
+                    <div style="background:white;border-radius:12px;padding:8px;display:inline-block;">
+                        <img src="@Model.QrImageUrl" alt="QR thanh toán" style="width:200px;height:200px;border-radius:8px;" />
+                    </div>
+                </div>
+            }
             <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.85rem;">
                 <span style="color: var(--text-muted);">Số tài khoản</span>
                 <span style="color: var(--brand-white); font-weight: 700; font-size: 1rem;">@Model.BankNumber</span>

@@ -127,7 +127,7 @@
             ? '<div class="chp-showrooms">' + showrooms.map(function (s) {
                 var sc = Number(s.SoLuong) <= 0 ? '#dc3545' : (Number(s.SoLuong) <= 5 ? '#ffc107' : '#28a745');
                 var versions = Array.isArray(s.PhienBans) ? s.PhienBans : [];
-                var subHtml = versions.length > 1
+                var subHtml = versions.length > 0
                     ? '<div class="chp-sr-vers">' + versions.map(function (v) {
                         var vc = Number(v.SoLuong) <= 0 ? '#dc3545' : (Number(v.SoLuong) <= 2 ? '#ffc107' : '#28a745');
                         return '<div class="chp-sr-ver">'

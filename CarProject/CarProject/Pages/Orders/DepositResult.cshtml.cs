@@ -32,6 +32,8 @@ public class DepositResultModel : PageModel
     public string LoaiNhietLieu { get; set; } = "";
     public long GiaNiemYet { get; set; }
     public string GiaNiemYetStr { get; set; } = "";
+    public string TongTienGocStr { get; set; } = "";
+    public string CocRateText { get; set; } = "20%";
     public string TrangThaiDonHang { get; set; } = "";
     public string SoDienThoai { get; set; } = "";
     public List<DonDatCocChiTiet> ChiTiets { get; set; } = new();
@@ -107,18 +109,27 @@ public class DepositResultModel : PageModel
         }
 
         SoTienCocStr = SoTienCoc >= 1_000_000_000
-            ? $"{SoTienCoc / 1_000_000_000:N1} tỷ VNĐ"
+            ? $"{SoTienCoc / 1_000_000_000:N2} tỷ VNĐ"
             : $"{SoTienCoc / 1_000_000:N0} triệu VNĐ";
         GiaNiemYetStr = GiaNiemYet >= 1_000_000_000
-            ? $"{GiaNiemYet / 1_000_000_000:N1} tỷ VNĐ"
+            ? $"{GiaNiemYet / 1_000_000_000:N2} tỷ VNĐ"
             : $"{GiaNiemYet / 1_000_000:N0} triệu VNĐ";
+
+        var tongGoc = ChiTiets.Sum(c => (long)(c.PhienBan?.GiaNiemYet ?? 0) * c.SoLuong);
+        if (tongGoc <= 0) tongGoc = GiaNiemYet;
+        TongTienGocStr = tongGoc >= 1_000_000_000
+            ? $"{tongGoc / 1_000_000_000:N2} tỷ VNĐ"
+            : $"{tongGoc / 1_000_000:N0} triệu VNĐ";
+        var rateItems = ChiTiets
+            .Select(c => c.PhienBan != null && c.PhienBan.SoLuongTrongKho <= 0 ? "15%" : "20%")
+            .Distinct().ToList();
+        if (rateItems.Count == 0) rateItems.Add("20%");
+        CocRateText = rateItems.Count == 1 ? rateItems[0] : "15%/20%";
 
         if (!string.IsNullOrEmpty(MaGiaoDich))
         {
-            var bin = "970436"; // VQR bin
-            var encodedInfo = Uri.EscapeDataString(MaGiaoDich);
-            var encodedName = Uri.EscapeDataString(_sepay.AccountName);
-            QrImageUrl = $"https://img.vietqr.io/image/{bin}-{_sepay.BankNumber}-compact2.jpg?amount=10000&addInfo={encodedInfo}&accountName={encodedName}";
+            var bin = "970422"; // MB Bank BIN
+            QrImageUrl = CarProject.Services.VietQr.BuildDataUri(bin, _sepay.BankNumber, 10000, MaGiaoDich);
             ShowQr = true;
         }
 

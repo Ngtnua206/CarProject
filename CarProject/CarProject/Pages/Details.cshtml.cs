@@ -46,12 +46,12 @@ public class DetailsModel : PageModel
             .ThenBy(h => h.MaHinhAnh)
             .ToListAsync();
 
-        // Các phiên bản đã được đặt cọc (đơn đang chờ xử lý/đã xác nhận) - đếm theo từng showroom
-        var reservedStatuses = new List<string> { "Chờ xử lý", "Chờ xác nhận", "Đã xác nhận", "Đã thanh toán", "Hoàn tất" };
+        // Chỉ đếm 'đã đặt cọc' cho những đơn ĐÃ THANH TOÁN (chuyển tiền thành công).
+        // Số đơn chưa thanh toán không giữ xe, không chặn người khác.
         var daDatCocList = await _db.DonDatCocChiTiet
             .Where(c => maPhienBans.Contains(c.MaPhienBan)
                 && c.DonDatCoc != null
-                && reservedStatuses.Contains(c.DonDatCoc!.TrangThaiDonHang ?? ""))
+                && c.DonDatCoc!.TrangThaiThanhToan == "Đã thanh toán")
             .Select(c => new { c.MaPhienBan, c.MaChiNhanh, c.SoLuong })
             .ToListAsync();
 
@@ -68,6 +68,17 @@ public class DetailsModel : PageModel
 
             TongDaDatCocTheoPhienBan.TryGetValue(x.MaPhienBan, out var total);
             TongDaDatCocTheoPhienBan[x.MaPhienBan] = total + x.SoLuong;
+        }
+
+        // Cap tổng 'đã đặt cọc' theo tồn kho thực của từng phiên bản:
+        // VD tồn 6 nhưng người dùng đặt 9 => chỉ hiển thị 'đã đặt cọc 6 xe'.
+        var tongTonKho = await _db.PhienBanXe
+            .Where(p => maPhienBans.Contains(p.MaPhienBan))
+            .ToDictionaryAsync(p => p.MaPhienBan, p => Math.Max(0, p.SoLuongTrongKho));
+        foreach (var kv in TongDaDatCocTheoPhienBan.ToList())
+        {
+            if (tongTonKho.TryGetValue(kv.Key, out var max))
+                TongDaDatCocTheoPhienBan[kv.Key] = Math.Min(kv.Value, max);
         }
 
         await _log.LogAsync("Xem chi tiết xe", $"{HangXe?.TenHang} {Dong.TenDong} (ID={id})");

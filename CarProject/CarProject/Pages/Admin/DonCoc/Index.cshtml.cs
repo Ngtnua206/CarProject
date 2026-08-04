@@ -12,16 +12,18 @@ public class IndexModel : PageModel
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
     private readonly INotificationService _notif;
+    private readonly IRevenueService _revenue;
     public List<DonDatCoc> DonCocList { get; set; } = new();
     public List<ChiNhanhShowroom> ChiNhanhList { get; set; } = new();
     public string? SuccessMessage { get; set; }
     public string? ErrorMessage { get; set; }
 
-    public IndexModel(AppDbContext db, IActivityLogService log, INotificationService notif)
+    public IndexModel(AppDbContext db, IActivityLogService log, INotificationService notif, IRevenueService revenue)
     {
         _db = db;
         _log = log;
         _notif = notif;
+        _revenue = revenue;
     }
 
     public async Task OnGetAsync()
@@ -101,6 +103,10 @@ var lichHen = new LichHenLaiThu
 
         don.TrangThaiDonHang = "Đã hủy";
         don.MaQuanLyDuyet = User.GetJwtUserName();
+
+        // Hoàn tiền cọc: trừ doanh thu cọc đã cộng cho các showroom trong đơn
+        await _revenue.RevertDepositRevenueAsync(maDonCoc);
+
         await _db.SaveChangesAsync();
 
         if (don.MaKhachHang != null)
@@ -219,6 +225,7 @@ var lichHen = new LichHenLaiThu
         }
 
         don.TrangThaiDonHang = "Đã hủy";
+        await _revenue.RevertDepositRevenueAsync(maDonCoc);
         await _db.SaveChangesAsync();
 
         await _notif.SendAsync(don.MaKhachHang!, "Giao dịch bị hủy",
