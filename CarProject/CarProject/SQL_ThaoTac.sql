@@ -1,7 +1,9 @@
 ﻿-- ===================================================
--- SQL thao tác nhanh cho CarProject
--- Chạy trong SSMS (chọn database CarShopDb trước)
--- Thứ tự từ trên xuống dưới, chạy phát ok luôn
+-- SQL thao tac nhanh cho CarProject (BAN AN TOAN, IDEMPOTENT)
+-- Chay trong SSMS (chon database CarShopDb truoc)
+-- KHONG XOA bat ky du lieu nao. Toan bo la UPSERT, chay lai nhieu lan OK.
+-- GIU NGUYEN anh tren server: DuongDanLogo (HangXe), DuongDanAnh (DongXe/PhienBanXe/QuangCaoBanner), HinhAnhXe
+-- Ton kho dong bo theo dung du lieu hien tai cua DB local (sinh ngay 2026-08-04)
 -- ===================================================
 
 -- ==================== 0. CẬP NHẬT SCHEMA ====================
@@ -19,7 +21,6 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_DonDatCoc_ChiNhan
     ALTER TABLE DonDatCoc ADD CONSTRAINT FK_DonDatCoc_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HoaDonMuaXe_ChiNhanhShowroom')
     ALTER TABLE HoaDonMuaXe ADD CONSTRAINT FK_HoaDonMuaXe_ChiNhanhShowroom FOREIGN KEY (MaChiNhanh) REFERENCES ChiNhanhShowroom(MaChiNhanh);
--- Bảng chi tiết đơn cọc (hỗ trợ đặt trước xe hết hàng)
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'DonDatCocChiTiet')
 BEGIN
     CREATE TABLE DonDatCocChiTiet (
@@ -41,7 +42,6 @@ BEGIN
     CREATE INDEX IX_DonDatCocChiTiet_MaDonCoc ON DonDatCocChiTiet(MaDonCoc);
     CREATE INDEX IX_DonDatCocChiTiet_MaPhienBan ON DonDatCocChiTiet(MaPhienBan);
 END
--- Bảng tồn kho theo chi nhánh
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'TonKhoTheoChiNhanh')
 BEGIN
     CREATE TABLE TonKhoTheoChiNhanh (
@@ -59,752 +59,1670 @@ BEGIN
 END
 GO
 
--- ==================== 1. XÓA DỮ LIỆU CŨ ====================
-DELETE FROM ThongKeTongHop_Boss;
-DELETE FROM HoaDonMuaXe;
-DELETE FROM DonDatCocChiTiet;
-DELETE FROM DonDatCoc;
-DELETE FROM TonKhoTheoChiNhanh;
-DELETE FROM NhatKyHeThong;
-DELETE FROM ThongBao;
-DELETE FROM GioHang;
-DELETE FROM QuangCaoBanner;
-DELETE FROM LichHenLaiThu;
-DELETE FROM KenhTuVan;
-DELETE FROM ChuongTrinhKhuyenMai;
-DELETE FROM ChiNhanhShowroom;
-DELETE FROM PhienBanXe_SanPham;
-DELETE FROM DongXe;
-DELETE FROM HangXe;
-DELETE FROM TaiKhoan;
+-- ==================== 1. TÀI KHOẢN (UPSERT - giữ account đã có) ====================
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'fntzzs682@gmail.com')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'fntzzs682@gmail.com',N'123456',N'Admin',N'Active',N'Admin',N'fntzzs682@gmail.com');
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'Ngttu2006@gmail.com')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'Ngttu2006@gmail.com',N'Iumaioanhh@2024',N'Admin',N'Active',N'Ngtnua',N'Ngttu2006@gmail.com');
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'thanhdac223@gmail.com')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'thanhdac223@gmail.com',N'@Trinhvu1',N'Admin',N'Active',N'',N'thanhdac223@gmail.com');
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'Vanh280306@gmail.com')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'Vanh280306@gmail.com',N'Vanh2803',N'Admin',N'Active',N'',N'Vanh280306@gmail.com');
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'minhquanmkp123@gmail.com')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'minhquanmkp123@gmail.com',N'hahahihi123',N'Admin',N'Active',N'',N'minhquanmkp123@gmail.com');
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'user1')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'user1',N'user123',N'User',N'Active',N'Nguyễn Văn User',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'user2')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'user2',N'user123',N'User',N'Active',N'Trần Thị Khách',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'user3')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'user3',N'user123',N'User',N'Active',N'Lê Hoàng Nam',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'user4')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'user4',N'user123',N'User',N'Active',N'Phạm Minh Tâm',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'user5')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'user5',N'user123',N'User',N'Active',N'Đỗ Thúy Hằng',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS1')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS1',N'quanly123',N'Quản Lý',N'Hoạt động',N'Nguyễn Văn A',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS2')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS2',N'quanly123',N'Quản Lý',N'Hoạt động',N'Nguyễn Văn B',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS3')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS3',N'quanly123',N'Quản Lý',N'Hoạt động',N'Trần Thị C',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS4')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS4',N'quanly123',N'Quản Lý',N'Hoạt động',N'Lê Văn D',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS5')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS5',N'quanly123',N'Quản Lý',N'Hoạt động',N'Phạm Thị E',NULL);
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'QuanlyCS6')
+    INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)
+    VALUES (N'QuanlyCS6',N'quanly123',N'Quản Lý',N'Hoạt động',N'Hoàng Văn F',NULL);
+GO
 
--- ==================== 2. THÊM TÀI KHOẢN ====================
--- Admin
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi, Email)
-VALUES ('fntzzs682@gmail.com', '123456', 'Admin', 'Active', 'Admin', 'fntzzs682@gmail.com');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi, Email)
-VALUES ('Ngttu2006@gmail.com', 'Iumaioanhh@2024', 'Admin', 'Active', N'Ngtnua', 'Ngttu2006@gmail.com');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi, Email)
-VALUES ('thanhdac223@gmail.com', '@Trinhvu1', 'Admin', 'Active', '', 'thanhdac223@gmail.com');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi, Email)
-VALUES ('Vanh280306@gmail.com', 'Vanh2803', 'Admin', 'Active', '', 'Vanh280306@gmail.com');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi, Email)
-VALUES ('minhquanmkp123@gmail.com', 'hahahihi123', 'Admin', 'Active', '', 'minhquanmkp123@gmail.com');
+-- ==================== 2. HÃNG XE (UPSERT - GIỮ NGUYÊN DuongDanLogo trên server) ====================
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 1)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (1,N'Toyota',N'Nhật Bản',N'https://yt3.googleusercontent.com/Ze3-8domW2lUcA5x0bTN0TNbGGoxLKa_t4l5P-j37BCzuWHf3YlGJwmpZkDJ1M2egKUI4fb5wQ=s900-c-k-c0x00ffffff-no-rj');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Toyota', QuocGia=N'Nhật Bản' WHERE MaHang = 1;
 
--- User
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('user1', 'user123', 'User', 'Active', N'Nguyễn Văn User');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('user2', 'user123', 'User', 'Active', N'Trần Thị Khách');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('user3', 'user123', 'User', 'Active', N'Lê Hoàng Nam');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('user4', 'user123', 'User', 'Active', N'Phạm Minh Tâm');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('user5', 'user123', 'User', 'Active', N'Đỗ Thúy Hằng');
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 2)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (2,N'Honda',N'Nhật Bản',N'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjNN9PyTICXYqFfZwgJSTd_ftng4BTSqxJBFPlBwq19A&s=10');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Honda', QuocGia=N'Nhật Bản' WHERE MaHang = 2;
 
--- Quản Lý
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS1', 'quanly123', N'Quản Lý', N'Hoạt động', N'Nguyễn Văn A');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS2', 'quanly123', N'Quản Lý', N'Hoạt động', N'Nguyễn Văn B');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS3', 'quanly123', N'Quản Lý', N'Hoạt động', N'Trần Thị C');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS4', 'quanly123', N'Quản Lý', N'Hoạt động', N'Lê Văn D');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS5', 'quanly123', N'Quản Lý', N'Hoạt động', N'Phạm Thị E');
-INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, TenHienThi)
-VALUES ('QuanlyCS6', 'quanly123', N'Quản Lý', N'Hoạt động', N'Hoàng Văn F');
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 3)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (3,N'Ford',N'Mỹ',N'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRz3Qk1cyXFVUJ-Ma0HzyswY2YpEecbMonaP7TJ_C9EQ&s=10');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Ford', QuocGia=N'Mỹ' WHERE MaHang = 3;
 
--- ==================== 3. THÊM HÃNG XE ====================
-SET IDENTITY_INSERT HangXe ON;
-INSERT INTO HangXe (MaHang, TenHang, QuocGia, DuongDanLogo) VALUES
-(1,  N'Toyota',        N'Nhật Bản',   '/images/brands/toyota.png'),
-(2,  N'Honda',         N'Nhật Bản',   '/images/brands/honda.png'),
-(3,  N'Ford',          N'Mỹ',         '/images/brands/ford.png'),
-(4,  N'BMW',           N'Đức',        '/images/brands/bmw.png'),
-(5,  N'VinFast',       N'Việt Nam',   '/images/brands/vinfast.png'),
-(6,  N'Mercedes-Benz', N'Đức',        '/images/brands/mercedes.png'),
-(7,  N'Audi',          N'Đức',        '/images/brands/audi.png'),
-(8,  N'Lexus',         N'Nhật Bản',   '/images/brands/lexus.png'),
-(9,  N'Hyundai',       N'Hàn Quốc',   '/images/brands/hyundai.png'),
-(10, N'Kia',           N'Hàn Quốc',   '/images/brands/kia.png'),
-(11, N'Mazda',         N'Nhật Bản',   '/images/brands/mazda.png'),
-(12, N'Suzuki',        N'Nhật Bản',   '/images/brands/suzuki.png'),
-(13, N'Mitsubishi',    N'Nhật Bản',   '/images/brands/mitsubishi.png'),
-(14, N'Nissan',        N'Nhật Bản',   '/images/brands/nissan.png'),
-(15, N'Subaru',        N'Nhật Bản',   '/images/brands/subaru.png');
-SET IDENTITY_INSERT HangXe OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 4)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (4,N'BMW',N'Đức',N'/uploads/admin/67619976-eaa2-43ce-bfed-be9c65189f45.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'BMW', QuocGia=N'Đức' WHERE MaHang = 4;
 
--- ==================== 4. THÊM DÒNG XE ====================
-SET IDENTITY_INSERT DongXe ON;
-INSERT INTO DongXe (MaDong, MaHang, TenDong, KieuDang, NoiBat) VALUES
--- Toyota (1)
-(1,  1,  N'Toyota Camry',          N'Sedan',     1),
-(2,  1,  N'Toyota Hilux',          N'Bán tải',   0),
-(3,  1,  N'Toyota Corolla Altis',  N'Sedan',     0),
-(4,  1,  N'Toyota Fortuner',       N'SUV',       1),
-(5,  1,  N'Toyota Vios',           N'Sedan',     0),
--- Honda (2)
-(6,  2,  N'Honda Civic',           N'Sedan',     1),
-(7,  2,  N'Honda CR-V',            N'SUV',       1),
-(8,  2,  N'Honda HR-V',            N'SUV',       0),
-(9,  2,  N'Honda Accord',          N'Sedan',     0),
--- Ford (3)
-(10, 3,  N'Ford Explorer',         N'SUV',       0),
-(11, 3,  N'Ford Everest',          N'SUV',       1),
-(12, 3,  N'Ford Ranger',           N'Bán tải',   1),
-(13, 3,  N'Ford Territory',        N'SUV',       1),
--- BMW (4)
-(14, 4,  N'BMW 3 Series',          N'Sedan',     1),
-(15, 4,  N'BMW 5 Series',          N'Sedan',     1),
-(16, 4,  N'BMW X3',                N'SUV',       1),
-(17, 4,  N'BMW X5',                N'SUV',       1),
--- VinFast (5)
-(18, 5,  N'VinFast Lux SA',        N'SUV',       1),
-(19, 5,  N'VinFast Fadil',         N'Hatchback', 0),
-(20, 5,  N'VinFast VF e34',        N'SUV (Điện)',0),
-(21, 5,  N'VinFast VF 8',          N'SUV (Điện)',1),
-(22, 5,  N'VinFast VF 9',          N'SUV (Điện)',1),
--- Mercedes-Benz (6)
-(23, 6,  N'Mercedes C-Class',      N'Sedan',     1),
-(24, 6,  N'Mercedes E-Class',      N'Sedan',     1),
-(25, 6,  N'Mercedes S-Class',      N'Sedan',     1),
-(26, 6,  N'Mercedes GLC',          N'SUV',       0),
-(27, 6,  N'Mercedes GLE',          N'SUV',       0),
--- Audi (7)
-(28, 7,  N'Audi A3',               N'Sedan',     0),
-(29, 7,  N'Audi A4',               N'Sedan',     1),
-(30, 7,  N'Audi Q5',               N'SUV',       1),
-(31, 7,  N'Audi Q7',               N'SUV',       0),
--- Lexus (8)
-(32, 8,  N'Lexus ES',              N'Sedan',     1),
-(33, 8,  N'Lexus RX',              N'SUV',       1),
-(34, 8,  N'Lexus NX',              N'SUV',       0),
--- Hyundai (9)
-(35, 9,  N'Hyundai Santa Fe',      N'SUV',       1),
-(36, 9,  N'Hyundai Tucson',        N'SUV',       0),
-(37, 9,  N'Hyundai Accent',        N'Sedan',     0),
-(38, 9,  N'Hyundai Creta',         N'SUV',       0),
--- Kia (10)
-(39, 10, N'Kia Sorento',           N'SUV',       1),
-(40, 10, N'Kia Sportage',          N'SUV',       0),
-(41, 10, N'Kia Cerato',            N'Sedan',     0),
-(42, 10, N'Kia Morning',           N'Hatchback', 0),
--- Mazda (11)
-(43, 11, N'Mazda CX-5',            N'SUV',       1),
-(44, 11, N'Mazda CX-8',            N'SUV',       0),
-(45, 11, N'Mazda3',                N'Sedan',     0),
-(46, 11, N'Mazda6',                N'Sedan',     0),
--- Suzuki (12)
-(47, 12, N'Suzuki Swift',          N'Hatchback', 0),
-(48, 12, N'Suzuki Vitara',         N'SUV',       0),
-(49, 12, N'Suzuki Ertiga',         N'MPV',       0),
--- Mitsubishi (13)
-(50, 13, N'Mitsubishi Xpander',    N'MPV',       1),
-(51, 13, N'Mitsubishi Outlander',  N'SUV',       0),
-(52, 13, N'Mitsubishi Triton',     N'Bán tải',   0),
--- Nissan (14)
-(53, 14, N'Nissan Navara',         N'Bán tải',   0),
-(54, 14, N'Nissan Kicks',          N'SUV',       0),
-(55, 14, N'Nissan Almera',         N'Sedan',     0),
--- Subaru (15)
-(56, 15, N'Subaru Forester',       N'SUV',       0),
-(57, 15, N'Subaru Outback',        N'SUV',       0),
-(58, 15, N'Subaru XV',             N'SUV',       0);
-SET IDENTITY_INSERT DongXe OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 5)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (5,N'VinFast',N'Việt Nam',N'/uploads/admin/a803917d-5cc1-49f4-9a73-930cf7cffd7f.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'VinFast', QuocGia=N'Việt Nam' WHERE MaHang = 5;
 
--- ==================== 5. THÊM PHIÊN BẢN XE ====================
-SET IDENTITY_INSERT PhienBanXe_SanPham ON;
-INSERT INTO PhienBanXe_SanPham (MaPhienBan, MaDong, TenPhienBan, GiaNiemYet, MauSac, DongCo, HopSo, LoaiNhietLieu, SoLuongTrongKho, DuongDanAnh, MaKhuyenMai, TrangThai) VALUES
--- Camry (dong 1)
-(1,  1,  N'Camry 2.0 CVT',                1050000000, N'Bạc',  N'2.0L 4 xi-lanh',       N'CVT',          N'Xăng',         5, '/images/cars/camry.jpg',       '', N'Còn hàng'),
-(2,  1,  N'Camry 2.5 HEV',                1250000000, N'Đen',  N'2.5L Hybrid',          N'e-CVT',        N'Xăng + Điện',  3, '/images/cars/camry-hybrid.jpg','', N'Còn hàng'),
--- Hilux (dong 2)
-(3,  2,  N'Hilux 2.4G 4x2 AT',            950000000,  N'Trắng',N'2.4L Turbo Diesel',    N'AT 6 cấp',     N'Dầu',          8, '/images/cars/hilux.jpg',       '', N'Còn hàng'),
-(4,  2,  N'Hilux 2.8G 4x4 AT',            1150000000, N'Xám',  N'2.8L Turbo Diesel',    N'AT 6 cấp',     N'Dầu',          4, '/images/cars/hilux.jpg',       '', N'Còn hàng'),
--- Corolla Altis (dong 3)
-(5,  3,  N'Corolla Altis 1.8G CVT',       750000000,  N'Đen',  N'1.8L 4 xi-lanh',       N'CVT',          N'Xăng',         6, '', '', N'Còn hàng'),
-(6,  3,  N'Corolla Altis 1.8HEV',         850000000,  N'Xanh', N'1.8L Hybrid',          N'e-CVT',        N'Xăng + Điện',  2, '', '', N'Còn hàng'),
--- Fortuner (dong 4)
-(7,  4,  N'Fortuner 2.4G 4x2 AT',         1100000000, N'Trắng',N'2.4L Turbo Diesel',    N'AT 6 cấp',     N'Dầu',          7, '', '', N'Còn hàng'),
-(8,  4,  N'Fortuner 2.8V 4x4 AT',         1350000000, N'Đen',  N'2.8L Turbo Diesel',    N'AT 6 cấp',     N'Dầu',          3, '', '', N'Còn hàng'),
--- Vios (dong 5)
-(9,  5,  N'Vios 1.5G CVT',                530000000,  N'Bạc',  N'1.5L 4 xi-lanh',       N'CVT',          N'Xăng',         15, '', '', N'Còn hàng'),
-(10, 5,  N'Vios 1.5E MT',                 470000000,  N'Đỏ',   N'1.5L 4 xi-lanh',       N'MT 5 cấp',     N'Xăng',         10, '', '', N'Còn hàng'),
--- Civic (dong 6)
-(11, 6,  N'Civic 1.5 Turbo CVT',          850000000,  N'Đỏ',   N'1.5L Turbo',           N'CVT',          N'Xăng',         6, '/images/cars/civic.jpg',       '', N'Còn hàng'),
-(12, 6,  N'Civic RS 1.5 Turbo',           920000000,  N'Đen',  N'1.5L Turbo',           N'CVT',          N'Xăng',         3, '', '', N'Còn hàng'),
--- CR-V (dong 7)
-(13, 7,  N'CR-V 1.5 Turbo G',             1050000000, N'Xanh', N'1.5L Turbo',           N'CVT',          N'Xăng',         4, '', '', N'Còn hàng'),
-(14, 7,  N'CR-V 1.5 Turbo L',             1200000000, N'Xám',  N'1.5L Turbo',           N'CVT',          N'Xăng',         2, '', '', N'Còn hàng'),
--- HR-V (dong 8)
-(15, 8,  N'HR-V 1.8L',                    750000000,  N'Trắng',N'1.8L 4 xi-lanh',       N'CVT',          N'Xăng',         5, '', '', N'Còn hàng'),
--- Accord (dong 9)
-(16, 9,  N'Accord 2.0 Turbo',             1400000000, N'Đen',  N'2.0L Turbo',           N'CVT',          N'Xăng',         2, '', '', N'Còn hàng'),
--- Explorer (dong 10)
-(17, 10, N'Explorer 2.3L EcoBoost',       1200000000, N'Xanh', N'2.3L EcoBoost',        N'AT 10 cấp',    N'Xăng',         4, '/images/cars/explorer.jpg',    '', N'Còn hàng'),
-(18, 10, N'Explorer 3.0L V6',             1500000000, N'Đen',  N'3.0L V6 EcoBoost',     N'AT 10 cấp',    N'Xăng',         1, '', '', N'Còn hàng'),
--- Everest (dong 11)
-(19, 11, N'Everest 2.0L Turbo 4x2',       1100000000, N'Trắng',N'2.0L Turbo Diesel',    N'AT 10 cấp',    N'Dầu',          5, '', '', N'Còn hàng'),
-(20, 11, N'Everest 2.0L Turbo 4x4',       1300000000, N'Xám',  N'2.0L Turbo Diesel',    N'AT 10 cấp',    N'Dầu',          3, '', '', N'Còn hàng'),
--- Ranger (dong 12)
-(21, 12, N'Ranger 2.0L XL 4x2',           700000000,  N'Trắng',N'2.0L Turbo Diesel',    N'AT 6 cấp',     N'Dầu',          10, '', '', N'Còn hàng'),
-(22, 12, N'Ranger 2.0L Wildtrak 4x4',     950000000,  N'Đỏ',   N'2.0L Turbo Diesel',    N'AT 10 cấp',    N'Dầu',          6, '', '', N'Còn hàng'),
--- Territory (dong 13)
-(23, 13, N'Territory 1.8L Titanium',      850000000,  N'Xanh', N'1.8L Turbo',           N'AT 7 cấp',     N'Xăng',         4, '', '', N'Còn hàng'),
--- 3 Series (dong 14)
-(24, 14, N'320i Sport Line',              1600000000, N'Đen',  N'2.0L Turbo 4 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '/images/cars/bmw320.jpg',      '', N'Còn hàng'),
-(25, 14, N'330i M Sport',                 1900000000, N'Xanh', N'2.0L Turbo 4 xi-lanh', N'AT 8 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- 5 Series (dong 15)
-(26, 15, N'520i Luxury',                  2300000000, N'Bạc',  N'2.0L Turbo 4 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
-(27, 15, N'530i M Sport',                 2700000000, N'Đen',  N'3.0L Turbo 6 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- X3 (dong 16)
-(28, 16, N'X3 xDrive20i',                 2000000000, N'Trắng',N'2.0L Turbo 4 xi-lanh', N'AT 8 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
-(29, 16, N'X3 M40i',                      2800000000, N'Xanh', N'3.0L Turbo 6 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- X5 (dong 17)
-(30, 17, N'X5 xDrive40i',                 3500000000, N'Đen',  N'3.0L Turbo 6 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- Lux SA (dong 18)
-(31, 18, N'Lux SA 2.0T Base',             1100000000, N'Trắng',N'2.0L Turbo',           N'AT 8 cấp',     N'Xăng',         7, '/images/cars/luxsa.jpg',       '', N'Còn hàng'),
-(32, 18, N'Lux SA 2.0T Premium',          1300000000, N'Đen',  N'2.0L Turbo',           N'AT 8 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
--- Fadil (dong 19)
-(33, 19, N'Fadil 1.2 Base',               360000000,  N'Đỏ',   N'1.2L 3 xi-lanh',       N'MT 5 cấp',     N'Xăng',         15, '/images/cars/fadil.jpg',       '', N'Còn hàng'),
-(34, 19, N'Fadil 1.2 AT',                 395000000,  N'Bạc',  N'1.2L 3 xi-lanh',       N'CVT',          N'Xăng',         12, '', '', N'Còn hàng'),
--- VF e34 (dong 20)
-(35, 20, N'VF e34 Eco',                   710000000,  N'Xanh', N'Điện động cơ 110kW',   N'1 cấp',        N'Điện',         5, '', '', N'Còn hàng'),
-(36, 20, N'VF e34 Plus',                  770000000,  N'Trắng',N'Điện động cơ 110kW',   N'1 cấp',        N'Điện',         3, '', '', N'Còn hàng'),
--- VF 8 (dong 21)
-(37, 21, N'VF 8 Eco',                     1050000000, N'Xanh', N'Điện động cơ 260kW',   N'1 cấp',        N'Điện',         4, '', '', N'Còn hàng'),
-(38, 21, N'VF 8 Plus',                    1150000000, N'Đỏ',   N'Điện động cơ 300kW',   N'1 cấp',        N'Điện',         2, '', '', N'Còn hàng'),
--- VF 9 (dong 22)
-(39, 22, N'VF 9 Eco',                     1600000000, N'Bạc',  N'Điện động cơ 300kW',   N'1 cấp',        N'Điện',         2, '', '', N'Còn hàng'),
-(40, 22, N'VF 9 Plus',                    1800000000, N'Đen',  N'Điện động cơ 300kW',   N'1 cấp',        N'Điện',         1, '', '', N'Còn hàng'),
--- C-Class (dong 23)
-(41, 23, N'C200 Avantgarde',              1500000000, N'Bạc',  N'1.5L Turbo + 48V',     N'AT 9 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
-(42, 23, N'C300 AMG Line',                1850000000, N'Đen',  N'2.0L Turbo',           N'AT 9 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- E-Class (dong 24)
-(43, 24, N'E200 Exclusive',               2100000000, N'Trắng',N'2.0L Turbo',           N'AT 9 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
-(44, 24, N'E300 AMG Line',                2500000000, N'Xanh', N'2.0L Turbo',           N'AT 9 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- S-Class (dong 25)
-(45, 25, N'S450L 4MATIC',                 5500000000, N'Đen',  N'3.0L Turbo 6 xi-lanh', N'AT 9 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- GLC (dong 26)
-(46, 26, N'GLC 200 4MATIC',               1900000000, N'Xám',  N'2.0L Turbo',           N'AT 9 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
-(47, 26, N'GLC 300 4MATIC',               2300000000, N'Trắng',N'2.0L Turbo',           N'AT 9 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- GLE (dong 27)
-(48, 27, N'GLE 300d 4MATIC',              3000000000, N'Đen',  N'3.0L Turbo Diesel',    N'AT 9 cấp',     N'Dầu',          1, '', '', N'Còn hàng'),
-(49, 27, N'GLE 450 4MATIC',               3700000000, N'Xanh', N'3.0L Turbo 6 xi-lanh', N'AT 9 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- A3 (dong 28)
-(50, 28, N'A3 35 TFSI',                   1250000000, N'Bạc',  N'1.4L Turbo',           N'AT 7 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
--- A4 (dong 29)
-(51, 29, N'A4 40 TFSI',                   1600000000, N'Đen',  N'2.0L Turbo',           N'AT 7 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
-(52, 29, N'A4 45 TFSI Quattro',           1850000000, N'Trắng',N'2.0L Turbo',           N'AT 7 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- Q5 (dong 30)
-(53, 30, N'Q5 40 TFSI',                   2200000000, N'Xanh', N'2.0L Turbo',           N'AT 7 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- Q7 (dong 31)
-(54, 31, N'Q7 45 TFSI Quattro',           3200000000, N'Đen',  N'3.0L Turbo 6 xi-lanh', N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- ES (dong 32)
-(55, 32, N'ES 250',                       2300000000, N'Bạc',  N'2.5L 4 xi-lanh',       N'AT 8 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- RX (dong 33)
-(56, 33, N'RX 350 F Sport',               3300000000, N'Đen',  N'3.5L V6',              N'AT 8 cấp',     N'Xăng',         1, '', '', N'Còn hàng'),
--- NX (dong 34)
-(57, 34, N'NX 250',                       2100000000, N'Xám',  N'2.5L 4 xi-lanh',       N'AT 8 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
-(58, 34, N'NX 350h',                      2400000000, N'Xanh', N'2.5L Hybrid',          N'e-CVT',        N'Xăng + Điện',  1, '', '', N'Còn hàng'),
--- Santa Fe (dong 35)
-(59, 35, N'Santa Fe 2.5 Premium',         1150000000, N'Xanh', N'2.5L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         5, '', '', N'Còn hàng'),
-(60, 35, N'Santa Fe 2.2D Calligraphy',    1350000000, N'Đen',  N'2.2L Turbo Diesel',    N'AT 8 cấp',     N'Dầu',          3, '', '', N'Còn hàng'),
--- Tucson (dong 36)
-(61, 36, N'Tucson 2.0X Tiêu chuẩn',       750000000,  N'Trắng',N'2.0L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         8, '', '', N'Còn hàng'),
-(62, 36, N'Tucson 1.6T Đặc biệt',         900000000,  N'Đỏ',   N'1.6L Turbo',           N'AT 7 cấp',     N'Xăng',         4, '', '', N'Còn hàng'),
--- Accent (dong 37)
-(63, 37, N'Accent 1.4MT Base',            430000000,  N'Bạc',  N'1.4L 4 xi-lanh',       N'MT 6 cấp',     N'Xăng',         12, '', '', N'Còn hàng'),
-(64, 37, N'Accent 1.4AT Đặc biệt',        500000000,  N'Đen',  N'1.4L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         8, '', '', N'Còn hàng'),
--- Creta (dong 38)
-(65, 38, N'Creta 1.5 Tiêu chuẩn',         640000000,  N'Xanh', N'1.5L 4 xi-lanh',       N'MT 6 cấp',     N'Xăng',         6, '', '', N'Còn hàng'),
-(66, 38, N'Creta 1.5 Đặc biệt',           720000000,  N'Trắng',N'1.5L 4 xi-lanh',       N'CVT',          N'Xăng',         4, '', '', N'Còn hàng'),
--- Sorento (dong 39)
-(67, 39, N'Sorento 2.5 X-Line',           1250000000, N'Đen',  N'2.5L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
-(68, 39, N'Sorento 2.2D Premium',         1450000000, N'Xám',  N'2.2L Turbo Diesel',    N'AT 8 cấp',     N'Dầu',          2, '', '', N'Còn hàng'),
--- Sportage (dong 40)
-(69, 40, N' Sportage 2.0 Tiêu chuẩn',     800000000,  N'Trắng',N'2.0L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         5, '', '', N'Còn hàng'),
-(70, 40, N' Sportage 1.6T GT-Line',       1000000000, N'Xanh', N'1.6L Turbo',           N'AT 7 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
--- Cerato (dong 41)
-(71, 41, N'Cerato 1.6MT',                 580000000,  N'Bạc',  N'1.6L 4 xi-lanh',       N'MT 6 cấp',     N'Xăng',         7, '', '', N'Còn hàng'),
-(72, 41, N'Cerato 2.0AT',                 680000000,  N'Đỏ',   N'2.0L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         5, '', '', N'Còn hàng'),
--- Morning (dong 42)
-(73, 42, N'Morning 1.25MT',               360000000,  N'Đỏ',   N'1.25L 4 xi-lanh',      N'MT 5 cấp',     N'Xăng',         18, '', '', N'Còn hàng'),
-(74, 42, N'Morning 1.25AT',               400000000,  N'Trắng',N'1.25L 4 xi-lanh',      N'AT 4 cấp',     N'Xăng',         14, '', '', N'Còn hàng'),
--- CX-5 (dong 43)
-(75, 43, N'CX-5 2.0L Deluxe',             850000000,  N'Đỏ',   N'2.0L SkyActiv',       N'AT 6 cấp',     N'Xăng',         6, '', '', N'Còn hàng'),
-(76, 43, N'CX-5 2.5L Signature',          1050000000, N'Xanh', N'2.5L SkyActiv',       N'AT 6 cấp',     N'Xăng',         4, '', '', N'Còn hàng'),
--- CX-8 (dong 44)
-(77, 44, N'CX-8 2.5L Premium',           1150000000, N'Đen',  N'2.5L SkyActiv',       N'AT 6 cấp',     N'Xăng',         3, '', '', N'Còn hàng'),
--- Mazda3 (dong 45)
-(78, 45, N'Mazda3 1.5L Deluxe',          620000000,  N'Bạc',  N'1.5L SkyActiv',       N'AT 6 cấp',     N'Xăng',         8, '', '', N'Còn hàng'),
-(79, 45, N'Mazda3 2.0L Premium',         720000000,  N'Đỏ',   N'2.0L SkyActiv',       N'AT 6 cấp',     N'Xăng',         5, '', '', N'Còn hàng'),
--- Mazda6 (dong 46)
-(80, 46, N'Mazda6 2.0L Deluxe',          850000000,  N'Xám',  N'2.0L SkyActiv',       N'AT 6 cấp',     N'Xăng',         4, '', '', N'Còn hàng'),
-(81, 46, N'Mazda6 2.5L Premium',         1000000000, N'Đen',  N'2.5L SkyActiv',       N'AT 6 cấp',     N'Xăng',         2, '', '', N'Còn hàng'),
--- Swift (dong 47)
-(82, 47, N'Swift 1.2L AT',               480000000,  N'Xanh', N'1.2L 4 xi-lanh',       N'CVT',          N'Xăng',         6, '', '', N'Còn hàng'),
--- Vitara (dong 48)
-(83, 48, N'Vitara 1.6L AT',              680000000,  N'Xám',  N'1.6L 4 xi-lanh',       N'AT 6 cấp',     N'Xăng',         4, '', '', N'Còn hàng'),
--- Ertiga (dong 49)
-(84, 49, N'Ertiga 1.5L AT',              580000000,  N'Trắng',N'1.5L 4 xi-lanh',       N'AT 4 cấp',     N'Xăng',         5, '', '', N'Còn hàng'),
--- Xpander (dong 50)
-(85, 50, N'Xpander 1.5L AT',             660000000,  N'Bạc',  N'1.5L 4 xi-lanh',       N'AT 4 cấp',     N'Xăng',         7, '', '', N'Còn hàng'),
--- Outlander (dong 51)
-(86, 51, N'Outlander 2.0L CVT',          950000000,  N'Xanh', N'2.0L 4 xi-lanh',       N'CVT',          N'Xăng',         3, '', '', N'Còn hàng'),
--- Triton (dong 52)
-(87, 52, N'Triton 2.4L 4x2 AT',          720000000,  N'Trắng',N'2.4L Turbo Diesel',    N'AT 5 cấp',     N'Dầu',          6, '', '', N'Còn hàng'),
-(88, 52, N'Triton 2.4L 4x4 AT',          850000000,  N'Đen',  N'2.4L Turbo Diesel',    N'AT 5 cấp',     N'Dầu',          4, '', '', N'Còn hàng'),
--- Navara (dong 53)
-(89, 53, N'Navara 2.5L 4x2 AT',          750000000,  N'Trắng',N'2.5L Turbo Diesel',    N'AT 7 cấp',     N'Dầu',          5, '', '', N'Còn hàng'),
-(90, 53, N'Navara 2.5L 4x4 AT',          950000000,  N'Đỏ',   N'2.5L Turbo Diesel',    N'AT 7 cấp',     N'Dầu',          3, '', '', N'Còn hàng'),
--- Kicks (dong 54)
-(91, 54, N'Kicks 1.2L AT',               680000000,  N'Xanh', N'1.2L 3 xi-lanh',       N'CVT',          N'Xăng',         4, '', '', N'Còn hàng'),
--- Almera (dong 55)
-(92, 55, N'Almera 1.5L AT',              550000000,  N'Bạc',  N'1.5L 4 xi-lanh',       N'CVT',          N'Xăng',         6, '', '', N'Còn hàng'),
--- Forester (dong 56)
-(93, 56, N'Forester 2.0L i-L',           1150000000, N'Xanh', N'2.0L 4 xi-lanh',       N'CVT',          N'Xăng',         2, '', '', N'Còn hàng'),
-(94, 56, N'Forester 2.0L i-S',           1300000000, N'Xám',  N'2.0L 4 xi-lanh',       N'CVT',          N'Xăng',         1, '', '', N'Còn hàng'),
--- Outback (dong 57)
-(95, 57, N'Outback 2.5L',                1700000000, N'Đen',  N'2.5L 4 xi-lanh',       N'CVT',          N'Xăng',         1, '', '', N'Còn hàng'),
--- XV (dong 58)
-(96, 58, N'XV 2.0L',                     900000000,  N'Xanh', N'2.0L 4 xi-lanh',       N'CVT',          N'Xăng',         2, '', '', N'Còn hàng');
-SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 6)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (6,N'Mercedes-Benz',N'Đức',N'/images/brands/mercedes.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Mercedes-Benz', QuocGia=N'Đức' WHERE MaHang = 6;
 
--- ==================== 6. THÊM CHI NHÁNH ====================
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN01', N'Showroom TP. Hồ Chí Minh (Cơ sở 1)', N'123 Nguyễn Văn Linh, P. Tân Phong, Quận 7', N'TP. Hồ Chí Minh', '0909123456', 'QuanlyCS1', N'Hoạt động');
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN02', N'Showroom TP. Hồ Chí Minh (Cơ sở 2)', N'456 Xa lộ Hà Nội, P. Bình Thọ, TP. Thủ Đức', N'TP. Hồ Chí Minh', '0911222333', 'QuanlyCS2', N'Hoạt động');
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN03', N'Showroom Hà Nội (Cơ sở 3)', N'789 Trần Duy Hưng, P. Trung Hòa, Q. Cầu Giấy', N'Hà Nội', '0922333444', 'QuanlyCS3', N'Hoạt động');
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN04', N'Showroom Hà Nội (Cơ sở 4)', N'321 Giải Phóng, P. Hoàng Văn Thụ, Q. Hoàng Mai', N'Hà Nội', '0933444555', 'QuanlyCS4', N'Hoạt động');
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN05', N'Showroom Đà Nẵng (Cơ sở 5)', N'654 Nguyễn Văn Linh, P. Khuê Trung, Q. Hải Châu', N'Đà Nẵng', '0944555666', 'QuanlyCS5', N'Hoạt động');
-INSERT INTO ChiNhanhShowroom (MaChiNhanh, TenChiNhanh, DiaChi, ThanhPho, DuongDayNong, MaQuanLy, TrangThai)
-VALUES ('CN06', N'Showroom Hải Phòng (Cơ sở 6)', N'987 Võ Nguyên Giáp, P. Vĩnh Niệm, Q. Lê Chân', N'Hải Phòng', '0955666777', 'QuanlyCS6', N'Hoạt động');
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 7)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (7,N'Audi',N'Đức',N'/images/brands/audi.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Audi', QuocGia=N'Đức' WHERE MaHang = 7;
 
--- ==================== 5b. TỒN KHO THEO CHI NHÁNH ====================
-SET IDENTITY_INSERT TonKhoTheoChiNhanh ON;
-INSERT INTO TonKhoTheoChiNhanh (MaTonKho, MaPhienBan, MaChiNhanh, SoLuong, NgayCapNhat) VALUES
-(1002, 1, 'CN01', 1, '2026-07-29 11:37:59'),
-(1003, 1, 'CN02', 1, '2026-07-29 11:37:59'),
-(1004, 1, 'CN03', 1, '2026-07-29 11:37:59'),
-(1005, 1, 'CN06', 2, '2026-07-29 11:37:59'),
-(1006, 2, 'CN01', 1, '2026-07-29 11:37:59'),
-(1007, 2, 'CN06', 2, '2026-07-29 11:37:59'),
-(1008, 3, 'CN01', 2, '2026-07-29 11:37:59'),
-(1009, 3, 'CN02', 1, '2026-07-29 11:37:59'),
-(1010, 3, 'CN03', 1, '2026-07-29 11:37:59'),
-(1011, 3, 'CN06', 3, '2026-07-29 11:37:59'),
-(1012, 4, 'CN01', 1, '2026-07-29 11:37:59'),
-(1013, 4, 'CN02', 1, '2026-07-29 11:37:59'),
-(1014, 4, 'CN06', 2, '2026-07-29 11:37:59'),
-(1015, 5, 'CN01', 2, '2026-07-29 11:37:59'),
-(1016, 5, 'CN02', 1, '2026-07-29 11:37:59'),
-(1017, 5, 'CN03', 1, '2026-07-29 11:37:59'),
-(1018, 5, 'CN06', 2, '2026-07-29 11:37:59'),
-(1019, 6, 'CN06', 2, '2026-07-29 11:37:59'),
-(1020, 7, 'CN01', 2, '2026-07-29 11:37:59'),
-(1021, 7, 'CN02', 1, '2026-07-29 11:37:59'),
-(1022, 7, 'CN03', 1, '2026-07-29 11:37:59'),
-(1023, 7, 'CN06', 3, '2026-07-29 11:37:59'),
-(1024, 8, 'CN01', 1, '2026-07-29 11:37:59'),
-(1025, 8, 'CN06', 2, '2026-07-29 11:37:59'),
-(1026, 9, 'CN01', 5, '2026-07-29 11:37:59'),
-(1027, 9, 'CN02', 3, '2026-07-29 11:37:59'),
-(1028, 9, 'CN03', 3, '2026-07-29 11:37:59'),
-(1029, 9, 'CN04', 1, '2026-07-29 11:37:59'),
-(1030, 9, 'CN06', 3, '2026-07-29 11:37:59'),
-(1031, 10, 'CN01', 3, '2026-07-29 11:37:59'),
-(1032, 10, 'CN02', 2, '2026-07-29 11:37:59'),
-(1033, 10, 'CN03', 2, '2026-07-29 11:37:59'),
-(1034, 10, 'CN04', 1, '2026-07-29 11:37:59'),
-(1035, 10, 'CN06', 2, '2026-07-29 11:37:59'),
-(1036, 11, 'CN01', 2, '2026-07-29 11:37:59'),
-(1037, 11, 'CN02', 1, '2026-07-29 11:37:59'),
-(1038, 11, 'CN03', 1, '2026-07-29 11:37:59'),
-(1039, 11, 'CN06', 2, '2026-07-29 11:37:59'),
-(1040, 12, 'CN01', 1, '2026-07-29 11:37:59'),
-(1041, 12, 'CN06', 2, '2026-07-29 11:37:59'),
-(1042, 13, 'CN01', 1, '2026-07-29 11:37:59'),
-(1043, 13, 'CN02', 1, '2026-07-29 11:37:59'),
-(1044, 13, 'CN06', 2, '2026-07-29 11:37:59'),
-(1045, 14, 'CN06', 2, '2026-07-29 11:37:59'),
-(1046, 15, 'CN01', 1, '2026-07-29 11:37:59'),
-(1047, 15, 'CN02', 1, '2026-07-29 11:37:59'),
-(1048, 15, 'CN03', 1, '2026-07-29 11:37:59'),
-(1049, 15, 'CN06', 2, '2026-07-29 11:37:59'),
-(1050, 16, 'CN06', 2, '2026-07-29 11:37:59'),
-(1051, 17, 'CN01', 1, '2026-07-29 11:37:59'),
-(1052, 17, 'CN02', 1, '2026-07-29 11:37:59'),
-(1053, 17, 'CN06', 2, '2026-07-29 11:37:59'),
-(1054, 18, 'CN06', 1, '2026-07-29 11:37:59'),
-(1055, 19, 'CN01', 1, '2026-07-29 11:37:59'),
-(1056, 19, 'CN02', 1, '2026-07-29 11:37:59'),
-(1057, 19, 'CN03', 1, '2026-07-29 11:37:59'),
-(1058, 19, 'CN06', 2, '2026-07-29 11:37:59'),
-(1059, 20, 'CN01', 1, '2026-07-29 11:37:59'),
-(1060, 20, 'CN06', 2, '2026-07-29 11:37:59'),
-(1061, 21, 'CN01', 3, '2026-07-29 11:37:59'),
-(1062, 21, 'CN02', 2, '2026-07-29 11:37:59'),
-(1063, 21, 'CN03', 2, '2026-07-29 11:37:59'),
-(1064, 21, 'CN04', 1, '2026-07-29 11:37:59'),
-(1065, 21, 'CN06', 2, '2026-07-29 11:37:59'),
-(1066, 22, 'CN01', 2, '2026-07-29 11:37:59'),
-(1067, 22, 'CN02', 1, '2026-07-29 11:37:59'),
-(1068, 22, 'CN03', 1, '2026-07-29 11:37:59'),
-(1069, 22, 'CN06', 2, '2026-07-29 11:37:59'),
-(1070, 23, 'CN01', 1, '2026-07-29 11:37:59'),
-(1071, 23, 'CN02', 1, '2026-07-29 11:37:59'),
-(1072, 23, 'CN06', 2, '2026-07-29 11:37:59'),
-(1073, 25, 'CN06', 2, '2026-07-29 11:37:59'),
-(1074, 26, 'CN06', 1, '2026-07-29 11:37:59'),
-(1075, 27, 'CN06', 1, '2026-07-29 11:37:59'),
-(1076, 28, 'CN06', 2, '2026-07-29 11:37:59'),
-(1077, 29, 'CN06', 1, '2026-07-29 11:37:59'),
-(1078, 30, 'CN06', 1, '2026-07-29 11:37:59'),
-(1079, 31, 'CN01', 2, '2026-07-29 11:37:59'),
-(1080, 31, 'CN02', 1, '2026-07-29 11:37:59'),
-(1081, 31, 'CN03', 1, '2026-07-29 11:37:59'),
-(1082, 31, 'CN06', 2, '2026-07-29 11:37:59'),
-(1083, 32, 'CN01', 1, '2026-07-29 11:37:59'),
-(1084, 32, 'CN06', 2, '2026-07-29 11:37:59'),
-(1085, 33, 'CN01', 5, '2026-07-29 11:37:59'),
-(1086, 33, 'CN02', 3, '2026-07-29 11:37:59'),
-(1087, 33, 'CN03', 3, '2026-07-29 11:37:59'),
-(1088, 33, 'CN04', 1, '2026-07-29 11:37:59'),
-(1089, 33, 'CN06', 3, '2026-07-29 11:37:59'),
-(1090, 34, 'CN01', 4, '2026-07-29 11:37:59'),
-(1091, 34, 'CN02', 3, '2026-07-29 11:37:59'),
-(1092, 34, 'CN03', 2, '2026-07-29 11:37:59'),
-(1093, 34, 'CN04', 1, '2026-07-29 11:37:59'),
-(1094, 34, 'CN06', 2, '2026-07-29 11:37:59'),
-(1095, 35, 'CN01', 1, '2026-07-29 11:37:59'),
-(1096, 35, 'CN02', 1, '2026-07-29 11:37:59'),
-(1097, 35, 'CN03', 1, '2026-07-29 11:37:59'),
-(1098, 35, 'CN06', 2, '2026-07-29 11:37:59'),
-(1099, 36, 'CN01', 1, '2026-07-29 11:37:59'),
-(1100, 36, 'CN06', 2, '2026-07-29 11:37:59'),
-(1101, 37, 'CN01', 1, '2026-07-29 11:37:59'),
-(1102, 37, 'CN06', 2, '2026-07-29 11:37:59'),
-(1103, 38, 'CN06', 2, '2026-07-29 11:37:59'),
-(1104, 39, 'CN06', 2, '2026-07-29 11:37:59'),
-(1105, 40, 'CN06', 1, '2026-07-29 11:37:59'),
-(1106, 41, 'CN06', 2, '2026-07-29 11:37:59'),
-(1107, 42, 'CN06', 2, '2026-07-29 11:37:59'),
-(1108, 43, 'CN06', 2, '2026-07-29 11:37:59'),
-(1109, 44, 'CN06', 1, '2026-07-29 11:37:59'),
-(1110, 45, 'CN06', 1, '2026-07-29 11:37:59'),
-(1111, 46, 'CN01', 1, '2026-07-29 11:37:59'),
-(1112, 46, 'CN06', 2, '2026-07-29 11:37:59'),
-(1113, 47, 'CN06', 2, '2026-07-29 11:37:59'),
-(1114, 48, 'CN06', 1, '2026-07-29 11:37:59'),
-(1115, 49, 'CN06', 1, '2026-07-29 11:37:59'),
-(1116, 50, 'CN01', 1, '2026-07-29 11:37:59'),
-(1117, 50, 'CN06', 2, '2026-07-29 11:37:59'),
-(1118, 51, 'CN06', 2, '2026-07-29 11:37:59'),
-(1119, 52, 'CN06', 1, '2026-07-29 11:37:59'),
-(1120, 53, 'CN06', 2, '2026-07-29 11:37:59'),
-(1121, 54, 'CN06', 1, '2026-07-29 11:37:59'),
-(1122, 55, 'CN06', 2, '2026-07-29 11:37:59'),
-(1123, 56, 'CN06', 1, '2026-07-29 11:37:59'),
-(1124, 57, 'CN06', 2, '2026-07-29 11:37:59'),
-(1125, 58, 'CN06', 1, '2026-07-29 11:37:59'),
-(1126, 59, 'CN01', 1, '2026-07-29 11:37:59'),
-(1127, 59, 'CN02', 1, '2026-07-29 11:37:59'),
-(1128, 59, 'CN06', 2, '2026-07-29 11:37:59'),
-(1129, 60, 'CN01', 1, '2026-07-29 11:37:59'),
-(1130, 60, 'CN06', 2, '2026-07-29 11:37:59'),
-(1131, 61, 'CN01', 2, '2026-07-29 11:37:59'),
-(1132, 61, 'CN02', 2, '2026-07-29 11:37:59'),
-(1133, 61, 'CN03', 1, '2026-07-29 11:37:59'),
-(1134, 61, 'CN06', 3, '2026-07-29 11:37:59'),
-(1135, 62, 'CN01', 1, '2026-07-29 11:37:59'),
-(1136, 62, 'CN02', 1, '2026-07-29 11:37:59'),
-(1137, 62, 'CN06', 2, '2026-07-29 11:37:59'),
-(1138, 63, 'CN01', 4, '2026-07-29 11:37:59'),
-(1139, 63, 'CN02', 3, '2026-07-29 11:37:59'),
-(1140, 63, 'CN03', 2, '2026-07-29 11:37:59'),
-(1141, 63, 'CN04', 1, '2026-07-29 11:37:59'),
-(1142, 63, 'CN06', 2, '2026-07-29 11:37:59'),
-(1143, 64, 'CN01', 2, '2026-07-29 11:37:59'),
-(1144, 64, 'CN02', 2, '2026-07-29 11:37:59'),
-(1145, 64, 'CN03', 1, '2026-07-29 11:37:59'),
-(1146, 64, 'CN06', 3, '2026-07-29 11:37:59'),
-(1147, 65, 'CN01', 2, '2026-07-29 11:37:59'),
-(1148, 65, 'CN02', 1, '2026-07-29 11:37:59'),
-(1149, 65, 'CN03', 1, '2026-07-29 11:37:59'),
-(1150, 65, 'CN06', 2, '2026-07-29 11:37:59'),
-(1151, 66, 'CN01', 1, '2026-07-29 11:37:59'),
-(1152, 66, 'CN02', 1, '2026-07-29 11:37:59'),
-(1153, 66, 'CN06', 2, '2026-07-29 11:37:59'),
-(1154, 67, 'CN01', 1, '2026-07-29 11:37:59'),
-(1155, 67, 'CN06', 2, '2026-07-29 11:37:59'),
-(1156, 68, 'CN06', 2, '2026-07-29 11:37:59'),
-(1157, 69, 'CN01', 1, '2026-07-29 11:37:59'),
-(1158, 69, 'CN02', 1, '2026-07-29 11:37:59'),
-(1159, 69, 'CN03', 1, '2026-07-29 11:37:59'),
-(1160, 69, 'CN06', 2, '2026-07-29 11:37:59'),
-(1161, 70, 'CN01', 1, '2026-07-29 11:37:59'),
-(1162, 70, 'CN06', 2, '2026-07-29 11:37:59'),
-(1163, 71, 'CN01', 2, '2026-07-29 11:37:59'),
-(1164, 71, 'CN02', 1, '2026-07-29 11:37:59'),
-(1165, 71, 'CN03', 1, '2026-07-29 11:37:59'),
-(1166, 71, 'CN06', 3, '2026-07-29 11:37:59'),
-(1167, 72, 'CN01', 1, '2026-07-29 11:37:59'),
-(1168, 72, 'CN02', 1, '2026-07-29 11:37:59'),
-(1169, 72, 'CN03', 1, '2026-07-29 11:37:59'),
-(1170, 72, 'CN06', 2, '2026-07-29 11:37:59'),
-(1171, 73, 'CN01', 6, '2026-07-29 11:37:59'),
-(1172, 73, 'CN02', 4, '2026-07-29 11:37:59'),
-(1173, 73, 'CN03', 3, '2026-07-29 11:37:59'),
-(1174, 73, 'CN04', 1, '2026-07-29 11:37:59'),
-(1175, 73, 'CN06', 4, '2026-07-29 11:37:59'),
-(1176, 74, 'CN01', 4, '2026-07-29 11:37:59'),
-(1177, 74, 'CN02', 3, '2026-07-29 11:37:59'),
-(1178, 74, 'CN03', 2, '2026-07-29 11:37:59'),
-(1179, 74, 'CN04', 1, '2026-07-29 11:37:59'),
-(1180, 74, 'CN06', 4, '2026-07-29 11:37:59'),
-(1181, 75, 'CN01', 2, '2026-07-29 11:37:59'),
-(1182, 75, 'CN02', 1, '2026-07-29 11:37:59'),
-(1183, 75, 'CN03', 1, '2026-07-29 11:37:59'),
-(1184, 75, 'CN06', 2, '2026-07-29 11:37:59'),
-(1185, 76, 'CN01', 1, '2026-07-29 11:37:59'),
-(1186, 76, 'CN02', 1, '2026-07-29 11:37:59'),
-(1187, 76, 'CN06', 2, '2026-07-29 11:37:59'),
-(1188, 77, 'CN01', 1, '2026-07-29 11:37:59'),
-(1189, 77, 'CN06', 2, '2026-07-29 11:37:59'),
-(1190, 78, 'CN01', 2, '2026-07-29 11:37:59'),
-(1191, 78, 'CN02', 2, '2026-07-29 11:37:59'),
-(1192, 78, 'CN03', 1, '2026-07-29 11:37:59'),
-(1193, 78, 'CN06', 3, '2026-07-29 11:37:59'),
-(1194, 79, 'CN01', 1, '2026-07-29 11:37:59'),
-(1195, 79, 'CN02', 1, '2026-07-29 11:37:59'),
-(1196, 79, 'CN03', 1, '2026-07-29 11:37:59'),
-(1197, 79, 'CN06', 2, '2026-07-29 11:37:59'),
-(1198, 80, 'CN01', 1, '2026-07-29 11:37:59'),
-(1199, 80, 'CN02', 1, '2026-07-29 11:37:59'),
-(1200, 80, 'CN06', 2, '2026-07-29 11:37:59'),
-(1201, 81, 'CN06', 2, '2026-07-29 11:37:59'),
-(1202, 82, 'CN01', 2, '2026-07-29 11:37:59'),
-(1203, 82, 'CN02', 1, '2026-07-29 11:37:59'),
-(1204, 82, 'CN03', 1, '2026-07-29 11:37:59'),
-(1205, 82, 'CN06', 2, '2026-07-29 11:37:59'),
-(1206, 83, 'CN01', 1, '2026-07-29 11:37:59'),
-(1207, 83, 'CN02', 1, '2026-07-29 11:37:59'),
-(1208, 83, 'CN06', 2, '2026-07-29 11:37:59'),
-(1209, 84, 'CN01', 1, '2026-07-29 11:37:59'),
-(1210, 84, 'CN02', 1, '2026-07-29 11:37:59'),
-(1211, 84, 'CN03', 1, '2026-07-29 11:37:59'),
-(1212, 84, 'CN06', 2, '2026-07-29 11:37:59'),
-(1213, 85, 'CN01', 2, '2026-07-29 11:37:59'),
-(1214, 85, 'CN02', 1, '2026-07-29 11:37:59'),
-(1215, 85, 'CN03', 1, '2026-07-29 11:37:59'),
-(1216, 85, 'CN06', 3, '2026-07-29 11:37:59'),
-(1217, 86, 'CN01', 1, '2026-07-29 11:37:59'),
-(1218, 86, 'CN06', 2, '2026-07-29 11:37:59'),
-(1219, 87, 'CN01', 2, '2026-07-29 11:37:59'),
-(1220, 87, 'CN02', 1, '2026-07-29 11:37:59'),
-(1221, 87, 'CN03', 1, '2026-07-29 11:37:59'),
-(1222, 87, 'CN06', 2, '2026-07-29 11:37:59'),
-(1223, 88, 'CN01', 1, '2026-07-29 11:37:59'),
-(1224, 88, 'CN02', 1, '2026-07-29 11:37:59'),
-(1225, 88, 'CN06', 2, '2026-07-29 11:37:59'),
-(1226, 89, 'CN01', 1, '2026-07-29 11:37:59'),
-(1227, 89, 'CN02', 1, '2026-07-29 11:37:59'),
-(1228, 89, 'CN03', 1, '2026-07-29 11:37:59'),
-(1229, 89, 'CN06', 2, '2026-07-29 11:37:59'),
-(1230, 90, 'CN01', 1, '2026-07-29 11:37:59'),
-(1231, 90, 'CN06', 2, '2026-07-29 11:37:59'),
-(1232, 91, 'CN01', 1, '2026-07-29 11:37:59'),
-(1233, 91, 'CN02', 1, '2026-07-29 11:37:59'),
-(1234, 91, 'CN06', 2, '2026-07-29 11:37:59'),
-(1235, 92, 'CN01', 2, '2026-07-29 11:37:59'),
-(1236, 92, 'CN02', 1, '2026-07-29 11:37:59'),
-(1237, 92, 'CN03', 1, '2026-07-29 11:37:59'),
-(1238, 92, 'CN06', 2, '2026-07-29 11:37:59'),
-(1239, 93, 'CN06', 2, '2026-07-29 11:37:59'),
-(1240, 94, 'CN06', 1, '2026-07-29 11:37:59'),
-(1241, 95, 'CN06', 1, '2026-07-29 11:37:59'),
-(1242, 96, 'CN06', 2, '2026-07-29 11:37:59');
-SET IDENTITY_INSERT TonKhoTheoChiNhanh OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 8)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (8,N'Lexus',N'Nhật Bản',N'/images/brands/lexus.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Lexus', QuocGia=N'Nhật Bản' WHERE MaHang = 8;
 
--- ==================== 7. THÊM KHUYẾN MÃI ====================
-INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM01', N'Giảm 50% lệ phí trước bạ', N'Áp dụng cho tất cả dòng xe', N'Phần trăm', 50, 50000000, '2024-01-01', '2024-03-31', N'Hoạt động');
-INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM02', N'Giảm ngay 20 triệu', N'Cho dòng xe Toyota Vios và Hyundai Accent', N'Số tiền', 20000000, 20000000, '2026-07-01', '2026-09-30', N'Hoạt động');
-INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM03', N'Tặng gói phụ kiện 15 triệu', N'Cho khách đặt cọc xe Mercedes trước 30/09', N'Số tiền', 15000000, 15000000, '2026-07-01', '2026-09-30', N'Hoạt động');
-INSERT INTO ChuongTrinhKhuyenMai (MaKhuyenMai, TieuDe, MoTa, LoaiGiamGia, GiaTriGiam, MucGiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
-VALUES ('KM04', N'Giảm 10% cho xe điện VinFast', N'Áp dụng cho VF e34, VF 8, VF 9', N'Phần trăm', 10, 150000000, '2026-08-01', '2026-12-31', N'Hoạt động');
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 9)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (9,N'Hyundai',N'Hàn Quốc',N'/images/brands/hyundai.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Hyundai', QuocGia=N'Hàn Quốc' WHERE MaHang = 9;
 
--- ==================== 8. THÊM BANNER ====================
-SET IDENTITY_INSERT QuangCaoBanner ON;
-INSERT INTO QuangCaoBanner (MaBanner, DuongDanAnh, DuongDanLienKet, ThuTuHienThi, MaQuanLyCapNhat, TrangThaiKichHoat) VALUES
-(1, '/images/banners/banner1.jpg', '/Details/1',  1, 'fntzzs682@gmail.com', 1),
-(2, '/images/banners/banner2.jpg', '/Details/31', 2, 'fntzzs682@gmail.com', 1),
-(3, '/images/banners/banner3.jpg', '/Details/24', 3, 'fntzzs682@gmail.com', 1),
-(4, '/images/banners/banner4.jpg', '/Details/41', 4, 'fntzzs682@gmail.com', 1),
-(5, '/images/banners/banner5.jpg', '/Details/37', 5, 'fntzzs682@gmail.com', 1);
-SET IDENTITY_INSERT QuangCaoBanner OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 10)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (10,N'Kia',N'Hàn Quốc',N'/images/brands/kia.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Kia', QuocGia=N'Hàn Quốc' WHERE MaHang = 10;
 
--- ==================== 9. THÊM KÊNH TƯ VẤN ====================
-SET IDENTITY_INSERT KenhTuVan ON;
-INSERT INTO KenhTuVan (MaKenh, UrlMessenger, UrlZalo, UrlSMS) VALUES
-(1, 'https://m.me/carshop', 'https://zalo.me/carshop', '0906123456');
-SET IDENTITY_INSERT KenhTuVan OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 11)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (11,N'Mazda',N'Nhật Bản',N'/images/brands/mazda.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Mazda', QuocGia=N'Nhật Bản' WHERE MaHang = 11;
 
--- ==================== 10. THÊM ĐƠN CỌC MẪU ====================
-SET IDENTITY_INSERT DonDatCoc ON;
--- Đã giao xe (MaDonCoc 1-6)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (1, 'user1', 31, 'QuanlyCS1', 'CN01', 200000000, N'Chuyển khoản', N'Đã thanh toán', '2026-01-15 09:30:00', '2026-02-20', N'Đã giao xe', N'Giao tại showroom Quận 7', N'Nguyễn Văn A', '0901000001', N'123 Lê Lợi, Quận 1', 'MGC250701-1');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (2, 'user2', 3,  'QuanlyCS2', 'CN02', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-02-10 14:00:00', '2026-03-05', N'Đã giao xe', N'Xe màu bạc', N'Trần Văn B', '0901000002', N'456 Nguyễn Huệ, Quận 1', 'MGC250702-2');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (3, 'user3', 59, 'QuanlyCS3', 'CN03', 150000000, N'Tiền mặt', N'Đã thanh toán', '2026-03-05 10:00:00', '2026-03-28', N'Đã giao xe', N'Giao tại showroom Cầu Giấy', N'Lê Thị C', '0901000003', N'789 Trần Hưng Đạo, Hoàn Kiếm', 'MGC250703-3');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (4, 'user4', 24, 'QuanlyCS4', 'CN04', 450000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-20 15:30:00', '2026-04-15', N'Đã giao xe', N'Khách VIP - gói phụ kiện', N'Phạm Văn D', '0901000004', N'123 Nguyễn Văn Linh, Quận 7', 'MGC250704-4');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (5, 'user5', 41, 'QuanlyCS5', 'CN05', 300000000, N'Chuyển khoản', N'Đã thanh toán', '2026-03-25 08:00:00', '2026-04-20', N'Đã giao xe', N'Mercedes C200 màu bạc', N'Đỗ Thúy Hằng', '0901000011', N'456 Nguyễn Văn Linh, Đà Nẵng', 'MGC250711-11');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (6, 'user1', 37, 'QuanlyCS6', 'CN06', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-05 11:00:00', '2026-05-10', N'Đã giao xe', N'VF 8 màu xanh', N'Nguyễn Văn G', '0901000012', N'789 Văn Cao, Hải Phòng', 'MGC250712-12');
--- Đã xác nhận (MaDonCoc 7-9)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (7, 'user2', 2,  'QuanlyCS1', 'CN01', 250000000, N'Chuyển khoản', N'Đã thanh toán', '2026-04-10 09:00:00', '2026-05-20', N'Đã xác nhận', N'Camry Hybrid màu đen', N'Hoàng Thị E', '0901000005', N'456 Hải Phòng, Đà Nẵng', 'MGC250705-5');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (8, 'user3', 11, 'QuanlyCS2', 'CN02', 180000000, N'Tiền mặt', N'Đã thanh toán', '2026-05-05 11:30:00', '2026-06-10', N'Đã xác nhận', N'Civic Turbo màu đỏ', N'Đặng Văn F', '0901000006', N'789 Văn Cao, Hải Phòng', 'MGC250706-6');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, NgayHenNhanXe, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (9, 'user4', 75, 'QuanlyCS3', 'CN03', 100000000, N'Chuyển khoản', N'Đã thanh toán', '2026-06-20 14:00:00', '2026-07-25', N'Đã xác nhận', N'CX-5 Deluxe màu đỏ', N'Vũ Thị M', '0901000013', N'123 Hoàng Quốc Việt, Cầu Giấy', 'MGC250713-13');
--- Chờ xác nhận (MaDonCoc 10-12)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (10, 'user5', 17, 'QuanlyCS1', 'CN01', 200000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-01 08:00:00', N'Chờ xác nhận', N'Khách đang chờ vay ngân hàng', N'Nguyễn Văn H', '0901000007', N'123 Quận 7, TP.HCM', 'MGC250707-7');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (11, 'user1', 46, 'QuanlyCS2', 'CN02', 350000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-06-15 14:00:00', N'Chờ xác nhận', N'Khách muốn lái thử trước', N'Trần Thị K', '0901000008', N'456 Thủ Đức, TP.HCM', 'MGC250708-8');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (12, 'user2', 67, 'QuanlyCS3', 'CN03', 150000000, N'Chuyển khoản', N'Chưa thanh toán', '2026-07-01 09:00:00', N'Chờ xác nhận', N'Đang thương lượng giá', N'Lê Văn P', '0901000014', N'789 Cầu Giấy, Hà Nội', 'MGC250714-14');
--- Đã hủy (MaDonCoc 13-15)
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (13, 'user3', 33, 'QuanlyCS4', 'CN04', 100000000, N'Tiền mặt', N'Đã hoàn tiền', '2026-04-20 16:00:00', N'Đã hủy', N'Khách đổi ý không mua nữa', N'Lê Văn I', '0901000009', N'789 Cầu Giấy, Hà Nội', 'MGC250709-9');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (14, 'user4', 9,  'QuanlyCS5', 'CN05', 150000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-05-10 10:30:00', N'Đã hủy', N'Không đủ khả năng tài chính', N'Phạm Thị K', '0901000010', N'321 Hoàng Mai, Hà Nội', 'MGC250710-10');
-INSERT INTO DonDatCoc (MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyDuyet, MaChiNhanh, SoTienCoc, PhuongThucThanhToan, TrangThaiThanhToan, NgayTaoDon, TrangThaiDonHang, GhiChu, HoTen, SoDienThoai, DiaChi, MaGiaoDich)
-VALUES (15, 'user5', 61, 'QuanlyCS6', 'CN06', 80000000, N'Chuyển khoản', N'Đã hoàn tiền', '2026-06-25 15:00:00', N'Đã hủy', N'Chọn mua dòng xe khác', N'Ngô Văn Q', '0901000015', N'456 Lê Lợi, Hải Phòng', 'MGC250715-15');
-SET IDENTITY_INSERT DonDatCoc OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 12)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (12,N'Suzuki',N'Nhật Bản',N'/images/brands/suzuki.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Suzuki', QuocGia=N'Nhật Bản' WHERE MaHang = 12;
 
--- ==================== 10b. CHI TIẾT ĐƠN CỌC ====================
-SET IDENTITY_INSERT DonDatCocChiTiet ON;
-INSERT INTO DonDatCocChiTiet (MaChiTiet, MaDonCoc, MaPhienBan, MaChiNhanh, SoLuong, TrangThaiTiepNhan, NguoiPhanHoi, NgayPhanHoi, LyDoTuChoi) VALUES
-(1,  1,  31, 'CN01', 1, N'Đã tiếp nhận', 'QuanlyCS1', '2026-02-15 09:30:00', NULL),
-(2,  2,  3,  'CN02', 1, N'Đã tiếp nhận', 'QuanlyCS2', '2026-03-01 14:00:00', NULL),
-(3,  3,  59, 'CN03', 1, N'Đã tiếp nhận', 'QuanlyCS3', '2026-03-15 10:00:00', NULL),
-(4,  4,  24, 'CN04', 1, N'Đã tiếp nhận', 'QuanlyCS4', '2026-04-05 15:30:00', NULL),
-(5,  5,  41, 'CN05', 1, N'Đã tiếp nhận', 'QuanlyCS5', '2026-04-10 08:00:00', NULL),
-(6,  6,  37, 'CN06', 1, N'Đã tiếp nhận', 'QuanlyCS6', '2026-04-25 11:00:00', NULL),
-(7,  7,  2,  'CN01', 1, N'Đã tiếp nhận', 'QuanlyCS1', '2026-05-10 09:00:00', NULL),
-(8,  8,  11, 'CN02', 1, N'Đã tiếp nhận', 'QuanlyCS2', '2026-05-25 11:30:00', NULL),
-(9,  9,  75, 'CN03', 1, N'Đã tiếp nhận', 'QuanlyCS3', '2026-07-05 14:00:00', NULL),
-(10, 10, 17, 'CN01', 1, N'Chờ xác nhận', NULL, NULL, NULL),
-(11, 11, 46, 'CN02', 1, N'Chờ xác nhận', NULL, NULL, NULL),
-(12, 12, 67, 'CN03', 1, N'Chờ xác nhận', NULL, NULL, NULL),
-(13, 13, 33, 'CN04', 1, N'Từ chối', 'QuanlyCS4', '2026-05-01 16:00:00', N'Khách đổi ý không mua nữa'),
-(14, 14, 9,  'CN05', 1, N'Từ chối', 'QuanlyCS5', '2026-05-20 10:30:00', N'Không đủ khả năng tài chính'),
-(15, 15, 61, 'CN06', 1, N'Từ chối', 'QuanlyCS6', '2026-07-05 15:00:00', N'Chọn mua dòng xe khác');
-SET IDENTITY_INSERT DonDatCocChiTiet OFF;
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 13)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (13,N'Mitsubishi',N'Nhật Bản',N'/images/brands/mitsubishi.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Mitsubishi', QuocGia=N'Nhật Bản' WHERE MaHang = 13;
 
--- ==================== 11. THÊM HÓA ĐƠN MẪU ====================
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000001', 1, 'user1', 31, 'QuanlyCS1', 'CN01', 1100000000, 110000000, 50000000, 1160000000, 1160000000, N'Chuyển khoản + Tiền mặt', '2026-02-20', 'WDB1111111A000001', 'M274000001', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000002', 2, 'user2', 3,  'QuanlyCS2', 'CN02', 950000000, 95000000, 30000000, 1015000000, 1015000000, N'Chuyển khoản', '2026-03-05', 'WDB2222222A000002', 'M274000002', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000003', 3, 'user3', 59, 'QuanlyCS3', 'CN03', 1150000000, 115000000, 80000000, 1170000000, 1170000000, N'Chuyển khoản', '2026-03-28', 'WDB3333333A000003', 'M274000003', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000004', 4, 'user4', 24, 'QuanlyCS4', 'CN04', 1600000000, 160000000, 120000000, 1640000000, 1640000000, N'Chuyển khoản', '2026-04-15', 'WDB4444444A000004', 'M274000004', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000005', 5, 'user5', 41, 'QuanlyCS5', 'CN05', 1500000000, 150000000, 100000000, 1550000000, 1550000000, N'Chuyển khoản', '2026-04-20', 'WDB5555555A000005', 'M274000005', N'Đã thanh toán');
-INSERT INTO HoaDonMuaXe (MaHoaDon, MaDonCoc, MaKhachHang, MaPhienBan, MaQuanLyXuat, MaChiNhanh, GiaXeThucTe, ThueTruocBaVaPhiLanBanh, SoTienDuocGiam, TongTienPhaiTra, SoTienDaThanhToan, PhuongThucThanhToan, NgayXuatHoaDon, SoKhung, SoMay, TrangThaiHoaDon)
-VALUES ('HD000006', 6, 'user1', 37, 'QuanlyCS6', 'CN06', 1050000000, 105000000, 105000000, 1050000000, 1050000000, N'Chuyển khoản', '2026-05-10', 'WDB6666666A000006', 'M274000006', N'Đã thanh toán');
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 14)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (14,N'Nissan',N'Nhật Bản',N'/images/brands/nissan.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Nissan', QuocGia=N'Nhật Bản' WHERE MaHang = 14;
 
--- ==================== 12. THỐNG KÊ DOANH THU (TÍNH TỪ DỮ LIỆU THỰC TẾ) ====================
--- Tháng 1: Don 1 (CN01, 200M), chưa có hóa đơn
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN01', 0, 200000000, 0, 0, 15000, 45, 18);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN02', 0, 0, 0, 0, 12000, 30, 2);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN03', 0, 0, 0, 0, 9000, 25, 35);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN04', 0, 0, 0, 0, 8000, 20, 14);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN05', 0, 0, 0, 0, 5000, 12, 23);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-01', 'CN06', 0, 0, 0, 0, 4000, 8, 21);
--- Tháng 2: HD000001 (CN01, 1160M), Don 2 (CN02, 300M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN01', 1160000000, 0, 1, 0, 18000, 55, 18);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN02', 0, 300000000, 0, 0, 14000, 35, 2);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN03', 0, 0, 0, 0, 10000, 28, 35);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN04', 0, 0, 0, 0, 8500, 22, 14);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-02', 'CN06', 0, 0, 0, 0, 6000, 15, 21);
--- Tháng 3: HD000002 (CN02, 1015M), HD000003 (CN03, 1170M), Don 3 (CN03, 150M), Don 4 (CN04, 450M), Don 5 (CN05, 300M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN02', 1015000000, 0, 1, 0, 16000, 40, 2);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN03', 1170000000, 150000000, 1, 0, 12000, 32, 35);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN04', 0, 450000000, 0, 0, 11000, 30, 14);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-03', 'CN05', 0, 300000000, 0, 0, 7000, 18, 23);
--- Tháng 4: HD000004 (CN04, 1640M), HD000005 (CN05, 1550M), Don 7 (CN01, 250M), Don 6 (CN06, 250M), Don 13 hủy (CN04, 100M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN01', 0, 250000000, 0, 0, 20000, 60, 18);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN04', 1640000000, 0, 1, 1, 12000, 32, 14);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN05', 1550000000, 0, 1, 0, 9000, 24, 23);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-04', 'CN06', 0, 250000000, 0, 0, 7000, 16, 21);
--- Tháng 5: HD000006 (CN06, 1050M), Don 8 (CN02, 180M), Don 14 hủy (CN05, 150M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN02', 0, 180000000, 0, 0, 15000, 38, 2);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN05', 0, 0, 0, 1, 8000, 20, 23);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-05', 'CN06', 1050000000, 0, 1, 0, 8000, 20, 21);
--- Tháng 6: Don 9 (CN03, 100M), Don 10 (CN01, 200M), Don 11 (CN02, 350M), Don 15 hủy (CN06, 80M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN01', 0, 200000000, 0, 0, 18000, 50, 18);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN02', 0, 350000000, 0, 0, 16000, 42, 2);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN03', 0, 100000000, 0, 0, 10000, 26, 35);
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-06', 'CN06', 0, 0, 0, 1, 7000, 18, 21);
--- Tháng 7: Don 12 (CN03, 150M)
-INSERT INTO ThongKeTongHop_Boss (KyBaoCao, MaChiNhanh, TongDoanhThu, TongTienCocThuVe, TongSoXeDaBan, SoDonCocBiHuy, TongLuotXemWeb, TongLuotLaiThu, MaDongXeBanChayNhat)
-VALUES (N'2026-07', 'CN03', 0, 150000000, 0, 0, 6000, 15, 35);
+IF NOT EXISTS (SELECT 1 FROM HangXe WHERE MaHang = 15)
+BEGIN
+    SET IDENTITY_INSERT HangXe ON;
+    INSERT INTO HangXe (MaHang,TenHang,QuocGia,DuongDanLogo) VALUES (15,N'Subaru',N'Nhật Bản',N'/images/brands/subaru.png');
+    SET IDENTITY_INSERT HangXe OFF;
+END
+ELSE
+    UPDATE HangXe SET TenHang=N'Subaru', QuocGia=N'Nhật Bản' WHERE MaHang = 15;
 
--- ==================== 13. CẬP NHẬT TỒN KHO ====================
--- Trừ tồn kho cho từng xe đã bán (hóa đơn đã thanh toán)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 31; -- Lux SA 2.0T (HD000001)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 3;  -- Hilux 2.4G (HD000002)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 59; -- Santa Fe 2.5 Premium (HD000003)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 24; -- 320i Sport Line (HD000004)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 41; -- C200 Avantgarde (HD000005)
-UPDATE PhienBanXe_SanPham SET SoLuongTrongKho = SoLuongTrongKho - 1 WHERE MaPhienBan = 37; -- VF 8 Eco (HD000006)
 
--- ==================== 14. CẬP NHẬT MẬT KHẨU (PBKDF2 hash) ====================
+GO
+
+-- ==================== 3. DÒNG XE (UPSERT - GIỮ NGUYÊN DuongDanAnh trên server) ====================
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 1)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (1,1,N'Toyota Camry',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=1, TenDong=N'Toyota Camry', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 1;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 2)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (2,1,N'Toyota Hilux',N'Bán tải',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=1, TenDong=N'Toyota Hilux', KieuDang=N'Bán tải', NoiBat=0 WHERE MaDong = 2;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 3)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (3,1,N'Toyota Corolla Altis',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=1, TenDong=N'Toyota Corolla Altis', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 3;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 4)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (4,1,N'Toyota Fortuner',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=1, TenDong=N'Toyota Fortuner', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 4;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 5)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (5,1,N'Toyota Vios',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=1, TenDong=N'Toyota Vios', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 5;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 6)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (6,2,N'Honda Civic',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=2, TenDong=N'Honda Civic', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 6;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 7)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (7,2,N'Honda CR-V',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=2, TenDong=N'Honda CR-V', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 7;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 8)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (8,2,N'Honda HR-V',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=2, TenDong=N'Honda HR-V', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 8;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 9)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (9,2,N'Honda Accord',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=2, TenDong=N'Honda Accord', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 9;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 10)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (10,3,N'Ford Explorer',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=3, TenDong=N'Ford Explorer', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 10;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 11)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (11,3,N'Ford Everest',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=3, TenDong=N'Ford Everest', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 11;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 12)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (12,3,N'Ford Ranger',N'',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=3, TenDong=N'Ford Ranger', KieuDang=N'', NoiBat=1 WHERE MaDong = 12;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 13)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (13,3,N'Ford Territory',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=3, TenDong=N'Ford Territory', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 13;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 14)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (14,4,N'BMW 3 Series',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=4, TenDong=N'BMW 3 Series', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 14;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 15)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (15,4,N'BMW 5 Series',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=4, TenDong=N'BMW 5 Series', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 15;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 16)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (16,4,N'BMW X3',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=4, TenDong=N'BMW X3', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 16;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 17)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (17,4,N'BMW X5',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=4, TenDong=N'BMW X5', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 17;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 18)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (18,5,N'VinFast Lux SA',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=5, TenDong=N'VinFast Lux SA', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 18;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 19)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (19,5,N'VinFast Fadil',N'Hatchback',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=5, TenDong=N'VinFast Fadil', KieuDang=N'Hatchback', NoiBat=0 WHERE MaDong = 19;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 20)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (20,5,N'VinFast VF e34',N'SUV (Điện)',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=5, TenDong=N'VinFast VF e34', KieuDang=N'SUV (Điện)', NoiBat=0 WHERE MaDong = 20;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 21)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (21,5,N'VinFast VF 8',N'SUV (Điện)',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=5, TenDong=N'VinFast VF 8', KieuDang=N'SUV (Điện)', NoiBat=1 WHERE MaDong = 21;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 22)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (22,5,N'VinFast VF 9',N'SUV (Điện)',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=5, TenDong=N'VinFast VF 9', KieuDang=N'SUV (Điện)', NoiBat=1 WHERE MaDong = 22;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 23)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (23,6,N'Mercedes C-Class',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=6, TenDong=N'Mercedes C-Class', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 23;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 24)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (24,6,N'Mercedes E-Class',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=6, TenDong=N'Mercedes E-Class', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 24;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 25)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (25,6,N'Mercedes S-Class',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=6, TenDong=N'Mercedes S-Class', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 25;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 26)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (26,6,N'Mercedes GLC',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=6, TenDong=N'Mercedes GLC', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 26;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 27)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (27,6,N'Mercedes GLE',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=6, TenDong=N'Mercedes GLE', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 27;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 28)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (28,7,N'Audi A3',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=7, TenDong=N'Audi A3', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 28;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 29)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (29,7,N'Audi A4',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=7, TenDong=N'Audi A4', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 29;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 30)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (30,7,N'Audi Q5',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=7, TenDong=N'Audi Q5', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 30;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 31)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (31,7,N'Audi Q7',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=7, TenDong=N'Audi Q7', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 31;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 32)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (32,8,N'Lexus ES',N'Sedan',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=8, TenDong=N'Lexus ES', KieuDang=N'Sedan', NoiBat=1 WHERE MaDong = 32;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 33)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (33,8,N'Lexus RX',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=8, TenDong=N'Lexus RX', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 33;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 34)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (34,8,N'Lexus NX',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=8, TenDong=N'Lexus NX', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 34;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 35)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (35,9,N'Hyundai Santa Fe',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=9, TenDong=N'Hyundai Santa Fe', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 35;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 36)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (36,9,N'Hyundai Tucson',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=9, TenDong=N'Hyundai Tucson', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 36;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 37)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (37,9,N'Hyundai Accent',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=9, TenDong=N'Hyundai Accent', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 37;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 38)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (38,9,N'Hyundai Creta',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=9, TenDong=N'Hyundai Creta', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 38;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 39)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (39,10,N'Kia Sorento',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=10, TenDong=N'Kia Sorento', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 39;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 40)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (40,10,N'Kia Sportage',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=10, TenDong=N'Kia Sportage', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 40;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 41)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (41,10,N'Kia Cerato',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=10, TenDong=N'Kia Cerato', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 41;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 42)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (42,10,N'Kia Morning',N'Hatchback',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=10, TenDong=N'Kia Morning', KieuDang=N'Hatchback', NoiBat=0 WHERE MaDong = 42;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 43)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (43,11,N'Mazda CX-5',N'SUV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=11, TenDong=N'Mazda CX-5', KieuDang=N'SUV', NoiBat=1 WHERE MaDong = 43;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 44)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (44,11,N'Mazda CX-8',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=11, TenDong=N'Mazda CX-8', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 44;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 45)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (45,11,N'Mazda3',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=11, TenDong=N'Mazda3', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 45;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 46)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (46,11,N'Mazda6',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=11, TenDong=N'Mazda6', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 46;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 47)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (47,12,N'Suzuki Swift',N'Hatchback',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=12, TenDong=N'Suzuki Swift', KieuDang=N'Hatchback', NoiBat=0 WHERE MaDong = 47;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 48)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (48,12,N'Suzuki Vitara',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=12, TenDong=N'Suzuki Vitara', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 48;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 49)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (49,12,N'Suzuki Ertiga',N'MPV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=12, TenDong=N'Suzuki Ertiga', KieuDang=N'MPV', NoiBat=0 WHERE MaDong = 49;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 50)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (50,13,N'Mitsubishi Xpander',N'MPV',1);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=13, TenDong=N'Mitsubishi Xpander', KieuDang=N'MPV', NoiBat=1 WHERE MaDong = 50;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 51)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (51,13,N'Mitsubishi Outlander',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=13, TenDong=N'Mitsubishi Outlander', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 51;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 52)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (52,13,N'Mitsubishi Triton',N'Bán tải',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=13, TenDong=N'Mitsubishi Triton', KieuDang=N'Bán tải', NoiBat=0 WHERE MaDong = 52;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 53)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (53,14,N'Nissan Navara',N'Bán tải',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=14, TenDong=N'Nissan Navara', KieuDang=N'Bán tải', NoiBat=0 WHERE MaDong = 53;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 54)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (54,14,N'Nissan Kicks',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=14, TenDong=N'Nissan Kicks', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 54;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 55)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (55,14,N'Nissan Almera',N'Sedan',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=14, TenDong=N'Nissan Almera', KieuDang=N'Sedan', NoiBat=0 WHERE MaDong = 55;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 56)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (56,15,N'Subaru Forester',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=15, TenDong=N'Subaru Forester', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 56;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 57)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (57,15,N'Subaru Outback',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=15, TenDong=N'Subaru Outback', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 57;
+
+IF NOT EXISTS (SELECT 1 FROM DongXe WHERE MaDong = 58)
+BEGIN
+    SET IDENTITY_INSERT DongXe ON;
+    INSERT INTO DongXe (MaDong,MaHang,TenDong,KieuDang,NoiBat) VALUES (58,15,N'Subaru XV',N'SUV',0);
+    SET IDENTITY_INSERT DongXe OFF;
+END
+ELSE
+    UPDATE DongXe SET MaHang=15, TenDong=N'Subaru XV', KieuDang=N'SUV', NoiBat=0 WHERE MaDong = 58;
+
+
+GO
+
+-- ==================== 4. PHIÊN BẢN XE (UPSERT - GIỮ NGUYÊN DuongDanAnh trên server) ====================
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 1)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (1,1,N'Camry 2.0 CVT',1050000000,N'Bạc',N'2.0L 4 xi-lanh',N'CVT',N'Xăng',N'/images/cars/camry.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=1, TenPhienBan=N'Camry 2.0 CVT', GiaNiemYet=1050000000, MauSac=N'Bạc', DongCo=N'2.0L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 1;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 2)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (2,1,N'Camry 2.5 HEV',1250000000,N'Đen',N'2.5L Hybrid',N'e-CVT',N'Xăng + Điện',N'/images/cars/camry-hybrid.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=1, TenPhienBan=N'Camry 2.5 HEV', GiaNiemYet=1250000000, MauSac=N'Đen', DongCo=N'2.5L Hybrid', HopSo=N'e-CVT', LoaiNhietLieu=N'Xăng + Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 2;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 3)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (3,2,N'Hilux 2.4G 4x2 AT',950000000,N'Trắng',N'2.4L Turbo Diesel',N'AT 6 cấp',N'Dầu',N'/images/cars/hilux.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=2, TenPhienBan=N'Hilux 2.4G 4x2 AT', GiaNiemYet=950000000, MauSac=N'Trắng', DongCo=N'2.4L Turbo Diesel', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 3;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 4)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (4,2,N'Hilux 2.8G 4x4 AT',1150000000,N'Xám',N'2.8L Turbo Diesel',N'AT 6 cấp',N'Dầu',N'/images/cars/hilux.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=2, TenPhienBan=N'Hilux 2.8G 4x4 AT', GiaNiemYet=1150000000, MauSac=N'Xám', DongCo=N'2.8L Turbo Diesel', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 4;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 5)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (5,3,N'Corolla Altis 1.8G CVT',750000000,N'Đen',N'1.8L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=3, TenPhienBan=N'Corolla Altis 1.8G CVT', GiaNiemYet=750000000, MauSac=N'Đen', DongCo=N'1.8L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 5;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 6)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (6,3,N'Corolla Altis 1.8HEV',850000000,N'Xanh',N'1.8L Hybrid',N'e-CVT',N'Xăng + Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=3, TenPhienBan=N'Corolla Altis 1.8HEV', GiaNiemYet=850000000, MauSac=N'Xanh', DongCo=N'1.8L Hybrid', HopSo=N'e-CVT', LoaiNhietLieu=N'Xăng + Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 6;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 7)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (7,4,N'Fortuner 2.4G 4x2 AT',1100000000,N'Trắng',N'2.4L Turbo Diesel',N'AT 6 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=4, TenPhienBan=N'Fortuner 2.4G 4x2 AT', GiaNiemYet=1100000000, MauSac=N'Trắng', DongCo=N'2.4L Turbo Diesel', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 7;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 8)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (8,4,N'Fortuner 2.8V 4x4 AT',1350000000,N'Đen',N'2.8L Turbo Diesel',N'AT 6 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=4, TenPhienBan=N'Fortuner 2.8V 4x4 AT', GiaNiemYet=1350000000, MauSac=N'Đen', DongCo=N'2.8L Turbo Diesel', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 8;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 9)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (9,5,N'Vios 1.5G CVT',530000000,N'Bạc',N'1.5L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=5, TenPhienBan=N'Vios 1.5G CVT', GiaNiemYet=530000000, MauSac=N'Bạc', DongCo=N'1.5L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 9;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 10)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (10,5,N'Vios 1.5E MT',470000000,N'Đỏ',N'1.5L 4 xi-lanh',N'MT 5 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=5, TenPhienBan=N'Vios 1.5E MT', GiaNiemYet=470000000, MauSac=N'Đỏ', DongCo=N'1.5L 4 xi-lanh', HopSo=N'MT 5 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 10;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 11)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (11,6,N'Civic 1.5 Turbo CVT',850000000,N'Đỏ',N'1.5L Turbo',N'CVT',N'Xăng',N'/images/cars/civic.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=6, TenPhienBan=N'Civic 1.5 Turbo CVT', GiaNiemYet=850000000, MauSac=N'Đỏ', DongCo=N'1.5L Turbo', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 11;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 12)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (12,6,N'Civic RS 1.5 Turbo',920000000,N'Đen',N'1.5L Turbo',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=6, TenPhienBan=N'Civic RS 1.5 Turbo', GiaNiemYet=920000000, MauSac=N'Đen', DongCo=N'1.5L Turbo', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 12;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 13)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (13,7,N'CR-V 1.5 Turbo G',1050000000,N'Xanh',N'1.5L Turbo',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=7, TenPhienBan=N'CR-V 1.5 Turbo G', GiaNiemYet=1050000000, MauSac=N'Xanh', DongCo=N'1.5L Turbo', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 13;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 14)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (14,7,N'CR-V 1.5 Turbo L',1200000000,N'Xám',N'1.5L Turbo',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=7, TenPhienBan=N'CR-V 1.5 Turbo L', GiaNiemYet=1200000000, MauSac=N'Xám', DongCo=N'1.5L Turbo', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 14;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 15)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (15,8,N'HR-V 1.8L',750000000,N'Trắng',N'1.8L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=8, TenPhienBan=N'HR-V 1.8L', GiaNiemYet=750000000, MauSac=N'Trắng', DongCo=N'1.8L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 15;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 16)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (16,9,N'Accord 2.0 Turbo',1400000000,N'Đen',N'2.0L Turbo',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=9, TenPhienBan=N'Accord 2.0 Turbo', GiaNiemYet=1400000000, MauSac=N'Đen', DongCo=N'2.0L Turbo', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 16;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 17)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (17,10,N'Explorer 2.3L EcoBoost',1200000000,N'Xanh',N'2.3L EcoBoost',N'AT 10 cấp',N'Xăng',N'/images/cars/explorer.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=10, TenPhienBan=N'Explorer 2.3L EcoBoost', GiaNiemYet=1200000000, MauSac=N'Xanh', DongCo=N'2.3L EcoBoost', HopSo=N'AT 10 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 17;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 18)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (18,10,N'Explorer 3.0L V6',1500000000,N'Đen',N'3.0L V6 EcoBoost',N'AT 10 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=10, TenPhienBan=N'Explorer 3.0L V6', GiaNiemYet=1500000000, MauSac=N'Đen', DongCo=N'3.0L V6 EcoBoost', HopSo=N'AT 10 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 18;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 19)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (19,11,N'Everest 2.0L Turbo 4x2',1100000000,N'Trắng',N'2.0L Turbo Diesel',N'AT 10 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=11, TenPhienBan=N'Everest 2.0L Turbo 4x2', GiaNiemYet=1100000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo Diesel', HopSo=N'AT 10 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 19;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 20)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (20,11,N'Everest 2.0L Turbo 4x4',1300000000,N'Xám',N'2.0L Turbo Diesel',N'AT 10 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=11, TenPhienBan=N'Everest 2.0L Turbo 4x4', GiaNiemYet=1300000000, MauSac=N'Xám', DongCo=N'2.0L Turbo Diesel', HopSo=N'AT 10 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 20;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 21)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (21,12,N'Ranger 2.0L XL 4x2',700000000,N'Trắng',N'2.0L Turbo Diesel',N'AT 6 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=12, TenPhienBan=N'Ranger 2.0L XL 4x2', GiaNiemYet=700000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo Diesel', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 21;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 22)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (22,12,N'Ranger 2.0L Wildtrak 4x4',950000000,N'Đỏ',N'2.0L Turbo Diesel',N'AT 10 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=12, TenPhienBan=N'Ranger 2.0L Wildtrak 4x4', GiaNiemYet=950000000, MauSac=N'Đỏ', DongCo=N'2.0L Turbo Diesel', HopSo=N'AT 10 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 22;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 23)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (23,13,N'Territory 1.8L Titanium',850000000,N'Xanh',N'1.8L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=13, TenPhienBan=N'Territory 1.8L Titanium', GiaNiemYet=850000000, MauSac=N'Xanh', DongCo=N'1.8L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 23;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 24)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (24,14,N'320i Sport Line',1600000000,N'Đen',N'2.0L Turbo 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'/images/cars/bmw320.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=14, TenPhienBan=N'320i Sport Line', GiaNiemYet=1600000000, MauSac=N'Đen', DongCo=N'2.0L Turbo 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 24;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 25)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (25,14,N'330i M Sport',1900000000,N'Xanh',N'2.0L Turbo 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=14, TenPhienBan=N'330i M Sport', GiaNiemYet=1900000000, MauSac=N'Xanh', DongCo=N'2.0L Turbo 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 25;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 26)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (26,15,N'520i Luxury',2300000000,N'Bạc',N'2.0L Turbo 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=15, TenPhienBan=N'520i Luxury', GiaNiemYet=2300000000, MauSac=N'Bạc', DongCo=N'2.0L Turbo 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 26;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 27)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (27,15,N'530i M Sport',2700000000,N'Đen',N'3.0L Turbo 6 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=15, TenPhienBan=N'530i M Sport', GiaNiemYet=2700000000, MauSac=N'Đen', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 27;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 28)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (28,16,N'X3 xDrive20i',2000000000,N'Trắng',N'2.0L Turbo 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=16, TenPhienBan=N'X3 xDrive20i', GiaNiemYet=2000000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 28;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 29)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (29,16,N'X3 M40i',2800000000,N'Xanh',N'3.0L Turbo 6 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=16, TenPhienBan=N'X3 M40i', GiaNiemYet=2800000000, MauSac=N'Xanh', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 29;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 30)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (30,17,N'X5 xDrive40i',3500000000,N'Đen',N'3.0L Turbo 6 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=17, TenPhienBan=N'X5 xDrive40i', GiaNiemYet=3500000000, MauSac=N'Đen', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 30;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 31)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (31,18,N'Lux SA 2.0T Base',1100000000,N'Trắng',N'2.0L Turbo',N'AT 8 cấp',N'Xăng',N'/images/cars/luxsa.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=18, TenPhienBan=N'Lux SA 2.0T Base', GiaNiemYet=1100000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 31;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 32)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (32,18,N'Lux SA 2.0T Premium',1300000000,N'Đen',N'2.0L Turbo',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=18, TenPhienBan=N'Lux SA 2.0T Premium', GiaNiemYet=1300000000, MauSac=N'Đen', DongCo=N'2.0L Turbo', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 32;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 33)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (33,19,N'Fadil 1.2 Base',360000000,N'Đỏ',N'1.2L 3 xi-lanh',N'MT 5 cấp',N'Xăng',N'/images/cars/fadil.jpg',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=19, TenPhienBan=N'Fadil 1.2 Base', GiaNiemYet=360000000, MauSac=N'Đỏ', DongCo=N'1.2L 3 xi-lanh', HopSo=N'MT 5 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 33;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 34)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (34,19,N'Fadil 1.2 AT',395000000,N'Bạc',N'1.2L 3 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=19, TenPhienBan=N'Fadil 1.2 AT', GiaNiemYet=395000000, MauSac=N'Bạc', DongCo=N'1.2L 3 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 34;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 35)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (35,20,N'VF e34 Eco',710000000,N'Xanh',N'Điện động cơ 110kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=20, TenPhienBan=N'VF e34 Eco', GiaNiemYet=710000000, MauSac=N'Xanh', DongCo=N'Điện động cơ 110kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 35;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 36)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (36,20,N'VF e34 Plus',770000000,N'Trắng',N'Điện động cơ 110kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=20, TenPhienBan=N'VF e34 Plus', GiaNiemYet=770000000, MauSac=N'Trắng', DongCo=N'Điện động cơ 110kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 36;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 37)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (37,21,N'VF 8 Eco',1050000000,N'Xanh',N'Điện động cơ 260kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=21, TenPhienBan=N'VF 8 Eco', GiaNiemYet=1050000000, MauSac=N'Xanh', DongCo=N'Điện động cơ 260kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 37;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 38)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (38,21,N'VF 8 Plus',1150000000,N'Đỏ',N'Điện động cơ 300kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=21, TenPhienBan=N'VF 8 Plus', GiaNiemYet=1150000000, MauSac=N'Đỏ', DongCo=N'Điện động cơ 300kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 38;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 39)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (39,22,N'VF 9 Eco',1600000000,N'Bạc',N'Điện động cơ 300kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=22, TenPhienBan=N'VF 9 Eco', GiaNiemYet=1600000000, MauSac=N'Bạc', DongCo=N'Điện động cơ 300kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 39;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 40)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (40,22,N'VF 9 Plus',1800000000,N'Đen',N'Điện động cơ 300kW',N'1 cấp',N'Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=22, TenPhienBan=N'VF 9 Plus', GiaNiemYet=1800000000, MauSac=N'Đen', DongCo=N'Điện động cơ 300kW', HopSo=N'1 cấp', LoaiNhietLieu=N'Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 40;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 41)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (41,23,N'C200 Avantgarde',1500000000,N'Bạc',N'1.5L Turbo + 48V',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=23, TenPhienBan=N'C200 Avantgarde', GiaNiemYet=1500000000, MauSac=N'Bạc', DongCo=N'1.5L Turbo + 48V', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 41;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 42)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (42,23,N'C300 AMG Line',1850000000,N'Đen',N'2.0L Turbo',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=23, TenPhienBan=N'C300 AMG Line', GiaNiemYet=1850000000, MauSac=N'Đen', DongCo=N'2.0L Turbo', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 42;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 43)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (43,24,N'E200 Exclusive',2100000000,N'Trắng',N'2.0L Turbo',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=24, TenPhienBan=N'E200 Exclusive', GiaNiemYet=2100000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 43;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 44)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (44,24,N'E300 AMG Line',2500000000,N'Xanh',N'2.0L Turbo',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=24, TenPhienBan=N'E300 AMG Line', GiaNiemYet=2500000000, MauSac=N'Xanh', DongCo=N'2.0L Turbo', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 44;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 45)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (45,25,N'S450L 4MATIC',5500000000,N'Đen',N'3.0L Turbo 6 xi-lanh',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=25, TenPhienBan=N'S450L 4MATIC', GiaNiemYet=5500000000, MauSac=N'Đen', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 45;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 46)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (46,26,N'GLC 200 4MATIC',1900000000,N'Xám',N'2.0L Turbo',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=26, TenPhienBan=N'GLC 200 4MATIC', GiaNiemYet=1900000000, MauSac=N'Xám', DongCo=N'2.0L Turbo', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 46;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 47)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (47,26,N'GLC 300 4MATIC',2300000000,N'Trắng',N'2.0L Turbo',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=26, TenPhienBan=N'GLC 300 4MATIC', GiaNiemYet=2300000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 47;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 48)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (48,27,N'GLE 300d 4MATIC',3000000000,N'Đen',N'3.0L Turbo Diesel',N'AT 9 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=27, TenPhienBan=N'GLE 300d 4MATIC', GiaNiemYet=3000000000, MauSac=N'Đen', DongCo=N'3.0L Turbo Diesel', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 48;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 49)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (49,27,N'GLE 450 4MATIC',3700000000,N'Xanh',N'3.0L Turbo 6 xi-lanh',N'AT 9 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=27, TenPhienBan=N'GLE 450 4MATIC', GiaNiemYet=3700000000, MauSac=N'Xanh', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 9 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 49;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 50)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (50,28,N'A3 35 TFSI',1250000000,N'Bạc',N'1.4L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=28, TenPhienBan=N'A3 35 TFSI', GiaNiemYet=1250000000, MauSac=N'Bạc', DongCo=N'1.4L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 50;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 51)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (51,29,N'A4 40 TFSI',1600000000,N'Đen',N'2.0L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=29, TenPhienBan=N'A4 40 TFSI', GiaNiemYet=1600000000, MauSac=N'Đen', DongCo=N'2.0L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 51;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 52)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (52,29,N'A4 45 TFSI Quattro',1850000000,N'Trắng',N'2.0L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=29, TenPhienBan=N'A4 45 TFSI Quattro', GiaNiemYet=1850000000, MauSac=N'Trắng', DongCo=N'2.0L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 52;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 53)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (53,30,N'Q5 40 TFSI',2200000000,N'Xanh',N'2.0L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=30, TenPhienBan=N'Q5 40 TFSI', GiaNiemYet=2200000000, MauSac=N'Xanh', DongCo=N'2.0L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 53;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 54)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (54,31,N'Q7 45 TFSI Quattro',3200000000,N'Đen',N'3.0L Turbo 6 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=31, TenPhienBan=N'Q7 45 TFSI Quattro', GiaNiemYet=3200000000, MauSac=N'Đen', DongCo=N'3.0L Turbo 6 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 54;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 55)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (55,32,N'ES 250',2300000000,N'Bạc',N'2.5L 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=32, TenPhienBan=N'ES 250', GiaNiemYet=2300000000, MauSac=N'Bạc', DongCo=N'2.5L 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 55;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 56)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (56,33,N'RX 350 F Sport',3300000000,N'Đen',N'3.5L V6',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=33, TenPhienBan=N'RX 350 F Sport', GiaNiemYet=3300000000, MauSac=N'Đen', DongCo=N'3.5L V6', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 56;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 57)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (57,34,N'NX 250',2100000000,N'Xám',N'2.5L 4 xi-lanh',N'AT 8 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=34, TenPhienBan=N'NX 250', GiaNiemYet=2100000000, MauSac=N'Xám', DongCo=N'2.5L 4 xi-lanh', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 57;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 58)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (58,34,N'NX 350h',2400000000,N'Xanh',N'2.5L Hybrid',N'e-CVT',N'Xăng + Điện',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=34, TenPhienBan=N'NX 350h', GiaNiemYet=2400000000, MauSac=N'Xanh', DongCo=N'2.5L Hybrid', HopSo=N'e-CVT', LoaiNhietLieu=N'Xăng + Điện', MaKhuyenMai=N'' WHERE MaPhienBan = 58;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 59)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (59,35,N'Santa Fe 2.5 Premium',1150000000,N'Xanh',N'2.5L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=35, TenPhienBan=N'Santa Fe 2.5 Premium', GiaNiemYet=1150000000, MauSac=N'Xanh', DongCo=N'2.5L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 59;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 60)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (60,35,N'Santa Fe 2.2D Calligraphy',1350000000,N'Đen',N'2.2L Turbo Diesel',N'AT 8 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=35, TenPhienBan=N'Santa Fe 2.2D Calligraphy', GiaNiemYet=1350000000, MauSac=N'Đen', DongCo=N'2.2L Turbo Diesel', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 60;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 61)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (61,36,N'Tucson 2.0X Tiêu chuẩn',750000000,N'Trắng',N'2.0L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=36, TenPhienBan=N'Tucson 2.0X Tiêu chuẩn', GiaNiemYet=750000000, MauSac=N'Trắng', DongCo=N'2.0L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 61;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 62)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (62,36,N'Tucson 1.6T Đặc biệt',900000000,N'Đỏ',N'1.6L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=36, TenPhienBan=N'Tucson 1.6T Đặc biệt', GiaNiemYet=900000000, MauSac=N'Đỏ', DongCo=N'1.6L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 62;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 63)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (63,37,N'Accent 1.4MT Base',430000000,N'Bạc',N'1.4L 4 xi-lanh',N'MT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=37, TenPhienBan=N'Accent 1.4MT Base', GiaNiemYet=430000000, MauSac=N'Bạc', DongCo=N'1.4L 4 xi-lanh', HopSo=N'MT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 63;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 64)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (64,37,N'Accent 1.4AT Đặc biệt',500000000,N'Đen',N'1.4L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=37, TenPhienBan=N'Accent 1.4AT Đặc biệt', GiaNiemYet=500000000, MauSac=N'Đen', DongCo=N'1.4L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 64;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 65)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (65,38,N'Creta 1.5 Tiêu chuẩn',640000000,N'Xanh',N'1.5L 4 xi-lanh',N'MT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=38, TenPhienBan=N'Creta 1.5 Tiêu chuẩn', GiaNiemYet=640000000, MauSac=N'Xanh', DongCo=N'1.5L 4 xi-lanh', HopSo=N'MT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 65;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 66)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (66,38,N'Creta 1.5 Đặc biệt',720000000,N'Trắng',N'1.5L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=38, TenPhienBan=N'Creta 1.5 Đặc biệt', GiaNiemYet=720000000, MauSac=N'Trắng', DongCo=N'1.5L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 66;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 67)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (67,39,N'Sorento 2.5 X-Line',1250000000,N'Đen',N'2.5L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=39, TenPhienBan=N'Sorento 2.5 X-Line', GiaNiemYet=1250000000, MauSac=N'Đen', DongCo=N'2.5L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 67;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 68)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (68,39,N'Sorento 2.2D Premium',1450000000,N'Xám',N'2.2L Turbo Diesel',N'AT 8 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=39, TenPhienBan=N'Sorento 2.2D Premium', GiaNiemYet=1450000000, MauSac=N'Xám', DongCo=N'2.2L Turbo Diesel', HopSo=N'AT 8 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 68;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 69)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (69,40,N' Sportage 2.0 Tiêu chuẩn',800000000,N'Trắng',N'2.0L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=40, TenPhienBan=N' Sportage 2.0 Tiêu chuẩn', GiaNiemYet=800000000, MauSac=N'Trắng', DongCo=N'2.0L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 69;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 70)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (70,40,N' Sportage 1.6T GT-Line',1000000000,N'Xanh',N'1.6L Turbo',N'AT 7 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=40, TenPhienBan=N' Sportage 1.6T GT-Line', GiaNiemYet=1000000000, MauSac=N'Xanh', DongCo=N'1.6L Turbo', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 70;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 71)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (71,41,N'Cerato 1.6MT',580000000,N'Bạc',N'1.6L 4 xi-lanh',N'MT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=41, TenPhienBan=N'Cerato 1.6MT', GiaNiemYet=580000000, MauSac=N'Bạc', DongCo=N'1.6L 4 xi-lanh', HopSo=N'MT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 71;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 72)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (72,41,N'Cerato 2.0AT',680000000,N'Đỏ',N'2.0L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=41, TenPhienBan=N'Cerato 2.0AT', GiaNiemYet=680000000, MauSac=N'Đỏ', DongCo=N'2.0L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 72;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 73)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (73,42,N'Morning 1.25MT',360000000,N'Đỏ',N'1.25L 4 xi-lanh',N'MT 5 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=42, TenPhienBan=N'Morning 1.25MT', GiaNiemYet=360000000, MauSac=N'Đỏ', DongCo=N'1.25L 4 xi-lanh', HopSo=N'MT 5 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 73;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 74)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (74,42,N'Morning 1.25AT',400000000,N'Trắng',N'1.25L 4 xi-lanh',N'AT 4 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=42, TenPhienBan=N'Morning 1.25AT', GiaNiemYet=400000000, MauSac=N'Trắng', DongCo=N'1.25L 4 xi-lanh', HopSo=N'AT 4 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 74;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 75)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (75,43,N'CX-5 2.0L Deluxe',850000000,N'Đỏ',N'2.0L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=43, TenPhienBan=N'CX-5 2.0L Deluxe', GiaNiemYet=850000000, MauSac=N'Đỏ', DongCo=N'2.0L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 75;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 76)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (76,43,N'CX-5 2.5L Signature',1050000000,N'Xanh',N'2.5L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=43, TenPhienBan=N'CX-5 2.5L Signature', GiaNiemYet=1050000000, MauSac=N'Xanh', DongCo=N'2.5L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 76;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 77)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (77,44,N'CX-8 2.5L Premium',1150000000,N'Đen',N'2.5L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=44, TenPhienBan=N'CX-8 2.5L Premium', GiaNiemYet=1150000000, MauSac=N'Đen', DongCo=N'2.5L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 77;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 78)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (78,45,N'Mazda3 1.5L Deluxe',620000000,N'Bạc',N'1.5L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=45, TenPhienBan=N'Mazda3 1.5L Deluxe', GiaNiemYet=620000000, MauSac=N'Bạc', DongCo=N'1.5L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 78;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 79)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (79,45,N'Mazda3 2.0L Premium',720000000,N'Đỏ',N'2.0L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=45, TenPhienBan=N'Mazda3 2.0L Premium', GiaNiemYet=720000000, MauSac=N'Đỏ', DongCo=N'2.0L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 79;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 80)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (80,46,N'Mazda6 2.0L Deluxe',850000000,N'Xám',N'2.0L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=46, TenPhienBan=N'Mazda6 2.0L Deluxe', GiaNiemYet=850000000, MauSac=N'Xám', DongCo=N'2.0L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 80;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 81)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (81,46,N'Mazda6 2.5L Premium',1000000000,N'Đen',N'2.5L SkyActiv',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=46, TenPhienBan=N'Mazda6 2.5L Premium', GiaNiemYet=1000000000, MauSac=N'Đen', DongCo=N'2.5L SkyActiv', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 81;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 82)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (82,47,N'Swift 1.2L AT',480000000,N'Xanh',N'1.2L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=47, TenPhienBan=N'Swift 1.2L AT', GiaNiemYet=480000000, MauSac=N'Xanh', DongCo=N'1.2L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 82;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 83)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (83,48,N'Vitara 1.6L AT',680000000,N'Xám',N'1.6L 4 xi-lanh',N'AT 6 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=48, TenPhienBan=N'Vitara 1.6L AT', GiaNiemYet=680000000, MauSac=N'Xám', DongCo=N'1.6L 4 xi-lanh', HopSo=N'AT 6 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 83;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 84)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (84,49,N'Ertiga 1.5L AT',580000000,N'Trắng',N'1.5L 4 xi-lanh',N'AT 4 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=49, TenPhienBan=N'Ertiga 1.5L AT', GiaNiemYet=580000000, MauSac=N'Trắng', DongCo=N'1.5L 4 xi-lanh', HopSo=N'AT 4 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 84;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 85)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (85,50,N'Xpander 1.5L AT',660000000,N'Bạc',N'1.5L 4 xi-lanh',N'AT 4 cấp',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=50, TenPhienBan=N'Xpander 1.5L AT', GiaNiemYet=660000000, MauSac=N'Bạc', DongCo=N'1.5L 4 xi-lanh', HopSo=N'AT 4 cấp', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 85;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 86)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (86,51,N'Outlander 2.0L CVT',950000000,N'Xanh',N'2.0L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=51, TenPhienBan=N'Outlander 2.0L CVT', GiaNiemYet=950000000, MauSac=N'Xanh', DongCo=N'2.0L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 86;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 87)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (87,52,N'Triton 2.4L 4x2 AT',720000000,N'Trắng',N'2.4L Turbo Diesel',N'AT 5 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=52, TenPhienBan=N'Triton 2.4L 4x2 AT', GiaNiemYet=720000000, MauSac=N'Trắng', DongCo=N'2.4L Turbo Diesel', HopSo=N'AT 5 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 87;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 88)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (88,52,N'Triton 2.4L 4x4 AT',850000000,N'Đen',N'2.4L Turbo Diesel',N'AT 5 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=52, TenPhienBan=N'Triton 2.4L 4x4 AT', GiaNiemYet=850000000, MauSac=N'Đen', DongCo=N'2.4L Turbo Diesel', HopSo=N'AT 5 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 88;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 89)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (89,53,N'Navara 2.5L 4x2 AT',750000000,N'Trắng',N'2.5L Turbo Diesel',N'AT 7 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=53, TenPhienBan=N'Navara 2.5L 4x2 AT', GiaNiemYet=750000000, MauSac=N'Trắng', DongCo=N'2.5L Turbo Diesel', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 89;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 90)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (90,53,N'Navara 2.5L 4x4 AT',950000000,N'Đỏ',N'2.5L Turbo Diesel',N'AT 7 cấp',N'Dầu',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=53, TenPhienBan=N'Navara 2.5L 4x4 AT', GiaNiemYet=950000000, MauSac=N'Đỏ', DongCo=N'2.5L Turbo Diesel', HopSo=N'AT 7 cấp', LoaiNhietLieu=N'Dầu', MaKhuyenMai=N'' WHERE MaPhienBan = 90;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 91)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (91,54,N'Kicks 1.2L AT',680000000,N'Xanh',N'1.2L 3 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=54, TenPhienBan=N'Kicks 1.2L AT', GiaNiemYet=680000000, MauSac=N'Xanh', DongCo=N'1.2L 3 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 91;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 92)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (92,55,N'Almera 1.5L AT',550000000,N'Bạc',N'1.5L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=55, TenPhienBan=N'Almera 1.5L AT', GiaNiemYet=550000000, MauSac=N'Bạc', DongCo=N'1.5L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 92;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 93)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (93,56,N'Forester 2.0L i-L',1150000000,N'Xanh',N'2.0L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=56, TenPhienBan=N'Forester 2.0L i-L', GiaNiemYet=1150000000, MauSac=N'Xanh', DongCo=N'2.0L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 93;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 94)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (94,56,N'Forester 2.0L i-S',1300000000,N'Xám',N'2.0L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=56, TenPhienBan=N'Forester 2.0L i-S', GiaNiemYet=1300000000, MauSac=N'Xám', DongCo=N'2.0L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 94;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 95)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (95,57,N'Outback 2.5L',1700000000,N'Đen',N'2.5L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=57, TenPhienBan=N'Outback 2.5L', GiaNiemYet=1700000000, MauSac=N'Đen', DongCo=N'2.5L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 95;
+
+IF NOT EXISTS (SELECT 1 FROM PhienBanXe_SanPham WHERE MaPhienBan = 96)
+BEGIN
+    SET IDENTITY_INSERT PhienBanXe_SanPham ON;
+    INSERT INTO PhienBanXe_SanPham (MaPhienBan,MaDong,TenPhienBan,GiaNiemYet,MauSac,DongCo,HopSo,LoaiNhietLieu,DuongDanAnh,MaKhuyenMai) VALUES (96,58,N'XV 2.0L',900000000,N'Xanh',N'2.0L 4 xi-lanh',N'CVT',N'Xăng',N'',N'');
+    SET IDENTITY_INSERT PhienBanXe_SanPham OFF;
+END
+ELSE
+    UPDATE PhienBanXe_SanPham SET MaDong=58, TenPhienBan=N'XV 2.0L', GiaNiemYet=900000000, MauSac=N'Xanh', DongCo=N'2.0L 4 xi-lanh', HopSo=N'CVT', LoaiNhietLieu=N'Xăng', MaKhuyenMai=N'' WHERE MaPhienBan = 96;
+
+
+GO
+
+-- ==================== 5. CHI NHÁNH (MERGE) ====================
+MERGE INTO ChiNhanhShowroom AS T
+USING (VALUES
+ (N'CN01',N'Showroom TP. Hồ Chí Minh (Cơ sở 1)',N'123 Nguyễn Văn Linh, P. Tân Phong, Quận 7',N'TP. Hồ Chí Minh',N'0909123456',N'QuanlyCS1',N'Hoạt động'), (N'CN02',N'Showroom TP. Hồ Chí Minh (Cơ sở 2)',N'456 Xa lộ Hà Nội, P. Bình Thọ, TP. Thủ Đức',N'TP. Hồ Chí Minh',N'0911222333',N'QuanlyCS2',N'Hoạt động'), (N'CN03',N'Showroom Hà Nội (Cơ sở 3)',N'789 Trần Duy Hưng, P. Trung Hòa, Q. Cầu Giấy',N'Hà Nội',N'0922333444',N'QuanlyCS3',N'Hoạt động'), (N'CN04',N'Showroom Hà Nội (Cơ sở 4)',N'321 Giải Phóng, P. Hoàng Văn Thụ, Q. Hoàng Mai',N'Hà Nội',N'0933444555',N'QuanlyCS4',N'Hoạt động'), (N'CN05',N'Showroom Đà Nẵng (Cơ sở 5)',N'654 Nguyễn Văn Linh, P. Khuê Trung, Q. Hải Châu',N'Đà Nẵng',N'0944555666',N'QuanlyCS5',N'Hoạt động'), (N'CN06',N'Showroom Hải Phòng (Cơ sở 6)',N'987 Võ Nguyên Giáp, P. Vĩnh Niệm, Q. Lê Chân',N'Hải Phòng',N'0955666777',N'QuanlyCS6',N'Hoạt động')
+) AS S(MaChiNhanh,TenChiNhanh,DiaChi,ThanhPho,DuongDayNong,MaQuanLy,TrangThai)
+ON T.MaChiNhanh = S.MaChiNhanh
+WHEN MATCHED THEN UPDATE SET TenChiNhanh=S.TenChiNhanh, DiaChi=S.DiaChi, ThanhPho=S.ThanhPho, DuongDayNong=S.DuongDayNong, MaQuanLy=S.MaQuanLy, TrangThai=S.TrangThai
+WHEN NOT MATCHED THEN INSERT (MaChiNhanh,TenChiNhanh,DiaChi,ThanhPho,DuongDayNong,MaQuanLy,TrangThai) VALUES (S.MaChiNhanh,S.TenChiNhanh,S.DiaChi,S.ThanhPho,S.DuongDayNong,S.MaQuanLy,S.TrangThai);
+GO
+
+-- ==================== 6. KHUYẾN MÃI (MERGE) ====================
+MERGE INTO ChuongTrinhKhuyenMai AS T
+USING (VALUES
+ (N'KM01',N'Giảm 50% lệ phí trước bạ',N'Áp dụng cho tất cả dòng xe',N'Phần trăm',50.00,50000000.00,'2024-01-01','2024-03-31',N'Hoạt động'), (N'KM02',N'Giảm ngay 20 triệu',N'Cho dòng xe Toyota Vios và Hyundai Accent',N'Số tiền',20000000.00,20000000.00,'2026-07-01','2026-09-30',N'Hoạt động'), (N'KM03',N'Tặng gói phụ kiện 15 triệu',N'Cho khách đặt cọc xe Mercedes trước 30/09',N'Số tiền',15000000.00,15000000.00,'2026-07-01','2026-09-30',N'Hoạt động'), (N'KM04',N'Giảm 10% cho xe điện VinFast',N'Áp dụng cho VF e34, VF 8, VF 9',N'Phần trăm',10.00,150000000.00,'2026-08-01','2026-12-31',N'Hoạt động')
+) AS S(MaKhuyenMai,TieuDe,MoTa,LoaiGiamGia,GiaTriGiam,MucGiamToiDa,NgayBatDau,NgayKetThuc,TrangThai)
+ON T.MaKhuyenMai = S.MaKhuyenMai
+WHEN MATCHED THEN UPDATE SET TieuDe=S.TieuDe, MoTa=S.MoTa, LoaiGiamGia=S.LoaiGiamGia, GiaTriGiam=S.GiaTriGiam, MucGiamToiDa=S.MucGiamToiDa, NgayBatDau=S.NgayBatDau, NgayKetThuc=S.NgayKetThuc, TrangThai=S.TrangThai
+WHEN NOT MATCHED THEN INSERT (MaKhuyenMai,TieuDe,MoTa,LoaiGiamGia,GiaTriGiam,MucGiamToiDa,NgayBatDau,NgayKetThuc,TrangThai) VALUES (S.MaKhuyenMai,S.TieuDe,S.MoTa,S.LoaiGiamGia,S.GiaTriGiam,S.MucGiamToiDa,S.NgayBatDau,S.NgayKetThuc,S.TrangThai);
+GO
+
+-- ==================== 7. BANNER (UPSERT - GIỮ NGUYÊN DuongDanAnh banner trên server) ====================
+IF NOT EXISTS (SELECT 1 FROM QuangCaoBanner WHERE MaBanner = 1002)
+BEGIN
+    SET IDENTITY_INSERT QuangCaoBanner ON;
+    INSERT INTO QuangCaoBanner (MaBanner,DuongDanAnh,DuongDanLienKet,ThuTuHienThi,MaQuanLyCapNhat,TrangThaiKichHoat) VALUES (1002,N'/uploads/admin/91e457aa-b6db-46b6-aae7-776490397f8a.jpg',N'',1,N'fntzzs682@gmail.com',1);
+    SET IDENTITY_INSERT QuangCaoBanner OFF;
+END
+ELSE
+    UPDATE QuangCaoBanner SET DuongDanLienKet=N'', ThuTuHienThi=1, TrangThaiKichHoat=1 WHERE MaBanner = 1002;
+
+IF NOT EXISTS (SELECT 1 FROM QuangCaoBanner WHERE MaBanner = 1006)
+BEGIN
+    SET IDENTITY_INSERT QuangCaoBanner ON;
+    INSERT INTO QuangCaoBanner (MaBanner,DuongDanAnh,DuongDanLienKet,ThuTuHienThi,MaQuanLyCapNhat,TrangThaiKichHoat) VALUES (1006,N'/images/banners/banner5.jpg',N'',5,N'fntzzs682@gmail.com',1);
+    SET IDENTITY_INSERT QuangCaoBanner OFF;
+END
+ELSE
+    UPDATE QuangCaoBanner SET DuongDanLienKet=N'', ThuTuHienThi=5, TrangThaiKichHoat=1 WHERE MaBanner = 1006;
+
+IF NOT EXISTS (SELECT 1 FROM QuangCaoBanner WHERE MaBanner = 2001)
+BEGIN
+    SET IDENTITY_INSERT QuangCaoBanner ON;
+    INSERT INTO QuangCaoBanner (MaBanner,DuongDanAnh,DuongDanLienKet,ThuTuHienThi,MaQuanLyCapNhat,TrangThaiKichHoat) VALUES (2001,N'/uploads/admin/d5ca14e9-15e2-431f-950c-4acb33fd7c05.jpg',N'',6,N'Ngttu2006@gmail.com',1);
+    SET IDENTITY_INSERT QuangCaoBanner OFF;
+END
+ELSE
+    UPDATE QuangCaoBanner SET DuongDanLienKet=N'', ThuTuHienThi=6, TrangThaiKichHoat=1 WHERE MaBanner = 2001;
+
+
+GO
+
+-- ==================== 8. KÊNH TƯ VẤN (UPSERT) ====================
+IF NOT EXISTS (SELECT 1 FROM KenhTuVan WHERE MaKenh = 1)
+BEGIN
+    SET IDENTITY_INSERT KenhTuVan ON;
+    INSERT INTO KenhTuVan (MaKenh,UrlMessenger,UrlZalo,UrlSMS) VALUES (1,N'https://m.me/carshop',N'https://zalo.me/carshop',N'0906123456');
+    SET IDENTITY_INSERT KenhTuVan OFF;
+END
+ELSE
+    UPDATE KenhTuVan SET UrlMessenger=N'https://m.me/carshop', UrlZalo=N'https://zalo.me/carshop', UrlSMS=N'0906123456' WHERE MaKenh = 1;
+GO
+
+-- ==================== 9. TỒN KHO THEO CHI NHÁNH (MERGE) + ĐỒNG BỘ PHIÊN BẢN ====================
+MERGE INTO TonKhoTheoChiNhanh AS T
+USING (VALUES
+ (1,N'CN01',2), (1,N'CN02',1), (1,N'CN03',3), (1,N'CN04',2), (1,N'CN05',1), (1,N'CN06',1), (2,N'CN01',1), (2,N'CN02',1), (2,N'CN03',3), (2,N'CN04',3), (2,N'CN06',0), (3,N'CN01',1), (3,N'CN02',1), (3,N'CN03',3), (3,N'CN04',3), (3,N'CN06',0), (4,N'CN01',1), (4,N'CN02',0), (4,N'CN03',2), (4,N'CN04',3), (4,N'CN06',0), (5,N'CN01',2), (5,N'CN02',1), (5,N'CN03',3), (5,N'CN04',2), (5,N'CN05',1), (5,N'CN06',1), (6,N'CN01',1), (6,N'CN03',2), (6,N'CN04',3), (6,N'CN06',0), (7,N'CN01',1), (7,N'CN02',1), (7,N'CN03',3), (7,N'CN04',3), (7,N'CN06',0), (8,N'CN01',1), (8,N'CN03',2), (8,N'CN04',3), (8,N'CN06',0), (9,N'CN01',2), (9,N'CN02',2), (9,N'CN03',4), (9,N'CN04',4), (9,N'CN05',1), (9,N'CN06',1), (10,N'CN01',2), (10,N'CN02',1), (10,N'CN03',3), (10,N'CN04',4), (10,N'CN05',1), (10,N'CN06',1), (11,N'CN01',1), (11,N'CN02',1), (11,N'CN03',3), (11,N'CN04',3), (11,N'CN06',0), (12,N'CN01',1), (12,N'CN03',2), (12,N'CN04',3), (12,N'CN06',0), (13,N'CN01',1), (13,N'CN02',1), (13,N'CN03',3), (13,N'CN04',2), (13,N'CN06',0), (14,N'CN01',1), (14,N'CN03',2), (14,N'CN04',3), (14,N'CN06',0), (15,N'CN01',1), (15,N'CN02',0), (15,N'CN03',2), (15,N'CN04',3), (15,N'CN06',0), (16,N'CN03',2), (16,N'CN04',2), (16,N'CN06',0), (17,N'CN01',1), (17,N'CN02',0), (17,N'CN03',2), (17,N'CN04',3), (17,N'CN06',0), (18,N'CN03',1), (18,N'CN04',2), (18,N'CN06',0), (19,N'CN01',1), (19,N'CN02',1), (19,N'CN03',3), (19,N'CN04',2), (19,N'CN06',0), (20,N'CN01',1), (20,N'CN03',2), (20,N'CN04',3), (20,N'CN06',0), (21,N'CN01',2), (21,N'CN02',1), (21,N'CN03',3), (21,N'CN04',2), (21,N'CN05',1), (21,N'CN06',1), (22,N'CN01',1), (22,N'CN02',1), (22,N'CN03',3), (22,N'CN04',2), (22,N'CN06',0), (23,N'CN01',1), (23,N'CN02',0), (23,N'CN03',2), (23,N'CN04',3), (23,N'CN06',0), (25,N'CN01',1), (25,N'CN03',2), (25,N'CN04',2), (25,N'CN06',0), (26,N'CN03',1), (26,N'CN04',2), (26,N'CN06',0), (27,N'CN03',1), (27,N'CN04',2), (27,N'CN06',0), (28,N'CN01',1), (28,N'CN03',2), (28,N'CN04',2), (28,N'CN06',0), (29,N'CN03',1), (29,N'CN04',1), (29,N'CN06',0), (30,N'CN06',0), (31,N'CN01',1), (31,N'CN02',1), (31,N'CN03',3), (31,N'CN04',3), (31,N'CN06',0), (32,N'CN01',1), (32,N'CN03',2), (32,N'CN04',3), (32,N'CN06',0), (33,N'CN01',2), (33,N'CN02',1), (33,N'CN03',3), (33,N'CN04',4), (33,N'CN05',1), (33,N'CN06',1), (34,N'CN01',2), (34,N'CN02',1), (34,N'CN03',3), (34,N'CN04',2), (34,N'CN05',1), (34,N'CN06',1), (35,N'CN01',1), (35,N'CN02',0), (35,N'CN03',2), (35,N'CN04',3), (35,N'CN06',0), (36,N'CN01',1), (36,N'CN03',2), (36,N'CN04',2), (36,N'CN06',0), (37,N'CN01',1), (37,N'CN02',1), (37,N'CN03',3), (37,N'CN04',2), (37,N'CN06',0), (38,N'CN01',1), (38,N'CN03',2), (38,N'CN04',3), (38,N'CN06',0), (39,N'CN01',1), (39,N'CN03',2), (39,N'CN04',2), (39,N'CN06',0), (40,N'CN03',1), (40,N'CN04',2), (40,N'CN06',0), (41,N'CN01',1), (41,N'CN03',2), (41,N'CN04',3), (41,N'CN06',0), (42,N'CN01',1), (42,N'CN03',2), (42,N'CN04',2), (42,N'CN06',0), (43,N'CN01',1), (43,N'CN03',2), (43,N'CN04',2), (43,N'CN06',0), (44,N'CN03',1), (44,N'CN04',1), (44,N'CN06',0), (45,N'CN06',0), (46,N'CN01',1), (46,N'CN03',2), (46,N'CN04',2), (46,N'CN06',0), (47,N'CN03',1), (47,N'CN04',2), (47,N'CN06',0), (48,N'CN03',1), (48,N'CN04',1), (48,N'CN06',0), (49,N'CN03',1), (49,N'CN04',1), (49,N'CN06',0), (50,N'CN01',1), (50,N'CN03',2), (50,N'CN04',3), (50,N'CN06',0), (51,N'CN01',1), (51,N'CN03',2), (51,N'CN04',2), (51,N'CN06',0), (52,N'CN03',1), (52,N'CN04',2), (52,N'CN06',0), (53,N'CN01',1), (53,N'CN03',2), (53,N'CN04',3), (53,N'CN06',0), (54,N'CN06',0), (55,N'CN01',1), (55,N'CN03',2), (55,N'CN04',2), (55,N'CN06',0), (56,N'CN03',1), (56,N'CN04',1), (56,N'CN06',0), (57,N'CN01',1), (57,N'CN03',2), (57,N'CN04',2), (57,N'CN06',0), (58,N'CN03',1), (58,N'CN04',1), (58,N'CN06',0), (59,N'CN01',1), (59,N'CN02',1), (59,N'CN03',3), (59,N'CN04',2), (59,N'CN06',0), (60,N'CN01',1), (60,N'CN03',2), (60,N'CN04',2), (60,N'CN06',0), (61,N'CN01',1), (61,N'CN02',1), (61,N'CN03',3), (61,N'CN04',4), (61,N'CN06',0), (62,N'CN01',1), (62,N'CN02',0), (62,N'CN03',2), (62,N'CN04',3), (62,N'CN06',0), (63,N'CN01',2), (63,N'CN02',1), (63,N'CN03',3), (63,N'CN04',2), (63,N'CN05',1), (63,N'CN06',1), (64,N'CN01',1), (64,N'CN02',1), (64,N'CN03',3), (64,N'CN04',3), (64,N'CN06',0), (65,N'CN01',1), (65,N'CN02',1), (65,N'CN03',3), (65,N'CN04',2), (65,N'CN06',0), (66,N'CN01',1), (66,N'CN02',0), (66,N'CN03',2), (66,N'CN04',3), (66,N'CN06',0), (67,N'CN01',1), (67,N'CN03',2), (67,N'CN04',3), (67,N'CN06',0), (68,N'CN03',1), (68,N'CN04',2), (68,N'CN06',0), (69,N'CN01',1), (69,N'CN02',1), (69,N'CN03',3), (69,N'CN04',2), (69,N'CN06',0), (70,N'CN01',1), (70,N'CN03',2), (70,N'CN04',2), (70,N'CN06',0), (71,N'CN01',1), (71,N'CN02',1), (71,N'CN03',3), (71,N'CN04',3), (71,N'CN06',0), (72,N'CN01',1), (72,N'CN02',0), (72,N'CN03',2), (72,N'CN04',3), (72,N'CN06',0), (73,N'CN01',2), (73,N'CN02',1), (73,N'CN03',3), (73,N'CN04',4), (73,N'CN05',1), (73,N'CN06',1), (74,N'CN01',2), (74,N'CN02',1), (74,N'CN03',3), (74,N'CN04',2), (74,N'CN05',1), (74,N'CN06',1), (75,N'CN01',1), (75,N'CN02',1), (75,N'CN03',3), (75,N'CN04',3), (75,N'CN06',0), (76,N'CN01',1), (76,N'CN02',0), (76,N'CN03',2), (76,N'CN04',3), (76,N'CN06',0), (77,N'CN01',1), (77,N'CN03',2), (77,N'CN04',2), (77,N'CN06',0), (78,N'CN01',1), (78,N'CN02',1), (78,N'CN03',3), (78,N'CN04',4), (78,N'CN06',0), (79,N'CN01',1), (79,N'CN02',0), (79,N'CN03',2), (79,N'CN04',3), (79,N'CN06',0), (80,N'CN01',1), (80,N'CN02',0), (80,N'CN03',2), (80,N'CN04',3), (80,N'CN06',0), (81,N'CN03',1), (81,N'CN04',2), (81,N'CN06',0), (82,N'CN01',1), (82,N'CN02',1), (82,N'CN03',3), (82,N'CN04',2), (82,N'CN06',0), (83,N'CN01',1), (83,N'CN02',0), (83,N'CN03',2), (83,N'CN04',3), (83,N'CN06',0), (84,N'CN01',1), (84,N'CN02',1), (84,N'CN03',3), (84,N'CN04',2), (84,N'CN06',0), (85,N'CN01',1), (85,N'CN02',1), (85,N'CN03',3), (85,N'CN04',3), (85,N'CN06',0), (86,N'CN01',1), (86,N'CN03',2), (86,N'CN04',2), (86,N'CN06',0), (87,N'CN01',1), (87,N'CN02',1), (87,N'CN03',3), (87,N'CN04',2), (87,N'CN06',0), (88,N'CN01',1), (88,N'CN02',0), (88,N'CN03',2), (88,N'CN04',2), (88,N'CN06',0), (89,N'CN01',1), (89,N'CN02',0), (89,N'CN03',2), (89,N'CN04',3), (89,N'CN06',0), (90,N'CN01',1), (90,N'CN03',2), (90,N'CN04',2), (90,N'CN06',0), (91,N'CN01',1), (91,N'CN02',0), (91,N'CN03',2), (91,N'CN04',3), (91,N'CN06',0), (92,N'CN01',1), (92,N'CN02',1), (92,N'CN03',3), (92,N'CN04',2), (92,N'CN06',0), (93,N'CN01',1), (93,N'CN03',2), (93,N'CN04',2), (93,N'CN06',0), (94,N'CN03',1), (94,N'CN04',2), (94,N'CN06',0), (95,N'CN03',1), (95,N'CN04',1), (95,N'CN06',0), (96,N'CN03',1), (96,N'CN04',1), (96,N'CN06',0)
+) AS S(MaPhienBan,MaChiNhanh,SoLuong)
+ON T.MaPhienBan = S.MaPhienBan AND T.MaChiNhanh = S.MaChiNhanh
+WHEN MATCHED THEN UPDATE SET SoLuong=S.SoLuong, NgayCapNhat=GETDATE()
+WHEN NOT MATCHED THEN INSERT (MaPhienBan,MaChiNhanh,SoLuong,NgayCapNhat) VALUES (S.MaPhienBan,S.MaChiNhanh,S.SoLuong,GETDATE());
+
+UPDATE p SET
+    p.SoLuongTrongKho = a.s,
+    p.TrangThai = CASE WHEN a.s = 0 THEN N'Hết hàng' WHEN a.s <= 5 THEN N'Sắp hết' ELSE N'Còn hàng' END
+FROM PhienBanXe_SanPham p
+JOIN (SELECT MaPhienBan, SUM(SoLuong) s FROM TonKhoTheoChiNhanh GROUP BY MaPhienBan) a
+  ON a.MaPhienBan = p.MaPhienBan;
+GO
+
+-- ==================== 10. CẬP NHẬT MẬT KHẨU (PBKDF2) ====================
 UPDATE TaiKhoan SET MatKhau = N'vmkvfKErSh20Mgk5RAFnXA==.cpvftbad6YQAJyb4tnvFXlt0cVJnLzEufbEDLpv4XvA=' WHERE TenDangNhap = N'fntzzs682@gmail.com';
 UPDATE TaiKhoan SET MatKhau = N'Y6c07iVOADL1QREtk9ICoA==.uYBbMN2BI+5id0mITtfxzQ7qJR487SxvnjhfKpQCWTA=' WHERE TenDangNhap = N'minhquanmkp123@gmail.com';
 UPDATE TaiKhoan SET MatKhau = N'VXiDw90yeiJX4xbvy8InFw==.AhO+0sz6u9keAaY4KqoeFCfMmoo9eN/xG7xPBGcpOv4=' WHERE TenDangNhap = N'Ngttu2006@gmail.com';
@@ -821,222 +1739,17 @@ UPDATE TaiKhoan SET MatKhau = N'FGAO0dhh4hpX6IXg7UP7Xg==.VgoHnnaKcU+96KaRIw/fEIz
 UPDATE TaiKhoan SET MatKhau = N'pqJk4eU0McL3ZIbXAs5Htw==.n2zLZfvFFjRXMpCmA4DN2kYmITsC1HhPZk8oiH6zi/k=' WHERE TenDangNhap = N'user4';
 UPDATE TaiKhoan SET MatKhau = N'JkczGiUWrJPGO1KiE8kwBw==.uHc6YGr9tVyXdVOQlt47dXLyo+7vzOMZCZRAGv5MgMc=' WHERE TenDangNhap = N'user5';
 UPDATE TaiKhoan SET MatKhau = N'cG2v6iFxx5mDaZKKjeQ2vw==.ExgqY3iSU1Nl4zPNCgItChA1pWJX/XzHfOC/dKFXNGw=' WHERE TenDangNhap = N'Vanh280306@gmail.com';
+GO
 
--- ==================== 15. XEM LẠI DỮ LIỆU ====================
-PRINT N'=== HÃNG XE ==='; SELECT * FROM HangXe ORDER BY MaHang;
-PRINT N'=== DÒNG XE ==='; SELECT d.MaDong, d.TenDong, h.TenHang, d.KieuDang FROM DongXe d JOIN HangXe h ON d.MaHang = h.MaHang ORDER BY d.MaDong;
-PRINT N'=== PHIÊN BẢN ==='; SELECT p.MaPhienBan, p.TenPhienBan, d.TenDong, h.TenHang, p.GiaNiemYet, p.SoLuongTrongKho, p.TrangThai FROM PhienBanXe_SanPham p JOIN DongXe d ON p.MaDong = d.MaDong JOIN HangXe h ON d.MaHang = h.MaHang ORDER BY p.MaPhienBan;
-PRINT N'=== TÀI KHOẢN ==='; SELECT MaTaiKhoan AS ID, TenDangNhap, TenHienThi, Email, VaiTro, TrangThai FROM TaiKhoan ORDER BY MaTaiKhoan;
-PRINT N'=== CHI NHÁNH ==='; SELECT * FROM ChiNhanhShowroom;
-PRINT N'=== KHUYẾN MÃI ==='; SELECT * FROM ChuongTrinhKhuyenMai ORDER BY MaKhuyenMai;
-PRINT N'=== ĐƠN CỌC ==='; SELECT * FROM DonDatCoc ORDER BY NgayTaoDon DESC;
-PRINT N'=== CHI TIẾT ĐƠN CỌC ==='; SELECT ct.*, d.TenPhienBan FROM DonDatCocChiTiet ct JOIN PhienBanXe_SanPham d ON ct.MaPhienBan = d.MaPhienBan ORDER BY ct.MaChiTiet;
-PRINT N'=== TỒN KHO THEO CHI NHÁNH ==='; SELECT t.MaTonKho, t.MaPhienBan, d.TenPhienBan, t.MaChiNhanh, t.SoLuong, t.NgayCapNhat FROM TonKhoTheoChiNhanh t JOIN PhienBanXe_SanPham d ON t.MaPhienBan = d.MaPhienBan ORDER BY t.MaPhienBan, t.MaChiNhanh;
-PRINT N'=== HÓA ĐƠN ==='; SELECT * FROM HoaDonMuaXe ORDER BY NgayXuatHoaDon DESC;
-PRINT N'=== THỐNG KÊ ==='; SELECT * FROM ThongKeTongHop_Boss ORDER BY KyBaoCao;
-
--- Đếm số lượng
+-- ==================== 11. XEM LẠI DỮ LIỆU ====================
 PRINT N'=== SỐ LƯỢNG ===';
 SELECT 'HangXe' AS Bang, COUNT(*) AS SoLuong FROM HangXe
 UNION ALL SELECT 'DongXe', COUNT(*) FROM DongXe
 UNION ALL SELECT 'PhienBanXe_SanPham', COUNT(*) FROM PhienBanXe_SanPham
-UNION ALL SELECT 'TaiKhoan', COUNT(*) FROM TaiKhoan
-UNION ALL SELECT 'DonDatCoc', COUNT(*) FROM DonDatCoc
-UNION ALL SELECT 'DonDatCocChiTiet', COUNT(*) FROM DonDatCocChiTiet
+UNION ALL SELECT 'HinhAnhXe', COUNT(*) FROM HinhAnhXe
 UNION ALL SELECT 'TonKhoTheoChiNhanh', COUNT(*) FROM TonKhoTheoChiNhanh
-UNION ALL SELECT 'HoaDonMuaXe', COUNT(*) FROM HoaDonMuaXe
 UNION ALL SELECT 'ChiNhanhShowroom', COUNT(*) FROM ChiNhanhShowroom
-UNION ALL SELECT 'ThongKeTongHop_Boss', COUNT(*) FROM ThongKeTongHop_Boss
 ORDER BY Bang;
-
-
--- ============================================
--- PHẦN 3: VÍ DỤ CẬP NHẬT TRẠNG THÁI (CHẠY RIÊNG)
--- ============================================
--- Chạy 3 lệnh UPDATE này để test Quản Lý flow nhanh:
-
--- 1. Đặt 3 lịch hẹn thành "Chờ xác nhận" để QL có thể duyệt/từ chối
-UPDATE LichHenLaiThu SET TrangThai = N'Chờ xác nhận' WHERE TrangThai IS NULL OR TrangThai = N'';
-UPDATE LichHenLaiThu SET MaChiNhanh = 'MB001' WHERE MaChiNhanh IS NULL;
-
--- 2. Đặt 3 đơn cọc thành "Chờ xác nhận" để QL có thể duyệt/hủy
-UPDATE DonDatCoc SET TrangThaiDonHang = N'Chờ xác nhận' WHERE TrangThaiDonHang IS NULL OR TrangThaiDonHang = N'';
-UPDATE DonDatCoc SET MaChiNhanh = 'MB001' WHERE MaChiNhanh IS NULL;
-
--- 3. Kiểm tra kết quả
-SELECT MaLichHen, MaChiNhanh, TrangThai FROM LichHenLaiThu ORDER BY MaLichHen;
-SELECT MaDonCoc, MaChiNhanh, TrangThaiDonHang FROM DonDatCoc ORDER BY MaDonCoc;
-
-
--- ============================================
--- PHẦN 16: CÂN ĐỐI LẠI TỒN KHO THEO SHOWROOM (CHẠY RIÊNG)
--- ============================================
--- Mục tiêu: Hà Nội (CN03 + CN04) là showroom chính ~70% lượng xe;
--- còn lại chia cho TP.HCM (CN01, CN02), Đà Nẵng (CN05), Hải Phòng (CN06).
--- Đa số phiên bản còn hàng 3-10, một số ít sắp hết hàng 1-2, vài mẫu hết hàng 0.
--- Chỉ dùng UPDATE/INSERT (KHÔNG DELETE, KHÔNG đổi logic), chạy lại được nhiều lần.
--- LƯU Ý: đã áp dụng thành công. KHÔNG cần chạy lại PHẦN 16.
--- Nếu chạy lại: bôi đen TỪ DÒNG "BEGIN TRAN" đến DÒNG "COMMIT" (tuyệt đối không bôi thiếu BEGIN TRAN).
-
--- ===== PHẦN 16: BẮT ĐẦU =====
-BEGIN TRAN;
-
--- 16.1 Tổng tồn kho mục tiêu cho từng phiên bản (MaPhienBan -> SoLuongTrongKho)
-DECLARE @Tong TABLE (MaPhienBan INT PRIMARY KEY, Tong INT);
-INSERT INTO @Tong (MaPhienBan, Tong) VALUES
-(1,6),(2,4),(3,7),(4,4),(5,6),(6,3),(7,6),(8,3),(9,10),(10,8),
-(11,5),(12,3),(13,4),(14,3),(15,5),(16,2),(17,4),(18,1),(19,5),(20,3),
-(21,8),(22,5),(23,4),(24,0),(25,3),(26,1),(27,1),(28,3),(29,1),(30,0),
-(31,6),(32,4),(33,10),(34,8),(35,4),(36,3),(37,5),(38,3),(39,3),(40,1),
-(41,4),(42,3),(43,3),(44,1),(45,0),(46,3),(47,2),(48,1),(49,1),(50,4),
-(51,3),(52,2),(53,4),(54,0),(55,3),(56,0),(57,3),(58,1),(59,5),(60,3),
-(61,7),(62,4),(63,8),(64,6),(65,5),(66,4),(67,4),(68,2),(69,5),(70,3),
-(71,6),(72,4),(73,10),(74,8),(75,6),(76,4),(77,3),(78,7),(79,4),(80,4),
-(81,2),(82,5),(83,4),(84,5),(85,6),(86,3),(87,5),(88,3),(89,4),(90,3),
-(91,4),(92,5),(93,3),(94,2),(95,1),(96,2);
-
--- 16.2 Phân bổ tỷ lệ: CN03 42% + CN04 28% = 70% Hà Nội; CN01 10%, CN02 5%, CN05 5%, CN06 = còn lại
-SELECT MaPhienBan, Tong,
-    CN03 = ROUND(Tong * 0.42, 0),
-    CN04 = ROUND(Tong * 0.28, 0),
-    CN01 = ROUND(Tong * 0.10, 0),
-    CN02 = ROUND(Tong * 0.05, 0),
-    CN05 = ROUND(Tong * 0.05, 0),
-    CN06 = Tong - (ROUND(Tong*0.42,0) + ROUND(Tong*0.28,0) + ROUND(Tong*0.10,0) + ROUND(Tong*0.05,0) + ROUND(Tong*0.05,0))
-INTO #PB FROM @Tong;
-
--- 16.3 Ghép thành danh sách (MaPhienBan, MaChiNhanh, SoLuong)
-SELECT MaPhienBan, 'CN03' AS MaChiNhanh, CN03 AS SoLuong INTO #PBShow FROM #PB WHERE CN03 > 0
-UNION ALL SELECT MaPhienBan, 'CN04', CN04 FROM #PB WHERE CN04 > 0
-UNION ALL SELECT MaPhienBan, 'CN01', CN01 FROM #PB WHERE CN01 > 0
-UNION ALL SELECT MaPhienBan, 'CN02', CN02 FROM #PB WHERE CN02 > 0
-UNION ALL SELECT MaPhienBan, 'CN05', CN05 FROM #PB WHERE CN05 > 0
-UNION ALL SELECT MaPhienBan, 'CN06', CN06 FROM #PB WHERE CN06 > 0;
-
--- 16.4 Reset tồn kho các phiên bản đang cập nhật về 0
-UPDATE t SET t.SoLuong = 0
-FROM TonKhoTheoChiNhanh t JOIN @Tong k ON k.MaPhienBan = t.MaPhienBan;
-
--- 16.5 Cập nhật số xe mới cho dòng đã tồn tại
-UPDATE t SET t.SoLuong = p.SoLuong, t.NgayCapNhat = GETDATE()
-FROM TonKhoTheoChiNhanh t JOIN #PBShow p ON t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh;
-
--- 16.6 Thêm dòng tồn kho chưa có (vd CN05 Đà Nẵng)
-INSERT INTO TonKhoTheoChiNhanh (MaPhienBan, MaChiNhanh, SoLuong, NgayCapNhat)
-SELECT p.MaPhienBan, p.MaChiNhanh, p.SoLuong, GETDATE()
-FROM #PBShow p
-WHERE NOT EXISTS (SELECT 1 FROM TonKhoTheoChiNhanh t WHERE t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh);
-
--- 16.7 Đồng bộ SoLuongTrongKho + TrangThai trên bảng phiên bản
-UPDATE p SET
-    p.SoLuongTrongKho = k.Tong,
-    p.TrangThai = CASE WHEN k.Tong = 0 THEN N'Hết hàng' WHEN k.Tong <= 2 THEN N'Sắp hết' ELSE N'Còn hàng' END
-FROM PhienBanXe_SanPham p JOIN @Tong k ON p.MaPhienBan = k.MaPhienBan;
-
-DROP TABLE #PB;
-DROP TABLE #PBShow;
-COMMIT;
-
--- 16.8 Kiểm tra nhanh sau khi chạy
-SELECT t.MaChiNhanh, SUM(t.SoLuong) AS TongXe,
-       CAST(SUM(t.SoLuong) * 100.0 / (SELECT SUM(SoLuong) FROM TonKhoTheoChiNhanh) AS DECIMAL(6,2)) AS PhanTram
-FROM TonKhoTheoChiNhanh t GROUP BY t.MaChiNhanh ORDER BY t.MaChiNhanh;
-SELECT COUNT(*) AS SoPhienBanHetHang FROM PhienBanXe_SanPham WHERE SoLuongTrongKho = 0;
-SELECT COUNT(*) AS SoPhienBanSapHet FROM PhienBanXe_SanPham WHERE SoLuongTrongKho BETWEEN 1 AND 2;
 -- Kiểm tra tổng tồn kho khớp SoLuongTrongKho (phải trả về 0 dòng)
 SELECT a.MaPhienBan FROM (SELECT MaPhienBan, SUM(SoLuong) s FROM TonKhoTheoChiNhanh GROUP BY MaPhienBan) a
 JOIN PhienBanXe_SanPham p ON p.MaPhienBan = a.MaPhienBan WHERE a.s <> p.SoLuongTrongKho;
--- KẾT THÚC PHẦN 16
-
-
--- ============================================
--- PHẦN 17: BỔ SUNG TỒN KHO (CHẠY RIÊNG)
--- ============================================
--- Mục tiêu: ~60% phiên bản ở trạng thái "Còn hàng" (SoLuongTrongKho >= 6),
--- số còn lại chia 1-5 (Sắp hết) và 0 (Hết hàng).
--- Ưu tiên khu vực đông dân: Hà Nội (CN03, CN04) ~75%, TP.HCM (CN01, CN02) ~21%,
--- Đà Nẵng (CN05) + Hải Phòng (CN06) phần còn lại.
--- Chỉ dùng UPDATE/INSERT (KHÔNG DELETE), chạy lại được nhiều lần.
--- LƯU Ý: đã áp dụng thành công (57 phiên bản Còn hàng). KHÔNG cần chạy lại PHẦN 17.
--- Nếu chạy lại: bôi đen TỪ DÒNG "BEGIN TRAN" đến DÒNG "COMMIT" (tuyệt đối không bôi thiếu BEGIN TRAN).
-
--- ===== PHẦN 17: BẮT ĐẦU =====
-BEGIN TRAN;
-
--- 17.1 Tổng tồn kho mục tiêu (đa số >=6 để Còn hàng)
-DECLARE @Tong TABLE (MaPhienBan INT PRIMARY KEY, Tong INT);
-INSERT INTO @Tong (MaPhienBan, Tong) VALUES
-(1,10),(2,8),(3,8),(4,6),(5,10),(6,6),(7,8),(8,6),(9,14),(10,12),
-(11,8),(12,6),(13,7),(14,6),(15,6),(16,4),(17,6),(18,3),(19,7),(20,6),
-(21,10),(22,7),(23,6),(24,0),(25,5),(26,3),(27,3),(28,5),(29,2),(30,0),
-(31,8),(32,6),(33,12),(34,10),(35,6),(36,5),(37,7),(38,6),(39,5),(40,3),
-(41,6),(42,5),(43,5),(44,2),(45,0),(46,5),(47,3),(48,2),(49,2),(50,6),
-(51,5),(52,3),(53,6),(54,0),(55,5),(56,2),(57,5),(58,2),(59,7),(60,5),
-(61,9),(62,6),(63,10),(64,8),(65,7),(66,6),(67,6),(68,3),(69,7),(70,5),
-(71,8),(72,6),(73,12),(74,10),(75,8),(76,6),(77,5),(78,9),(79,6),(80,6),
-(81,3),(82,7),(83,6),(84,7),(85,8),(86,5),(87,7),(88,5),(89,6),(90,5),
-(91,6),(92,7),(93,5),(94,3),(95,2),(96,2);
-
--- 17.2 Phân bổ: CN03 30%, CN04 25%, CN01 20%, CN02 15%, CN05 5%, CN06 5% (phần dư chia cho CN03+CN04 - Hà Nội)
-SELECT MaPhienBan, Tong,
-    CN03 = FLOOR(Tong * 0.30),
-    CN04 = FLOOR(Tong * 0.25),
-    CN01 = FLOOR(Tong * 0.20),
-    CN02 = FLOOR(Tong * 0.15),
-    CN05 = ROUND(Tong * 0.05, 0),
-    CN06 = ROUND(Tong * 0.05, 0),
-    du = Tong - (FLOOR(Tong*0.30) + FLOOR(Tong*0.25) + FLOOR(Tong*0.20) + FLOOR(Tong*0.15) + ROUND(Tong*0.05,0) + ROUND(Tong*0.05,0))
-INTO #PB0 FROM @Tong;
-
-SELECT MaPhienBan, Tong,
-    CN03 = CN03 + FLOOR(du * 0.5),
-    CN04 = CN04 + (du - FLOOR(du * 0.5)),
-    CN01, CN02, CN05, CN06
-INTO #PB FROM #PB0;
-
--- 17.3 Ghép thành danh sách (MaPhienBan, MaChiNhanh, SoLuong)
-SELECT MaPhienBan, 'CN03' AS MaChiNhanh, CN03 AS SoLuong INTO #PBShow FROM #PB WHERE CN03 > 0
-UNION ALL SELECT MaPhienBan, 'CN04', CN04 FROM #PB WHERE CN04 > 0
-UNION ALL SELECT MaPhienBan, 'CN01', CN01 FROM #PB WHERE CN01 > 0
-UNION ALL SELECT MaPhienBan, 'CN02', CN02 FROM #PB WHERE CN02 > 0
-UNION ALL SELECT MaPhienBan, 'CN05', CN05 FROM #PB WHERE CN05 > 0
-UNION ALL SELECT MaPhienBan, 'CN06', CN06 FROM #PB WHERE CN06 > 0;
-
--- 17.4 Reset tồn kho các phiên bản đang cập nhật về 0
-UPDATE t SET t.SoLuong = 0
-FROM TonKhoTheoChiNhanh t JOIN @Tong k ON k.MaPhienBan = t.MaPhienBan;
-
--- 17.5 Cập nhật số xe mới cho dòng đã tồn tại
-UPDATE t SET t.SoLuong = p.SoLuong, t.NgayCapNhat = GETDATE()
-FROM TonKhoTheoChiNhanh t JOIN #PBShow p ON t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh;
-
--- 17.6 Thêm dòng tồn kho chưa có
-INSERT INTO TonKhoTheoChiNhanh (MaPhienBan, MaChiNhanh, SoLuong, NgayCapNhat)
-SELECT p.MaPhienBan, p.MaChiNhanh, p.SoLuong, GETDATE()
-FROM #PBShow p
-WHERE NOT EXISTS (SELECT 1 FROM TonKhoTheoChiNhanh t WHERE t.MaPhienBan = p.MaPhienBan AND t.MaChiNhanh = p.MaChiNhanh);
-
--- 17.7 Đồng bộ SoLuongTrongKho + TrangThai (ngưỡng hiển thị: 0 = Hết hàng, 1-5 = Sắp hết, >=6 = Còn hàng)
-UPDATE p SET
-    p.SoLuongTrongKho = k.Tong,
-    p.TrangThai = CASE WHEN k.Tong = 0 THEN N'Hết hàng' WHEN k.Tong <= 5 THEN N'Sắp hết' ELSE N'Còn hàng' END
-FROM PhienBanXe_SanPham p JOIN @Tong k ON p.MaPhienBan = k.MaPhienBan;
-
-DROP TABLE #PB0;
-DROP TABLE #PB;
-DROP TABLE #PBShow;
-COMMIT;
-
--- 17.8 Kiểm tra nhanh sau khi chạy
-SELECT t.MaChiNhanh, SUM(t.SoLuong) AS TongXe,
-       CAST(SUM(t.SoLuong) * 100.0 / (SELECT SUM(SoLuong) FROM TonKhoTheoChiNhanh) AS DECIMAL(6,2)) AS PhanTram
-FROM TonKhoTheoChiNhanh t GROUP BY t.MaChiNhanh ORDER BY t.MaChiNhanh;
-SELECT
-  SUM(CASE WHEN SoLuongTrongKho >= 6 THEN 1 ELSE 0 END) AS ConHang_GE6,
-  SUM(CASE WHEN SoLuongTrongKho BETWEEN 1 AND 5 THEN 1 ELSE 0 END) AS SapHet_1_5,
-  SUM(CASE WHEN SoLuongTrongKho = 0 THEN 1 ELSE 0 END) AS HetHang_0
-FROM PhienBanXe_SanPham;
--- Kiểm tra tổng tồn kho khớp SoLuongTrongKho (phải trả về 0 dòng)
-SELECT a.MaPhienBan FROM (SELECT MaPhienBan, SUM(SoLuong) s FROM TonKhoTheoChiNhanh GROUP BY MaPhienBan) a
-JOIN PhienBanXe_SanPham p ON p.MaPhienBan = a.MaPhienBan WHERE a.s <> p.SoLuongTrongKho;
--- KẾT THÚC PHẦN 17

@@ -1,142 +1,322 @@
 @page
 @model CarProject.Pages.Admin.DonCoc.IndexModel
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Quản lý Đơn Cọc</h2>
-                <a asp-page="Create" class="btn btn-primary">+ Thêm Đơn Cọc</a>
-            </div>
+<style>
+    .dc-wrap { margin-top: 1rem; }
+    .dc-card {
+        background: #131316;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .dc-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 1rem; padding: 1rem 1.25rem; flex-wrap: wrap;
+    }
+    .dc-title { margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .dc-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.45); margin-top: 0.15rem; }
+    .dc-th { color: #fff; }
+    .dc-table-responsive { overflow-x: auto; }
+    .dc-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 14px;
+        color: rgba(255,255,255,0.85);
+        min-width: 1180px;
+    }
+    .dc-table thead th {
+        background: #0b0b0d;
+        color: rgba(255,255,255,0.55);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 600;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        text-align: left;
+        position: sticky; top: 0; z-index: 1;
+    }
+    .dc-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: middle;
+        line-height: 1.35;
+    }
+    .dc-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
 
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success">@TempData["Success"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Error"]</div>
-            }
+    /* Mã */
+    .dc-id { font-weight: 700; color: rgba(255,255,255,0.95); font-size: 13px; }
 
-            @if (Model.DonCocList.Count == 0)
-            {
-                <div class="alert alert-info">Không có đơn cọc nào.</div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Mã</th>
-                                <th>Khách Hàng</th>
-                                <th>Xe</th>
-                                <th>Showroom</th>
-                                <th>Tiền Cọc</th>
-                                <th>Thanh Toán</th>
-                                <th>Trạng Thái</th>
-                                <th>Ngày Tạo</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var d in Model.DonCocList)
+    /* Khách hàng */
+    .dc-cust-name { font-weight: 600; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dc-cust-phone { color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Cột Xe */
+    .dc-car-list { display: flex; flex-direction: column; gap: 6px; }
+    .dc-car {
+        display: flex; align-items: center; gap: 6px;
+        min-width: 0;
+    }
+    .dc-car-name {
+        font-weight: 600; color: #fff; font-size: 13px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        flex: 1; min-width: 0;
+    }
+    .dc-car-name i { color: rgba(255,255,255,0.35); font-size: 11px; margin-right: 3px; }
+    .dc-qty-badge, .dc-status-badge {
+        flex-shrink: 0;
+        font-size: 11px; line-height: 1;
+        padding: 3px 7px;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+    .dc-qty-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); }
+    .dc-status-badge { background: rgba(255,193,7,0.14); color: #ffd54a; }
+    .dc-status-badge.green { background: rgba(40,167,69,0.16); color: #69db7c; }
+    .dc-status-badge.red { background: rgba(220,53,69,0.16); color: #ff8787; }
+    .dc-more { margin-top: 2px; }
+    .dc-more-btn {
+        background: none; border: 1px dashed rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.6);
+        border-radius: 999px; font-size: 11px; padding: 2px 10px;
+        cursor: pointer; transition: all .15s;
+    }
+    .dc-more-btn:hover { border-color: var(--brand-silver); color: #fff; background: rgba(255,255,255,0.05); }
+
+    /* Showroom */
+    .dc-showroom { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.35; }
+    .dc-showroom small { display: block; color: rgba(255,255,255,0.4); font-size: 11px; }
+
+    /* Tiền cọc */
+    .dc-money { font-weight: 600; color: rgba(255,255,255,0.9); font-size: 13px; white-space: nowrap; }
+
+    /* Badges chung (bo tròn 999px) */
+    .dc-badge {
+        display: inline-flex; align-items: center;
+        border-radius: 999px; font-size: 11px; line-height: 1;
+        padding: 4px 9px; font-weight: 600; white-space: nowrap;
+    }
+    .dc-badge.green { background: rgba(40,167,69,0.16); color: #69db7c; }
+    .dc-badge.yellow { background: rgba(255,193,7,0.14); color: #ffd54a; }
+    .dc-badge.red { background: rgba(220,53,69,0.16); color: #ff8787; }
+    .dc-badge.gray { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.55); }
+    .dc-badge.blue { background: rgba(13,110,253,0.16); color: #74c0fc; }
+    .dc-badge.purple { background: rgba(111,66,193,0.16); color: #b197fc; }
+
+    /* Ngày tạo */
+    .dc-date { font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap; }
+    .dc-date small { display: block; color: rgba(255,255,255,0.4); font-size: 11px; }
+
+    /* Hành động */
+    .dc-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .dc-act-btn {
+        width: 30px; height: 30px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(255,255,255,0.04);
+        color: rgba(255,255,255,0.6); font-size: 12px;
+        cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .dc-act-btn:hover { background: rgba(255,255,255,0.10); color: #fff; }
+    .dc-act-btn.edit:hover { color: #ffd54a; border-color: rgba(255,193,7,0.4); }
+    .dc-act-btn.del:hover { color: #ff8787; border-color: rgba(220,53,69,0.4); }
+    .dc-act-btn.ok:hover { color: #69db7c; border-color: rgba(40,167,69,0.4); }
+    .dc-act-btn.no:hover { color: #ff8787; border-color: rgba(220,53,69,0.4); }
+
+    /* Modal xe */
+    .dc-modal-list-title { font-weight: 700; color: #fff; font-size: 15px; margin-bottom: 0.25rem; }
+    .dc-modal-count { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 0.75rem; }
+</style>
+
+<div class="container-fluid dc-wrap">
+    <div class="dc-toolbar">
+        <div>
+            <h1 class="dc-title">Quản lý Đơn Cọc</h1>
+            <div class="dc-subtitle">Tổng cộng @Model.DonCocList.Count đơn · Dashboard quản trị</div>
+        </div>
+        <a asp-page="Create" class="btn btn-primary btn-sm" style="border-radius:8px;">
+            <i class="fas fa-plus me-1"></i> Thêm Đơn Cọc
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    @if (Model.DonCocList.Count == 0)
+    {
+        <div class="alert alert-info">Không có đơn cọc nào.</div>
+    }
+    else
+    {
+        <div class="dc-card">
+            <div class="dc-table-responsive">
+                <table class="dc-table">
+                    <colgroup>
+                        <col style="width:70px" />
+                        <col style="width:190px" />
+                        <col style="width:330px" />
+                        <col style="width:250px" />
+                        <col style="width:150px" />
+                        <col style="width:140px" />
+                        <col style="width:140px" />
+                        <col style="width:150px" />
+                        <col style="width:130px" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Khách hàng</th>
+                            <th>Xe</th>
+                            <th>Showroom</th>
+                            <th>Tiền cọc</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.DonCocList)
+                        {
+                            var allCt = d.ChiTiets.Select(ct => new
                             {
-                                <tr>
-                                    <td>#@d.MaDonCoc</td>
-                                    <td>
-                                        <strong>@d.HoTen</strong><br>
-                                        <small>@d.SoDienThoai</small>
-                                    </td>
-                                    <td>
-                                        @if (d.ChiTiets.Any())
+                                Ten = $"{ct.PhienBan?.DongXe?.TenDong ?? ""} {ct.PhienBan?.TenPhienBan ?? ""}".Trim(),
+                                SoLuong = ct.SoLuong,
+                                Status = ct.TrangThaiTiepNhan == "Đã tiếp nhận" ? "Đã tiếp nhận" : (ct.TrangThaiTiepNhan == "Từ chối" ? "Từ chối" : "Chờ xác nhận")
+                            }).ToList();
+                            var visibleCt = allCt.Take(3).ToList();
+                            var hiddenCt = allCt.Skip(3).ToList();
+                            var visibleJson = System.Text.Json.JsonSerializer.Serialize(visibleCt);
+                            var hiddenJson = System.Text.Json.JsonSerializer.Serialize(hiddenCt);
+                            var showroomName = d.ChiNhanh?.TenChiNhanh ?? "—";
+
+                            <tr>
+                                <td><span class="dc-id">#@d.MaDonCoc</span></td>
+
+                                <td>
+                                    <div class="dc-cust-name">@d.HoTen</div>
+                                    <div class="dc-cust-phone">@d.SoDienThoai</div>
+                                </td>
+
+                                <td>
+                                    <div class="dc-car-list">
+                                        @foreach (var ct in visibleCt)
                                         {
-                                            foreach (var ct in d.ChiTiets)
-                                            {
-                                                var ctTen = $"{ct.PhienBan?.TenPhienBan ?? ""}";
-                                                var ctStatus = ct.TrangThaiTiepNhan == "Đã tiếp nhận"
-                                                    ? "<span class='badge bg-success'>Đã tiếp nhận</span>"
-                                                    : (ct.TrangThaiTiepNhan == "Từ chối"
-                                                        ? $"<span class='badge bg-danger'>Từ chối</span> <small class='text-danger'>{ct.LyDoTuChoi}</small>"
-                                                        : "<span class='badge bg-warning text-dark'>Chờ xác nhận</span>");
-                                                <div style="margin-bottom:0.3rem;">
-                                                    <span>@ctTen</span> <small class="text-muted">x@(ct.SoLuong)</small>
-                                                    <div style="font-size:0.72rem;">@Html.Raw(ctStatus)</div>
-                                                </div>
-                                            }
+                                            <div class="dc-car" title="@ct.Ten">
+                                                <span class="dc-car-name"><i class="fas fa-car"></i>@ct.Ten</span>
+                                                <span class="dc-qty-badge">x@(ct.SoLuong)</span>
+                                                <span class="dc-status-badge @(ct.Status == "Chờ xác nhận" ? "" : (ct.Status == "Đã tiếp nhận" ? "green" : "red"))">@ct.Status</span>
+                                            </div>
+                                        }
+                                        @if (hiddenCt.Any())
+                                        {
+                                            <div class="dc-more">
+                                                <button type="button" class="dc-more-btn" onclick='openCarsModal(@d.MaDonCoc, @Html.Raw(visibleJson), @Html.Raw(hiddenJson), @allCt.Count, "@(System.Text.Json.JsonEncodedText.Encode(d.HoTen ?? ""))")'>
+                                                    +@(hiddenCt.Count) xe khác · Xem tất cả
+                                                </button>
+                                            </div>
+                                        }
+                                        @if (!d.ChiTiets.Any())
+                                        {
+                                            <span class="dc-status-badge gray" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.5)">@(d.PhienBan?.TenPhienBan ?? "—")</span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @* Tách showroom dài thành 2 dòng nếu cần *@
+                                    @if (showroomName.Length > 24)
+                                    {
+                                        var match = System.Text.RegularExpressions.Regex.Match(showroomName, @"^(.*?)(\(Cơ sở \d+\))$");
+                                        if (match.Success)
+                                        {
+                                            <div class="dc-showroom">@match.Groups[1].Value.Trim()<small>@match.Groups[2].Value</small></div>
                                         }
                                         else
                                         {
-                                            <span>@d.PhienBan?.TenPhienBan <br><small>@d.PhienBan?.DongXe?.TenDong</small></span>
+                                            <div class="dc-showroom">@showroomName</div>
                                         }
-                                    </td>
-                                    <td>@(d.ChiNhanh?.TenChiNhanh ?? "—")</td>
-                                    <td>@d.SoTienCoc.ToString("N0")đ</td>
-                                    <td>
-                                        <span class="badge @(d.TrangThaiThanhToan == "Đã thanh toán" ? "bg-success" : "bg-warning")">
-                                            @d.TrangThaiThanhToan
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @switch (d.TrangThaiDonHang)
-                                        {
-                                            case "Chờ xử lý":
-                                                <span class="badge bg-info">Chờ xử lý</span>
-                                                break;
-                                            case "Đã duyệt":
-                                                <span class="badge bg-success">Đã duyệt</span>
-                                                break;
-                                            case "Đã hủy":
-                                                <span class="badge bg-danger">Đã hủy</span>
-                                                break;
-                                            case "Đã xác nhận":
-                                                <span class="badge bg-primary">Đã xác nhận</span>
-                                                break;
-                                            case "Hoàn tất":
-                                                <span class="badge bg-success">Hoàn tất</span>
-                                                break;
-                                            case "Đã từ chối":
-                                                <span class="badge bg-danger">Đã từ chối</span>
-                                                break;
-                                            default:
-                                                <span class="badge bg-secondary">@d.TrangThaiDonHang</span>
-                                                break;
-                                        }
-                                    </td>
-                                    <td>@d.NgayTaoDon.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td>
+                                    }
+                                    else
+                                    {
+                                        <div class="dc-showroom">@showroomName</div>
+                                    }
+                                </td>
+
+                                <td><span class="dc-money">@d.SoTienCoc.ToString("N0")đ</span></td>
+
+                                <td>
+                                    <span class="dc-badge @(d.TrangThaiThanhToan == "Đã thanh toán" ? "green" : d.TrangThaiThanhToan == "Một phần" ? "yellow" : "yellow")">@d.TrangThaiThanhToan</span>
+                                </td>
+
+                                <td>
+                                    @switch (d.TrangThaiDonHang)
+                                    {
+                                        case "Chờ xử lý":
+                                            <span class="dc-badge blue">@d.TrangThaiDonHang</span>
+                                            break;
+                                        case "Đã duyệt":
+                                        case "Đã xác nhận":
+                                        case "Hoàn tất":
+                                            <span class="dc-badge green">@d.TrangThaiDonHang</span>
+                                            break;
+                                        case "Đã hủy":
+                                        case "Đã từ chối":
+                                            <span class="dc-badge red">@d.TrangThaiDonHang</span>
+                                            break;
+                                        default:
+                                            <span class="dc-badge gray">@d.TrangThaiDonHang</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="dc-date">@d.NgayTaoDon.ToString("dd/MM/yyyy")<small>@d.NgayTaoDon.ToString("HH:mm")</small></div>
+                                </td>
+
+                                <td>
+                                    <div class="dc-actions">
                                         @if (d.TrangThaiDonHang == "Chờ xử lý" && d.TrangThaiThanhToan == "Đã thanh toán")
                                         {
-                                            <button class="btn btn-success btn-sm" onclick="openApproveModal(@d.MaDonCoc, '@d.HoTen', '@string.Join(", ", d.ChiTiets.Select(c => c.PhienBan?.TenPhienBan))')">
-                                                <i class="fas fa-check"></i> Duyệt
+                                            <button type="button" class="dc-act-btn ok" title="Duyệt đơn"
+                                                    onclick='openApproveModal(@d.MaDonCoc, "@(System.Text.Json.JsonEncodedText.Encode(d.HoTen ?? ""))", "@(System.Text.Json.JsonEncodedText.Encode(string.Join(", ", d.ChiTiets.Select(c => c.PhienBan?.TenPhienBan))))")'>
+                                                <i class="fas fa-check"></i>
                                             </button>
                                             <form method="post" asp-page-handler="Reject" style="display:inline" onsubmit="return confirm('Từ chối đơn cọc #@d.MaDonCoc?');">
                                                 <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Từ chối</button>
+                                                <button type="submit" class="dc-act-btn no" title="Từ chối"><i class="fas fa-times"></i></button>
                                             </form>
                                         }
-                                        <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-warning">Sửa</a>
-                                        <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa?');">Xóa</a>
                                         @if (d.TrangThaiDonHang == "Đã xác nhận")
                                         {
                                             <form method="post" asp-page-handler="Sold" style="display:inline" onsubmit="return confirm('Xác nhận bán thành công?');">
                                                 <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                                <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Bán thành công</button>
+                                                <button type="submit" class="dc-act-btn ok" title="Bán thành công"><i class="fas fa-check-circle"></i></button>
                                             </form>
                                             <form method="post" asp-page-handler="CancelSale" style="display:inline" onsubmit="return confirm('Hủy bán đơn cọc #@d.MaDonCoc?');">
                                                 <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
-                                                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-ban"></i> Hủy bán</button>
+                                                <button type="submit" class="dc-act-btn no" title="Hủy bán"><i class="fas fa-ban"></i></button>
                                             </form>
                                         }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
+                                        <a asp-page="Edit" asp-route-id="@d.MaDonCoc" class="dc-act-btn edit" title="Sửa"><i class="fas fa-edit"></i></a>
+                                        <a asp-page="Delete" asp-route-id="@d.MaDonCoc" class="dc-act-btn del" title="Xóa" onclick="return confirm('Xác nhận xóa?');"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    }
 </div>
 
 <!-- Modal duyệt đơn: chuyển showroom + gửi lịch hẹn -->
@@ -192,11 +372,50 @@
     </div>
 </div>
 
+<!-- Modal xem tất cả xe trong đơn -->
+<div class="modal fade" id="carsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết xe · Đơn cọc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="dc-modal-list-title" id="carsModalOrder"></div>
+                <div class="dc-modal-count" id="carsModalCount"></div>
+                <div class="dc-car-list" id="carsModalList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function openApproveModal(maDonCoc, hoTen, tenXe) {
         document.getElementById('approveMaDonCoc').value = maDonCoc;
         document.getElementById('approveHoTen').value = hoTen;
         document.getElementById('approveXe').value = tenXe;
         new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+
+    function openCarsModal(maDonCoc, cars, more, total, hoTen) {
+        var all = cars.concat(more);
+        document.getElementById('carsModalOrder').textContent = 'Đơn cọc #' + maDonCoc + ' — ' + hoTen;
+        document.getElementById('carsModalCount').textContent = total + ' xe trong đơn';
+        var list = document.getElementById('carsModalList');
+        list.innerHTML = '';
+        for (var i = 0; i < all.length; i++) {
+            var c = all[i];
+            var statusCls = c.Status === 'Chờ xác nhận' ? '' : (c.Status === 'Đã tiếp nhận' ? ' green' : ' red');
+            var row = document.createElement('div');
+            row.className = 'dc-car';
+            row.innerHTML = '<span class="dc-car-name"><i class="fas fa-car"></i>' + c.Ten + '</span>'
+                + '<span class="dc-qty-badge">x' + c.SoLuong + '</span>'
+                + '<span class="dc-status-badge' + statusCls + '">' + c.Status + '</span>';
+            list.appendChild(row);
+        }
+        new bootstrap.Modal(document.getElementById('carsModal')).show();
     }
 </script>
