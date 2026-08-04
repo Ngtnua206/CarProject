@@ -2,6 +2,7 @@
 
 ## Goal
 - Build luxury car showroom website with full UI/UX + admin CRUD using ASP.NET Core / Razor Pages / SQL Server Docker, integrating friend's Mercedes-Benz React design; added Quản Lý role with showroom revenue dashboard + admin revenue chart (line + bar via Chart.js)
+- Currently: `SQL_ThaoTac.sql` rewritten to safe/idempotent UPSERT so user can run on production `mylxcar.online` to sync business data + stock from local without losing server-uploaded images
 
 ## Constraints & Preferences
 - Primary theme: Mercedes-Benz dark luxury (black/silver, glassmorphism, premium buttons)
@@ -109,8 +110,19 @@
   - E2E verified (build 0 lỗi, app HTTP 200): save body hợp lệ → `{"success":true}`; body `{}` → 400; **tạo banner mới sau khi DELETE hết 5 banner** → `{"success":true}` + `MaQuanLyCapNhat=fntzzs682@gmail.com` (không FK error); đã khôi phục 5 banner gốc (`/uploads/admin/5b79b64b-...` + `/images/banners/banner2..5.jpg`); hero vẫn hiển thị banner OK
 - **Showroom khả dụng + cân đối tồn kho** (feedback người dùng):
   - `Checkout.cshtml`: select "Showroom hẹn gặp (nhận xe)" giờ **chỉ hiển thị showroom có xe nguồn của đơn hàng** (lọc từ `TonKhoTheoPhienBan` có `SoLuong > 0`, fallback toàn bộ nếu rỗng để tránh select trống); nhãn per-car đổi "Showroom nguồn:" → "Showroom khả dụng:"
-  - `SQL_ThaoTac.sql` **PHẦN 16** (dòng 880–948): cân đối tồn kho mẫu ~70% Hà Nội (CN03 42% + CN04 28%), còn lại CN01 10%, CN02 5%, CN05 5%, CN06 = phần còn lại; đa số 3–10 xe, 17 PB sắp hết (1–2), 5 PB hết hàng (0); chỉ UPDATE/INSERT (không DELETE), idempotent, wrap trong transaction; kiểm tra cuối: tổng TonKhoTheoChiNhanh khớp `SoLuongTrongKho` (0 dòng lệch)
+  - `SQL_ThaoTac.sql` **PHẦN 16**: cân đối tồn kho mẫu ~70% Hà Nội (CN03 42% + CN04 28%), còn lại CN01 10%, CN02 5%, CN05 5%, CN06 = còn lại; đa số 3–10 xe, 17 PB sắp hết (1–2), 5 PB hết hàng (0); kiểm tra cuối: tổng TonKhoTheoChiNhanh khớp `SoLuongTrongKho` (0 dòng lệch)
   - Build mới chưa chạy sau khi sửa Checkout.cshtml — cần kill `CarProject` + giải phóng port 5001 trước build (tránh MSB3027 exe lock)
+
+### Total Rewrite SQL_ThaoTac.sql — bản AN TOÀN + IDEMPOTENT (không mất ảnh server)
+- **Vấn đề**: `SQL_ThaoTac.sql` cũ dòng 63–79 DELETE sạch + INSERT lại → mất ảnh upload trên server (DuongDanAnh/HinhAnhXe/banner) + lỗi FK HinhAnhXe; user cần chạy lên production (`mylxcar.online`) đồng bộ dữ liệu kinh doanh + tồn kho từ local mà **giữ nguyên ảnh**
+- **Giải pháp**: toàn bộ chuyển sang UPSERT (không xoá gì, idempotent, chạy lại nhiều lần OK); sinh lại **toàn bộ giá trị từ DB local thật** (ngày 2026-08-04) bằng generator PowerShell `gen_sql.ps1` → ghi đè `SQL_ThaoTac.sql` UTF-8 BOM
+- **Bảo vệ ảnh**: khi hàng ĐÃ tồn tại → `UPDATE` chỉ cột text/kinh doanh (KHÔNG chạm `DuongDanLogo`/`DuongDanAnh`); khi chưa có → mới `INSERT` kèm ảnh; `HinhAnhXe` không đụng tới
+- **Các bảng identity** (HangXe, DongXe, PhienBanXe_SanPham, QuangCaoBanner, KenhTuVan): MERGE bị cấm với IDENTITY_INSERT → dùng pattern `IF NOT EXISTS (SELECT...) BEGIN SET IDENTITY_INSERT ON; INSERT; SET IDENTITY_INSERT OFF; END ELSE UPDATE ...` (UPDATE bằng literal, không no-op)
+- **Các bảng non-identity** (ChiNhanhShowroom, ChuongTrinhKhuyenMai, TonKhoTheoChiNhanh): dùng MERGE theokhoá text
+- **Tài khoản**: 16 account (5 admin + 5 user + 6 Quản Lý) UPSERT theo TenDangNhap, email phải bọc `N'...'` (lỗi cũ 4104 "multi-part identifier" vì thiếu quote); email rỗng → `NULL`
+- **Sửa bug generator**: bitmap BIT `True`→`1/0` (hàm `Lit()`); KenhTuVan bị flatten `@(@(1,...))` → scalar value nên pipeline tách thành ký tự `h,t,t,p` → hardcode `$ktvSql` trực tiếp
+- **E2E verified (chạy nguyên file trên local DB)**: **12/12 batch OK, 0 lỗi** (không còn 4104/544); counts đúng 15/58/96/6/3/1/410; **0 dòng lệch** tồn kho; ảnh giữ nguyên (DongXe_CoAnh=16, HinhAnhXe=0); script chạy `UPDATE ... SET SoLuongTrongKho=SUM, TrangThai(Còn hàng≥6/Sắp hết1-5/Hết hàng0)`
+- **Lưu ý test**: sửa file bằng PowerShell generator `WriteAllText` (UTF-8 BOM); console font hiển thị `?`/`�` cho tiếng Việt chỉ là lỗi hiển thị terminal, file thực sự đúng UTF-8
 
 ### In Progress
 - (none)
@@ -134,6 +146,7 @@
   - Token lưu trong session (`JwtToken`) khi login qua form, có sẵn cho API calls sau đó
 
 ## Next Steps
+- **Next user action**: mở SSMS trên production `mylxcar.online`, chọn DB `CarShopDb`, chạy nguyên `SQL_ThaoTac.sql` (bản mới an toàn — không mất ảnh server, không xoá dữ liệu) — script đã test sạch 0 lỗi trên local
 - Try running Aspire AppHost with the signed DLL — if signing doesn't resolve WDAC block, disable Memory Integrity (Windows Security → Device Security → Core Isolation → Off → reboot)
 - If Aspire still fails, use `run.bat` or VS Code launch config "CarProject (http)" for daily work
 - Commit + push clean code to GitHub
@@ -178,3 +191,4 @@
 - `run.bat`: double-click to run
 - `rebuild-and-run.bat`: build + run
 - `setup-cert.bat`: for other developers to install signing cert
+- `CarProject/SQL_ThaoTac.sql`: bản mới AN TOÀN/idempotent UPSERT (đã test sạch 0 lỗi trên local); generator `C:\Users\Tu\AppData\Local\Temp\opencode\gen_sql.ps1` sinh từ DB local (chạy `powershell -NoProfile -ExecutionPolicy Bypass -File ...`)

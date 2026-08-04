@@ -138,7 +138,7 @@ public class DonCocModel : PageModel
         // Gửi thông báo tới Admin khi từ chối
         await _notif.SendToRoleAsync("Admin", "Showroom từ chối tiếp nhận xe",
             $"Showroom {showroom.TenChiNhanh} từ chối tiếp nhận xe {tenXe} (Đơn cọc #{chiTiet.MaDonCoc}). Lý do: {lyDoTuChoi.Trim()}",
-            $"/Admin/DonCoc/Edit?maDonCoc={chiTiet.MaDonCoc}");
+            $"/Admin/DonCoc/Edit/{chiTiet.MaDonCoc}");
 
         if (chiTiet.DonDatCoc?.MaKhachHang != null)
         {

@@ -885,7 +885,7 @@ try
                 // Thông báo chung cho Admin
                 await notifSvc.SendToRoleAsync("Admin", "Đơn đặt cọc mới",
                     $"Đơn cọc #{donCoc.MaDonCoc} - {donCoc.HoTen} - {totalXe} xe - Tổng cọc: {donCoc.SoTienCoc:N0}đ - Hẹn gặp tại {hnName}",
-                    $"/Admin/DonCoc/Edit?maDonCoc={donCoc.MaDonCoc}");
+                    $"/Admin/DonCoc/Edit/{donCoc.MaDonCoc}");
 
                 // Thông báo tới Quản lý từng showroom có xe trong đơn
                 foreach (var group in donCoc.ChiTiets.GroupBy(c => c.MaChiNhanh))
