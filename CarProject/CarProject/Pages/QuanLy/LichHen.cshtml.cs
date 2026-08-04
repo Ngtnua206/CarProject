@@ -25,6 +25,37 @@ public class LichHenModel : PageModel
     public string? SuccessMessage { get; set; }
     public string? ErrorMessage { get; set; }
 
+    public IEnumerable<LichHenLaiThu> LichHenLaiThu => DanhSachLichHen.Where(l => IsTestDrive(l));
+    public IEnumerable<LichHenLaiThu> LichHenMuaXe => DanhSachLichHen.Where(l => IsPurchase(l));
+
+    public bool IsTestDrive(LichHenLaiThu lichHen)
+        => lichHen.TrangThai.Contains("Lái thử") || !lichHen.TrangThai.Contains("Mua xe");
+
+    public bool IsPurchase(LichHenLaiThu lichHen)
+        => lichHen.TrangThai.Contains("Mua xe");
+
+    public string GetBaseStatus(string trangThai)
+    {
+        if (trangThai.StartsWith("Chờ xác nhận")) return "Chờ xác nhận";
+        if (trangThai.StartsWith("Đã xác nhận")) return "Đã xác nhận";
+        if (trangThai.StartsWith("Từ chối")) return "Từ chối";
+        if (trangThai.StartsWith("Hoàn thành - Bán")) return "Hoàn thành - Bán";
+        if (trangThai.StartsWith("Hoàn thành - Không bán")) return "Hoàn thành - Không bán";
+        return trangThai;
+    }
+
+    public string GetTypeLabel(LichHenLaiThu lichHen)
+        => IsPurchase(lichHen) ? "Mua xe" : "Lái thử";
+
+    private string JoinTypeSuffix(string trangThai)
+    {
+        if (trangThai.Contains("Mua xe")) return " - Mua xe";
+        return " - Lái thử";
+    }
+
+    private string WithTypeSuffix(string baseStatus, string trangThai)
+        => baseStatus + JoinTypeSuffix(trangThai);
+
     public async Task<IActionResult> OnGetAsync()
     {
         var userName = User.GetJwtUserName();
@@ -68,11 +99,11 @@ public class LichHenModel : PageModel
             return RedirectToPage();
         }
 
-        lichHen.TrangThai = "Đã xác nhận";
+        lichHen.TrangThai = WithTypeSuffix("Đã xác nhận", lichHen.TrangThai);
         await _db.SaveChangesAsync();
 
-        await _notif.SendAsync(lichHen.MaKhachHang, "Lịch lái thử đã được xác nhận",
-            $"Lịch lái thử xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã được xác nhận.", "/TestDrive");
+        await _notif.SendAsync(lichHen.MaKhachHang, "Lịch hẹn đã được xác nhận",
+            $"Lịch hẹn xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã được xác nhận.", "/TestDrive");
         await _log.LogAsync($"QL duyệt lịch hẹn #{maLichHen}");
 
         SuccessMessage = "Đã xác nhận lịch hẹn.";
@@ -83,6 +114,21 @@ public class LichHenModel : PageModel
     {
         var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
 
+        var saleAmount = 0L;
+        if (daBan)
+        {
+            var phienBan = await _db.PhienBanXe
+                .Where(p => p.MaDong == lichHen.MaDong)
+                .OrderByDescending(p => p.SoLuongTrongKho)
+                .ThenBy(p => p.MaPhienBan)
+                .FirstOrDefaultAsync();
+            if (phienBan != null)
+            {
+                saleAmount = phienBan.GiaNiemYet;
+                phienBan.SoLuongTrongKho = Math.Max(0, phienBan.SoLuongTrongKho - 1);
+            }
+        }
+
         var thongKe = await _db.ThongKeTongHop_Boss
             .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == lichHen.MaChiNhanh);
 
@@ -92,12 +138,12 @@ public class LichHenModel : PageModel
             {
                 KyBaoCao = kyBaoCao,
                 MaChiNhanh = lichHen.MaChiNhanh,
-                TongDoanhThu = 0,
+                TongDoanhThu = saleAmount,
                 TongTienCocThuVe = 0,
                 TongSoXeDaBan = daBan ? 1 : 0,
                 SoDonCocBiHuy = 0,
-                TongLuotLaiThu = 1,
                 TongLuotXemWeb = 0,
+                TongLuotLaiThu = 1,
                 MaDongXeBanChayNhat = daBan ? lichHen.MaDong : 0
             };
             _db.ThongKeTongHop_Boss.Add(thongKe);
@@ -108,6 +154,7 @@ public class LichHenModel : PageModel
             if (daBan)
             {
                 thongKe.TongSoXeDaBan += 1;
+                thongKe.TongDoanhThu += saleAmount;
                 if (thongKe.MaDongXeBanChayNhat == 0)
                 {
                     thongKe.MaDongXeBanChayNhat = lichHen.MaDong;
@@ -138,11 +185,11 @@ public class LichHenModel : PageModel
             return RedirectToPage();
         }
 
-        lichHen.TrangThai = "Từ chối";
+        lichHen.TrangThai = WithTypeSuffix("Từ chối", lichHen.TrangThai);
         await _db.SaveChangesAsync();
 
-        await _notif.SendAsync(lichHen.MaKhachHang, "Lịch lái thử bị từ chối",
-            $"Lịch lái thử xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã bị từ chối. Vui lòng liên hệ showroom để biết thêm chi tiết.", "/TestDrive");
+        await _notif.SendAsync(lichHen.MaKhachHang, "Lịch hẹn bị từ chối",
+            $"Lịch hẹn xe vào {lichHen.NgayHen:dd/MM/yyyy} lúc {lichHen.GioHen} đã bị từ chối. Vui lòng liên hệ showroom để biết thêm chi tiết.", "/TestDrive");
         await _log.LogAsync($"QL từ chối lịch hẹn #{maLichHen}");
 
         SuccessMessage = "Đã từ chối lịch hẹn.";
@@ -169,13 +216,14 @@ public class LichHenModel : PageModel
             return RedirectToPage();
         }
 
-        if (lichHen.TrangThai != "Đã xác nhận")
+        if (!lichHen.TrangThai.StartsWith("Đã xác nhận"))
         {
             ErrorMessage = "Chỉ có thể hoàn thành lịch hẹn đã được xác nhận.";
             return RedirectToPage();
         }
 
-        lichHen.TrangThai = daBan ? "Hoàn thành - Bán" : "Hoàn thành - Không bán";
+        var status = daBan ? "Hoàn thành - Bán" : "Hoàn thành - Không bán";
+        lichHen.TrangThai = WithTypeSuffix(status, lichHen.TrangThai);
         await CapNhatDoanhThuLaiThuAsync(lichHen, daBan);
         await _db.SaveChangesAsync();
 

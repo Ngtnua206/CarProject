@@ -4690,6 +4690,12 @@ body.has-admin-bar .admin-edit-btn.btn-add:hover {
 [data-theme="light"] .car-card-premium .card-body .quick-specs span strong {
     color: #1a1a1a;
 }
+[data-theme="light"] .car-card-premium .card-body h5 {
+    color: #1a1a1a;
+}
+[data-theme="light"] .car-card-premium .card-body .price-row .price-value {
+    color: #1a1a1a;
+}
 [data-theme="light"] .car-card-premium .card-body .price-row .price-label {
     color: #999;
 }

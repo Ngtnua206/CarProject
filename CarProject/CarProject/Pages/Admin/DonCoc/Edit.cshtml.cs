@@ -130,6 +130,9 @@ public class EditModel : PageModel
         chiTiet.SoTienNhapMoiXe = soTienNhapMoiXe;
         chiTiet.SoLuongThieu = Math.Max(0, chiTiet.SoLuongThieu - soLuongNhap);
 
+        // 5. Trừ doanh thu showroom do nhập hàng
+        await GiamDoanhThuNhapHangAsync(maChiNhanh, soLuongNhap * soTienNhapMoiXe);
+
         await _db.SaveChangesAsync();
 
         await _log.LogAsync("Admin nhập xe vào showroom",
@@ -137,5 +140,33 @@ public class EditModel : PageModel
 
         TempData["Success"] = $"Đã nhập {soLuongNhap} xe vào showroom với giá {soTienNhapMoiXe:N0}đ/xe.";
         return RedirectToPage(new { id = maDonCoc });
+    }
+
+    private async Task GiamDoanhThuNhapHangAsync(string maChiNhanh, long soTienNhap)
+    {
+        if (string.IsNullOrEmpty(maChiNhanh) || soTienNhap <= 0) return;
+
+        var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
+        var thongKe = await _db.ThongKeTongHop_Boss
+            .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == maChiNhanh);
+
+        if (thongKe == null)
+        {
+            thongKe = new ThongKeTongHop_Boss
+            {
+                KyBaoCao = kyBaoCao,
+                MaChiNhanh = maChiNhanh,
+                TongDoanhThu = 0,
+                TongTienCocThuVe = 0,
+                TongSoXeDaBan = 0,
+                SoDonCocBiHuy = 0,
+                TongLuotXemWeb = 0,
+                TongLuotLaiThu = 0,
+                MaDongXeBanChayNhat = 0
+            };
+            _db.ThongKeTongHop_Boss.Add(thongKe);
+        }
+
+        thongKe.TongDoanhThu = Math.Max(0, thongKe.TongDoanhThu - soTienNhap);
     }
 }
