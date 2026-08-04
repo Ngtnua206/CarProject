@@ -27,20 +27,22 @@ public class SepayWebhookPayload
     public string reference_code { get; set; } = "";
 }
 
-public class SepayWebhookResponse
-{
-    public bool success { get; set; }
-    public string message { get; set; } = "";
-    public SepayWebhookData data { get; set; } = new();
-}
-
+// SePay gui object PLAANG (khong boc boi {success, data}).
+// Field names la camelCase theo tai lieu chinh thuc.
 public class SepayWebhookData
 {
     public long id { get; set; }
-    public string transaction_date { get; set; } = "";
-    public decimal amount { get; set; }
+    public string gateway { get; set; } = "";
+    public string transactionDate { get; set; } = "";
+    public string accountNumber { get; set; } = "";
+    public string subAccount { get; set; } = "";
+    public string? code { get; set; }
     public string content { get; set; } = "";
-    public string reference_code { get; set; } = "";
+    public string transferType { get; set; } = "";
+    public string description { get; set; } = "";
+    public decimal transferAmount { get; set; }
+    public decimal accumulated { get; set; }
+    public string referenceCode { get; set; } = "";
 }
 
 public interface ISepayService

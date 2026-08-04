@@ -826,12 +826,8 @@ try
             if (!sepay.VerifyWebhook(body, signature))
                 return Results.Json(new { success = false, message = "Invalid signature" }, statusCode: 400);
 
-            var payload = System.Text.Json.JsonSerializer.Deserialize<CarProject.Services.SepayWebhookResponse>(body);
-            if (payload == null || !payload.success)
-                return Results.Ok(new { success = true });
-
-            var data = payload.data;
-            if (data == null)
+            var data = System.Text.Json.JsonSerializer.Deserialize<CarProject.Services.SepayWebhookData>(body);
+            if (data == null || data.id <= 0)
                 return Results.Ok(new { success = true });
 
             var maGiaoDich = sepay.ExtractTransactionCode(data.content ?? "");
@@ -924,7 +920,7 @@ try
                 }
             }
 
-            await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.amount}");
+            await log.LogAsync($"Webhook Sepay nhận thanh toán đơn cọc #{donCoc.MaDonCoc}, số tiền {data.transferAmount}");
             return Results.Ok(new { success = true });
         }
         catch (Exception ex)
