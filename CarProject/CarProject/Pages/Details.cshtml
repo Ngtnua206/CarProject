@@ -68,7 +68,10 @@
                     {
                         <span class="brand-badge"><i class="fas fa-trophy"></i> @Model.HangXe.TenHang</span>
                     }
-                    <span class="brand-badge"><i class="fas fa-tag"></i> @Model.Dong?.KieuDang</span>
+                    @if (!string.IsNullOrEmpty(Model.Dong?.KieuDang))
+                    {
+                        <span class="brand-badge"><i class="fas fa-tag"></i> @Model.Dong.KieuDang</span>
+                    }
                     @if (Model.HangXe != null)
                     {
                         <span class="brand-badge"><i class="fas fa-flag"></i> @Model.HangXe.QuocGia</span>

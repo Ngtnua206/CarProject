@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace CarProject.Models;
 
@@ -9,7 +10,7 @@ public class HangXe
     public int MaHang { get; set; }
     public string TenHang { get; set; }
     public string QuocGia { get; set; }
-    public string DuongDanLogo { get; set; }
+    public string? DuongDanLogo { get; set; }
 }
 
 public class DongXe
@@ -18,11 +19,12 @@ public class DongXe
     public int MaDong { get; set; }
     public int MaHang { get; set; }
     public string TenDong { get; set; }
-    public string KieuDang { get; set; }
+    public string? KieuDang { get; set; }
     public string? DuongDanAnh { get; set; }
     public bool NoiBat { get; set; }
 
     [ForeignKey("MaHang")]
+    [ValidateNever]
     public HangXe HangXe { get; set; } = null!;
     public ICollection<PhienBanXe> PhienBanXes { get; set; } = new List<PhienBanXe>();
     public ICollection<HinhAnhXe> HinhAnhXes { get; set; } = new List<HinhAnhXe>();

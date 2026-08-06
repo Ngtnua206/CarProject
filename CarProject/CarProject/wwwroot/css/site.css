@@ -2259,7 +2259,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .detail-premium .info-panel .cta-group .btn-deposit-disabled,
-.detail-premium .info-panel .cta-group .btn-deposit-disabled:hover {
+.detail-premium .info-panel .cta-group .btn-deposit-disabled:hover,
+.btn-cta.btn-deposit-disabled,
+.btn-cta.btn-deposit-disabled:hover {
     background: rgba(255,255,255,0.05);
     color: rgba(255,255,255,0.32);
     border: 1.5px dashed rgba(255,255,255,0.18);

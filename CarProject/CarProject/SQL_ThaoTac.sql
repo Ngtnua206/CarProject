@@ -59,6 +59,20 @@ BEGIN
 END
 GO
 
+-- 0b. CÁC CỘT TÙY CHỌN CHUYỂN THÀNH NULL (đồng bộ với model: form admin để trống được)
+--     Phải chạy trước khối UPSERT để INSERT thiếu cột không bị lỗi NOT NULL.
+ALTER TABLE HangXe ALTER COLUMN DuongDanLogo NVARCHAR(MAX) NULL;
+ALTER TABLE DongXe ALTER COLUMN KieuDang NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN TenPhienBan NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN MauSac NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN DongCo NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN HopSo NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN LoaiNhietLieu NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN DuongDanAnh NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN MaKhuyenMai NVARCHAR(MAX) NULL;
+ALTER TABLE PhienBanXe_SanPham ALTER COLUMN TrangThai NVARCHAR(MAX) NULL;
+GO
+
 -- ==================== 1. TÀI KHOẢN (UPSERT - giữ account đã có) ====================
 IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = N'fntzzs682@gmail.com')
     INSERT INTO TaiKhoan (TenDangNhap,MatKhau,VaiTro,TrangThai,TenHienThi,Email)

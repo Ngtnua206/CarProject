@@ -121,7 +121,15 @@
                                             break;
                                     }
                                 </td>
-                                <td></td>
+                                <td>
+                                    @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && d.TrangThaiDonHang == "Chờ xác nhận" && d.ChiTiets.Any() && d.ChiTiets.All(c => c.TrangThaiTiepNhan == "Đã tiếp nhận"))
+                                    {
+                                        <form method="post" asp-page-handler="AcceptOrder" onsubmit="return confirm('Tiếp nhận toàn bộ đơn cọc này?');">
+                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Tiếp nhận đơn cọc</button>
+                                        </form>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>

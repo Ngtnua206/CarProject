@@ -13,7 +13,7 @@
         {"VinFast Lux SA", "\U0001f699"}, {"VinFast Fadil", "\U0001f695"}
     };
     var carBgList = new List<string> { "#050505", "#0a0a0a", "#0f0f0f", "#080808", "#070707", "#0c0c0c" };
-    var bodyTypes = Model.DongXeList.Select(d => d.KieuDang).Distinct().ToList();
+    var bodyTypes = Model.DongXeList.Select(d => d.KieuDang).Where(k => !string.IsNullOrEmpty(k)).Distinct().ToList();
 }
 
 <div class="listing-page">
