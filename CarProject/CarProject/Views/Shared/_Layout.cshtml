@@ -1,6 +1,7 @@
 ﻿@inject CarProject.Data.AppDbContext _db
 @inject CarProject.Services.INotificationService _notif
 @using CarProject.Services
+@using Microsoft.EntityFrameworkCore
 @{
     var hasLogin = User.IsJwtLoggedIn();
     var userRole = User.GetJwtRole();
@@ -15,6 +16,8 @@
         var p = ViewContext.RouteData.Values["page"]?.ToString();
         return p == "/About" || p == "/Contact" ? "active" : "";
     }
+    var contact = await _db.KenhTuVan.OrderBy(k => k.MaKenh).FirstOrDefaultAsync();
+    string CtUrl(string? url) => string.IsNullOrWhiteSpace(url) ? "javascript:void(0)" : url;
     }
 <!DOCTYPE html>
 <html lang="vi" data-theme="dark">
@@ -170,17 +173,17 @@
 
     <!-- Floating Contact Buttons -->
     <div class="contact-floating">
-        <a href="https://www.facebook.com/profile.php?id=61572253997967" class="btn-contact btn-messenger" title="Messenger">
+        <a href="@CtUrl(contact?.UrlMessenger)" class="btn-contact btn-messenger" title="Messenger" target="_blank" rel="noopener">
             <i class="fab fa-facebook-messenger"></i>
             <span class="tooltip-text">Chat Messenger</span>
         </a>
-        <a href="#" class="btn-contact btn-zalo" title="Zalo">
+        <a href="@CtUrl(contact?.UrlZalo)" class="btn-contact btn-zalo" title="Zalo" target="_blank" rel="noopener">
             <i class="fas fa-comment-dots"></i>
             <span class="tooltip-text">Chat Zalo</span>
         </a>
-        <a href="tel:19006886" class="btn-contact btn-phone" title="Gọi ngay">
+        <a href="@(string.IsNullOrWhiteSpace(contact?.UrlSMS) ? "tel:19006886" : "tel:" + contact.UrlSMS.Trim())" class="btn-contact btn-phone" title="Gọi ngay">
             <i class="fas fa-phone-alt"></i>
-            <span class="tooltip-text">1800 6886</span>
+            <span class="tooltip-text">@(string.IsNullOrWhiteSpace(contact?.UrlSMS) ? "1800 6886" : contact.UrlSMS.Trim())</span>
         </a>
     </div>
 
