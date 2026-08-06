@@ -13,17 +13,19 @@ public class IndexModel : PageModel
     private readonly IActivityLogService _log;
     private readonly INotificationService _notif;
     private readonly IRevenueService _revenue;
+    private readonly ISaleService _sale;
     public List<DonDatCoc> DonCocList { get; set; } = new();
     public List<ChiNhanhShowroom> ChiNhanhList { get; set; } = new();
     public string? SuccessMessage { get; set; }
     public string? ErrorMessage { get; set; }
 
-    public IndexModel(AppDbContext db, IActivityLogService log, INotificationService notif, IRevenueService revenue)
+    public IndexModel(AppDbContext db, IActivityLogService log, INotificationService notif, IRevenueService revenue, ISaleService sale)
     {
         _db = db;
         _log = log;
         _notif = notif;
         _revenue = revenue;
+        _sale = sale;
     }
 
     public async Task OnGetAsync()
@@ -190,54 +192,12 @@ var lichHen = new LichHenLaiThu
             .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
             .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
         if (don == null) return NotFound();
+        if (!don.ChiTiets.Any() && don.PhienBan == null) return NotFound();
 
-        var listPhienBan = don.ChiTiets.Any()
-            ? don.ChiTiets.Select(c => c.PhienBan).Where(p => p != null).ToList()
-            : new List<PhienBanXe?> { don.PhienBan };
-        if (listPhienBan.Count == 0 || listPhienBan.All(p => p == null)) return NotFound();
+        var (hoaDon, tenXe) = await _sale.SellAsync(don, userName);
 
-        // 1. Tạo hoá đơn (một hoá đơn cho toàn đơn)
-        var tongGia = (long)listPhienBan.Sum(p => p!.GiaNiemYet);
-        var hoaDon = new HoaDonMuaXe
-        {
-            MaHoaDon = $"HD{DateTime.Now:yyMMddHHmmss}{maDonCoc:D4}",
-            MaDonCoc = maDonCoc,
-            MaKhachHang = don.MaKhachHang,
-            MaPhienBan = don.MaPhienBan ?? listPhienBan.First()!.MaPhienBan,
-            MaQuanLyXuat = userName,
-            MaChiNhanh = don.MaChiNhanh,
-            GiaXeThucTe = tongGia,
-            ThueTruocBaVaPhiLanBanh = 0,
-            SoTienDuocGiam = 0,
-            TongTienPhaiTra = tongGia,
-            SoTienDaThanhToan = (long)don.SoTienCoc,
-            PhuongThucThanhToan = don.PhuongThucThanhToan,
-            NgayXuatHoaDon = DateTime.Now,
-            SoKhung = "Chưa cập nhật",
-            SoMay = "Chưa cập nhật",
-            TrangThaiHoaDon = "Đã thanh toán"
-        };
-        _db.HoaDonMuaXe.Add(hoaDon);
-
-        // 2. Trừ tồn kho từng xe
-        foreach (var p in listPhienBan)
-        {
-            p!.SoLuongTrongKho--;
-        }
-
-        // 3. Cập nhật thống kê doanh thu theo từng xe
-        foreach (var p in listPhienBan)
-        {
-            await CapNhatDoanhThu(don.MaChiNhanh ?? "", p!.GiaNiemYet, p.MaPhienBan);
-        }
-
-        // 4. Cập nhật trạng thái đơn
-        don.TrangThaiDonHang = "Hoàn tất";
-        await _db.SaveChangesAsync();
-
-        var tenXe = string.Join(", ", listPhienBan.Select(p => $"{p!.DongXe?.TenDong ?? ""} {p.TenPhienBan}".Trim()));
         await _notif.SendAsync(don.MaKhachHang!, "Mua xe thành công",
-            $"Xe {tenXe} - Đơn cọc #{maDonCoc} đã hoàn tất. Cảm ơn bạn đã mua xe!", "");
+            $"Xe {tenXe} - Đơn cọc #{maDonCoc} đã hoàn tất. Hóa đơn {hoaDon.MaHoaDon} đã được xuất. Cảm ơn bạn đã mua xe!", "");
 
         var qlOfShowroom = await _db.ChiNhanhShowroom
             .Where(c => c.MaChiNhanh == don.MaChiNhanh && c.MaQuanLy != null)

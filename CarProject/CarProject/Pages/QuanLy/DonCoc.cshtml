@@ -129,6 +129,26 @@
                                             <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Tiếp nhận đơn cọc</button>
                                         </form>
                                     }
+                                    @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && d.TrangThaiDonHang == "Đã xác nhận")
+                                    {
+                                        <form method="post" asp-page-handler="Sold" onsubmit="return confirm('Xác nhận bán xe và tạo hoá đơn?');">
+                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-receipt"></i> Bán thành công</button>
+                                        </form>
+                                    }
+                                    @if (d.TrangThaiDonHang == "Hoàn tất")
+                                    {
+                                        var hd = Model.HoaDonList.FirstOrDefault(h => h.MaDonCoc == d.MaDonCoc);
+                                        if (hd != null)
+                                        {
+                                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.5rem;min-width:220px;">
+                                                <div style="font-weight:600;font-size:0.85rem;"><i class="fas fa-file-invoice-dollar"></i> @hd.MaHoaDon</div>
+                                                <div style="font-size:0.75rem;color:#475569;">Cơ sở: <strong>@(Model.Showroom?.TenChiNhanh)</strong></div>
+                                                <div style="font-size:0.75rem;color:#475569;">Khách: <strong>@d.HoTen</strong> (@d.SoDienThoai)</div>
+                                                <div style="font-size:0.75rem;color:#475569;">Tổng: <strong>@hd.TongTienPhaiTra.ToString("N0")đ</strong> · Cọc: @hd.SoTienDaThanhToan.ToString("N0")đ · Còn: <strong>@((hd.TongTienPhaiTra - hd.SoTienDaThanhToan).ToString("N0"))đ</strong></div>
+                                            </div>
+                                        }
+                                    }
                                 </td>
                             </tr>
                         }

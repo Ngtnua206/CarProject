@@ -12,16 +12,19 @@ public class DonCocModel : PageModel
     private readonly AppDbContext _db;
     private readonly IActivityLogService _log;
     private readonly INotificationService _notif;
+    private readonly ISaleService _sale;
 
-    public DonCocModel(AppDbContext db, IActivityLogService log, INotificationService notif)
+    public DonCocModel(AppDbContext db, IActivityLogService log, INotificationService notif, ISaleService sale)
     {
         _db = db;
         _log = log;
         _notif = notif;
+        _sale = sale;
     }
 
     public ChiNhanhShowroom? Showroom { get; set; }
     public List<DonDatCoc> DanhSachDonCoc { get; set; } = new();
+    public List<HoaDonMuaXe> HoaDonList { get; set; } = new();
     public string? SuccessMessage { get; set; }
     public string? ErrorMessage { get; set; }
 
@@ -45,6 +48,11 @@ public class DonCocModel : PageModel
             .Include(d => d.KhachHang)
             .Where(d => d.ChiTiets.Any(c => c.MaChiNhanh == Showroom.MaChiNhanh))
             .OrderByDescending(d => d.NgayTaoDon)
+            .ToListAsync();
+
+        var maDons = DanhSachDonCoc.Select(d => d.MaDonCoc).ToList();
+        HoaDonList = await _db.HoaDonMuaXe
+            .Where(h => maDons.Contains(h.MaDonCoc))
             .ToListAsync();
 
         return Page();
@@ -176,6 +184,46 @@ public class DonCocModel : PageModel
 
         await _log.LogAsync($"QL tiếp nhận đơn cọc #{maDonCoc}");
         SuccessMessage = "Đã tiếp nhận đơn cọc.";
+        return RedirectToPage();
+    }
+
+    // ----- Bán thành công: tạo hoá đơn (cơ sở + tên khách + tiền), trừ kho, cập nhật doanh thu -----
+    public async Task<IActionResult> OnPostSoldAsync(int maDonCoc)
+    {
+        var userName = User.GetJwtUserName();
+        if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
+
+        var don = await _db.DonDatCoc
+            .Include(d => d.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
+        if (don == null) return NotFound();
+        if (!don.ChiTiets.Any() && don.PhienBan == null) return NotFound();
+
+        var showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (showroom == null || don.MaChiNhanh != showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền bán đơn cọc của showroom khác.";
+            return RedirectToPage();
+        }
+
+        if (don.TrangThaiDonHang != "Đã xác nhận")
+        {
+            ErrorMessage = "Chỉ đơn cọc đã tiếp nhận (Đã xác nhận) mới được bán.";
+            return RedirectToPage();
+        }
+
+        var (hoaDon, tenXe) = await _sale.SellAsync(don, userName);
+
+        await _notif.SendAsync(don.MaKhachHang!, "Mua xe thành công",
+            $"Xe {tenXe} - Đơn cọc #{maDonCoc} đã hoàn tất. Hóa đơn {hoaDon.MaHoaDon} được xuất tại {showroom.TenChiNhanh}. Cảm ơn bạn đã mua xe!",
+            $"/Orders/DepositResult?maDonCoc={maDonCoc}");
+        await _notif.SendToRoleAsync("Admin", "Quản Lý đã bán xe thành công",
+            $"Đơn cọc #{maDonCoc} - {don.HoTen} - xe {tenXe} đã bán tại {showroom.TenChiNhanh}. Hóa đơn {hoaDon.MaHoaDon}.",
+            "/Admin/HoaDon");
+
+        await _log.LogAsync($"QL bán thành công đơn cọc #{maDonCoc} - {tenXe} (HĐ {hoaDon.MaHoaDon})");
+        SuccessMessage = $"Đã bán thành công xe {tenXe}. Hóa đơn {hoaDon.MaHoaDon} đã được tạo.";
         return RedirectToPage();
     }
 }

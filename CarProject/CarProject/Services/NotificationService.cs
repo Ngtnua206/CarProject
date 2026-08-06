@@ -41,7 +41,7 @@ public class NotificationService : INotificationService
     public async Task SendToRoleAsync(string vaiTro, string tieuDe, string noiDung, string? duongDan = null)
     {
         var users = await _db.TaiKhoan
-            .Where(t => t.VaiTro == vaiTro && t.TrangThai == "Active")
+            .Where(t => t.VaiTro == vaiTro && (t.TrangThai == "Active" || t.TrangThai == "Hoạt động"))
             .ToListAsync();
 
         foreach (var user in users)

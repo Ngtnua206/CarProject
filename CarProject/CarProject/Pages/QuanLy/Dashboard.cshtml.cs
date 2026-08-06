@@ -54,37 +54,38 @@ public class DashboardModel : PageModel
         var dauThang = new DateTime(homNay.Year, homNay.Month, 1);
         var truoc30Ngay = homNay.AddDays(-30);
 
-        // Lấy các đơn cọc do quản lý này duyệt
-        var donCocQuery = _db.DonDatCoc
-            .Where(d => d.MaQuanLyDuyet == userName);
+        // Doanh thu = doanh thu ban xe thuc te tu hoa don (HoaDonMuaXe) thuoc showroom nay
+        var hdQuery = _db.HoaDonMuaXe
+            .Where(h => h.MaChiNhanh == Showroom.MaChiNhanh);
 
-        DoanhThuHomNay = await donCocQuery
-            .Where(d => d.NgayTaoDon >= homNay)
-            .SumAsync(d => (long?)d.SoTienCoc) ?? 0;
-        SoDonHomNay = await donCocQuery
-            .Where(d => d.NgayTaoDon >= homNay)
+        DoanhThuHomNay = await hdQuery
+            .Where(h => h.NgayXuatHoaDon >= homNay)
+            .SumAsync(h => (long?)h.TongTienPhaiTra) ?? 0;
+        SoDonHomNay = await hdQuery
+            .Where(h => h.NgayXuatHoaDon >= homNay)
             .CountAsync();
 
-        DoanhThuThangNay = await donCocQuery
-            .Where(d => d.NgayTaoDon >= dauThang)
-            .SumAsync(d => (long?)d.SoTienCoc) ?? 0;
-        SoDonThangNay = await donCocQuery
-            .Where(d => d.NgayTaoDon >= dauThang)
+        DoanhThuThangNay = await hdQuery
+            .Where(h => h.NgayXuatHoaDon >= dauThang)
+            .SumAsync(h => (long?)h.TongTienPhaiTra) ?? 0;
+        SoDonThangNay = await hdQuery
+            .Where(h => h.NgayXuatHoaDon >= dauThang)
             .CountAsync();
 
-        TongDon = await donCocQuery.CountAsync();
+        // So hoa don da xuat cua showroom tu truoc den nay
+        TongDon = await hdQuery.CountAsync();
 
-        // Tiền cọc thu về tháng này (doanh thu cọc phân bổ theo showroom -> ThongKeTongHop_Boss)
+        // Tien coc thu ve thang nay (phan bo theo showroom -> ThongKeTongHop_Boss)
         var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
         var thongKe = await _db.ThongKeTongHop_Boss
             .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == Showroom.MaChiNhanh);
         DoanhThuCocThangNay = thongKe?.TongTienCocThuVe ?? 0;
 
-        // Doanh thu 30 ngày gần nhất (cho biểu đồ)
-        var dailyData = await donCocQuery
-            .Where(d => d.NgayTaoDon >= truoc30Ngay)
-            .GroupBy(d => d.NgayTaoDon.Date)
-            .Select(g => new { Ngay = g.Key, Tong = g.Sum(d => (long?)d.SoTienCoc) ?? 0 })
+        // Doanh thu 30 ngay gan nhat (cho bieu do) — theo ngay xuat hoa don
+        var dailyData = await hdQuery
+            .Where(h => h.NgayXuatHoaDon.Date >= truoc30Ngay)
+            .GroupBy(h => h.NgayXuatHoaDon.Date)
+            .Select(g => new { Ngay = g.Key, Tong = g.Sum(h => (long?)h.TongTienPhaiTra) ?? 0 })
             .OrderBy(g => g.Ngay)
             .ToListAsync();
 

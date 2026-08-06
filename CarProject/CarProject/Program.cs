@@ -73,6 +73,7 @@ try
     builder.Services.AddScoped<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
     builder.Services.AddHttpClient<CarProject.Services.ISepayService, CarProject.Services.SepayService>();
     builder.Services.AddScoped<CarProject.Services.IRevenueService, CarProject.Services.RevenueService>();
+    builder.Services.AddScoped<CarProject.Services.ISaleService, CarProject.Services.SaleService>();
 
     // JWT config
     var jwtKey = builder.Configuration["Jwt:Key"] ?? "CarProjectSuperSecretKey2024@MustBe32CharsLong!";
@@ -552,6 +553,15 @@ try
         return Results.Ok(new { count });
     });
 
+    app.MapGet("/api/notifications/count", async (HttpContext ctx, CarProject.Services.INotificationService notif) =>
+    {
+        var userName = ctx.User.GetJwtUserName();
+        if (string.IsNullOrEmpty(userName))
+            return Results.Ok(new { count = 0 });
+        var count = await notif.GetUnreadCountAsync(userName);
+        return Results.Ok(new { count });
+    });
+
     app.MapPost("/api/cart/add", async (HttpContext ctx, ICartService cart, AppDbContext db) =>
     {
         var userName = ctx.User.GetJwtUserName();
@@ -1024,6 +1034,24 @@ try
                     {
                         await notifSvc.SendAsync(donCoc.MaKhachHang, "Thanh toán thành công",
                             $"Thanh toán cọc cho đơn #{donCoc.MaDonCoc} đã hoàn tất. {totalXe} xe sẽ được xử lý theo showroom {hnName}.", "/Orders/DepositResult?maDonCoc=" + donCoc.MaDonCoc);
+                    }
+
+                    // Báo Admin + Quản lý showroom có xe khi có đơn cọc online vừa thanh toán
+                    await notifSvc.SendToRoleAsync("Admin", "Đơn đặt cọc mới - đã thanh toán",
+                        $"Khách {donCoc.HoTen} đã đặt cọc {totalXe} xe (đơn #{donCoc.MaDonCoc}). Vui lòng vào xử lý.",
+                        "/Admin/DonCoc/Index");
+
+                    foreach (var g in donCoc.ChiTiets.GroupBy(c => c.MaChiNhanh))
+                    {
+                        var gCn = await db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaChiNhanh == g.Key);
+                        var ql = gCn?.MaQuanLy;
+                        if (!string.IsNullOrWhiteSpace(ql))
+                        {
+                            var gName = gCn?.TenChiNhanh ?? (g.Key ?? "");
+                            await notifSvc.SendAsync(ql, "Đơn đặt cọc mới - đã thanh toán",
+                                $"Khách {donCoc.HoTen} đã thanh toán {g.Sum(x => x.SoLuong)} xe phân bổ tại {gName}. Vui lòng tiếp nhận trong đơn #{donCoc.MaDonCoc}.",
+                                $"/QuanLy/DonCoc?highlight={donCoc.MaDonCoc}");
+                        }
                     }
                 }
 

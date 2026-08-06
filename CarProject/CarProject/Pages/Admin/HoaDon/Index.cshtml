@@ -29,14 +29,16 @@
     {
         <div class="db-card">
             <div class="db-table-responsive">
-                <table class="db-table" style="min-width:1260px;">
+                <table class="db-table" style="min-width:1460px;">
                     <colgroup>
                         <col style="width:170px" />
                         <col style="width:80px" />
-                        <col style="width:150px" />
+                        <col style="width:200px" />
                         <col style="width:200px" />
                         <col style="width:140px" />
+                        <col style="width:140px" />
                         <col style="width:150px" />
+                        <col style="width:140px" />
                         <col style="width:120px" />
                         <col style="width:130px" />
                         <col style="width:120px" />
@@ -48,7 +50,9 @@
                             <th>Khách hàng</th>
                             <th>Chi nhánh</th>
                             <th>Giá xe</th>
+                            <th>Đã thanh toán</th>
                             <th>Tổng tiền</th>
+                            <th>Còn lại</th>
                             <th>Ngày xuất</th>
                             <th>Trạng thái</th>
                             <th>Hành động</th>
@@ -62,13 +66,20 @@
 
                                 <td><span class="db-id">#@hd.MaDonCoc</span></td>
 
-                                <td><div class="db-sub">@(hd.DonDatCoc?.MaKhachHang ?? "—")</div></td>
+                                <td>
+                                    <div class="db-sub" style="font-weight:600;">@(hd.DonDatCoc?.HoTen ?? "—")</div>
+                                    <small class="text-muted">@(hd.DonDatCoc?.MaKhachHang ?? "")</small>
+                                </td>
 
                                 <td><div class="db-2line">@(hd.ChiNhanh?.TenChiNhanh ?? "—")</div></td>
 
                                 <td><span class="db-money">@hd.GiaXeThucTe.ToString("N0")đ</span></td>
 
+                                <td><span class="db-money">@hd.SoTienDaThanhToan.ToString("N0")đ</span></td>
+
                                 <td><span class="db-money">@hd.TongTienPhaiTra.ToString("N0")đ</span></td>
+
+                                <td><span class="db-money">@((hd.TongTienPhaiTra - hd.SoTienDaThanhToan).ToString("N0"))đ</span></td>
 
                                 <td><div class="db-date">@hd.NgayXuatHoaDon.ToString("dd/MM/yyyy")</div></td>
 

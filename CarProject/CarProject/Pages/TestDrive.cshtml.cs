@@ -231,7 +231,7 @@ public class TestDriveModel : PageModel
             {
                 var title = "Yêu cầu lái thử mới";
                 var content = $"Khách: {HoTen} ({SoDienThoai}) đã đặt lái thử {dong.TenDong} vào {NgayHen:yyyy-MM-dd} {GioHen}. Vui lòng kiểm tra và chấp nhận.";
-                var link = $"/Admin/Showroom/Bookings?ma={lichHen.MaLichHen}";
+                var link = $"/QuanLy/LichHen?highlight={lichHen.MaLichHen}";
                 await _notification.SendAsync(manager, title, content, link);
             }
             // Also create a user notification

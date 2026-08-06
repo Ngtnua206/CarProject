@@ -94,7 +94,7 @@
                         <i class="fas fa-bell"></i>
                         @if (notifCount > 0)
                         {
-                            <span class="notif-badge">@notifCount</span>
+                            <span class="notif-badge" id="notifBadge">@notifCount</span>
                         }
                     </a>
 
@@ -118,7 +118,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" style="min-width: 220px;">
                                     <li><a class="dropdown-item" asp-page="/Profile"><i class="fas fa-user-cog me-2"></i> Tài khoản</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Notifications/Index"><i class="fas fa-bell me-2"></i> Thông báo @(notifCount > 0 ? $"(+{notifCount})" : "")</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Notifications/Index"><i class="fas fa-bell me-2"></i> Thông báo <span id="notifDropdownCount">@(notifCount > 0 ? $"(+{notifCount})" : "")</span></a></li>
                                     <li><a class="dropdown-item" asp-page="/Orders/Cart/Index"><i class="fas fa-shopping-bag me-2"></i> Giỏ hàng</a></li>
                                     @if (userRole == "Quản Lý")
                                     {
@@ -335,7 +335,28 @@ success: function(data) {
                     }
                 });
             };
-            updateCartCount();
+            function updateNotifCount() {
+                $.get('/api/notifications/count', function(data) {
+                    var count = data.count || 0;
+                    var link = $('.nav-notif-link');
+                    var badge = $('#notifBadge');
+                    if (count > 0) {
+                        if (!badge.length) {
+                            badge = $('<span class="notif-badge" id="notifBadge"></span>').appendTo(link);
+                        }
+                        badge.text(count >= 10 ? '9+' : count);
+                    } else if (badge.length) {
+                        badge.remove();
+                    }
+                    var dd = $('#notifDropdownCount');
+                    if (dd.length) dd.text(count > 0 ? '(+' + count + ')' : '');
+                });
+            }
+            updateNotifCount();
+            setInterval(updateNotifCount, 30000);
+            $(document).on('visibilitychange focus', function() {
+                if (!document.hidden) updateNotifCount();
+            });
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
