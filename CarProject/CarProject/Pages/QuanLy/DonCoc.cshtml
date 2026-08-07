@@ -57,6 +57,7 @@
                             <th>Tiền cọc</th>
                             <th>Ngày tạo</th>
                             <th>Trạng thái</th>
+                            <th>Vị trí thu cọc</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -122,6 +123,20 @@
                                     }
                                 </td>
                                 <td>
+                                    @if (!string.IsNullOrWhiteSpace(d.ToaDoGap))
+                                    {
+                                        <div data-map-latlng="@d.ToaDoGap" style="width:100%;height:120px;border-radius:6px;border:1px solid #e2e8f0;background:#eef2f7;"></div>
+                                        <div style="font-size:0.72rem;color:#475569;margin-top:0.25rem;max-width:220px;">@(d.DiaDiemGap ?? "")</div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm mt-1" onclick="openQlMap('@d.ToaDoGap', '@((d.DiaDiemGap ?? "").Replace("'", "\\'"))', '#@d.MaDonCoc')">
+                                            <i class="fas fa-map-marked-alt"></i> Xem bản đồ lớn
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#999;font-size:0.75rem;">—</span>
+                                    }
+                                </td>
+                                <td>
                                     @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && d.TrangThaiDonHang == "Chờ xác nhận" && d.ChiTiets.Any() && d.ChiTiets.All(c => c.TrangThaiTiepNhan == "Đã tiếp nhận"))
                                     {
                                         <form method="post" asp-page-handler="AcceptOrder" onsubmit="return confirmAccept(event);">
@@ -170,6 +185,25 @@
     }
 </div>
 
+<!-- Modal hiển thị vị trí thu cọc (trong trang, không mở tab mới) -->
+<div class="modal fade" id="qlMapModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qlMapTitle">Vị trí thu cọc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="qlMap" style="width:100%;height:420px;border-radius:10px;"></div>
+                <div id="qlMapInfo" class="mt-2" style="font-size:0.85rem;color:#475569;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal từ chối tiếp nhận xe -->
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
@@ -209,18 +243,89 @@
         new bootstrap.Modal(document.getElementById('rejectModal')).show();
     }
 
+    var GIO_HANH_CHINH_BAT_DAU = 8;          // 08:00
+    var GIO_HEN_MUON_NHAT = 14;              // tối đa 14:30 (ít nhất 3 tiếng trước khi hết giờ hành chính 17:30)
+    var PHUT_HEN_MUON_NHAT = 30;
+
+    function isGioHoptLe(d) {
+        var hh = d.getHours(), mm = d.getMinutes();
+        if (hh < GIO_HANH_CHINH_BAT_DAU) return false;
+        if (hh > GIO_HEN_MUON_NHAT) return false;
+        if (hh === GIO_HEN_MUON_NHAT && mm > PHUT_HEN_MUON_NHAT) return false;
+        return true;
+    }
+
     function confirmAccept(event) {
         var form = event.target.closest('form');
         var ngay = form ? form.querySelector('[name="ngayHenNhanXe"]') : null;
-        if (ngay && !ngay.value) {
-            alert('Vui lòng chọn ngày/giờ hẹn gặp trước khi tiếp nhận đơn cọc.');
-            event.preventDefault();
-            return false;
+        if (ngay) {
+            if (!ngay.value) {
+                alert('Vui lòng chọn ngày/giờ hẹn gặp trước khi tiếp nhận đơn cọc.');
+                event.preventDefault();
+                return false;
+            }
+            var d = new Date(ngay.value);
+            if (isNaN(d.getTime()) || d.getTime() < Date.now()) {
+                alert('Không thể chọn thời điểm trong quá khứ. Vui lòng chọn giờ hẹn trong tương lai.');
+                event.preventDefault();
+                return false;
+            }
+            if (!isGioHoptLe(d)) {
+                alert('Giờ hẹn phải nằm trong giờ hành chính (08:00) và phải ít nhất 3 tiếng trước khi hết giờ hành chính (tối đa 14:30). Vui lòng chọn lại.');
+                event.preventDefault();
+                return false;
+            }
         }
         if (!confirm('Tiếp nhận toàn bộ đơn cọc này và gửi lịch hẹn cho khách?')) {
             event.preventDefault();
             return false;
         }
         return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var minStr = new Date(Date.now() + 60000).toISOString().slice(0, 16);
+        document.querySelectorAll('[name="ngayHenNhanXe"]').forEach(function (el) {
+            el.min = minStr;
+        });
+    });
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof L === 'undefined') return;
+        document.querySelectorAll('[data-map-latlng]').forEach(function (el) {
+            var raw = el.getAttribute('data-map-latlng');
+            var parts = raw ? raw.split(',') : [];
+            var lat = parseFloat(parts[0]), lng = parseFloat(parts[1]);
+            if (isNaN(lat) || isNaN(lng)) { el.style.display = 'none'; return; }
+            var m = L.map(el, { zoomControl: false, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(m);
+            L.marker([lat, lng]).addTo(m);
+        });
+    });
+
+    var qlBigMap = null;
+    var qlBigMarker = null;
+    function openQlMap(latlng, diaDiem, maDon) {
+        if (typeof L === 'undefined' || typeof bootstrap === 'undefined') return;
+        var parts = latlng ? latlng.split(',') : [];
+        var lat = parseFloat(parts[0]), lng = parseFloat(parts[1]);
+        if (isNaN(lat) || isNaN(lng)) return;
+        if (!qlBigMap) {
+            qlBigMap = L.map('qlMap', { zoomControl: true, attributionControl: false }).setView([lat, lng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(qlBigMap);
+            qlBigMarker = L.marker([lat, lng]).addTo(qlBigMap);
+        } else {
+            qlBigMap.setView([lat, lng], 16);
+            qlBigMarker.setLatLng([lat, lng]);
+        }
+        document.getElementById('qlMapTitle').textContent = 'Vị trí thu cọc' + (maDon || '');
+        document.getElementById('qlMapInfo').textContent = diaDiem || '';
+        var modal = new bootstrap.Modal(document.getElementById('qlMapModal'));
+        modal.show();
+        setTimeout(function () { if (qlBigMap) qlBigMap.invalidateSize(); }, 250);
     }
 </script>

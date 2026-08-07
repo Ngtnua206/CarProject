@@ -274,9 +274,9 @@ public class DepositFormModel : PageModel
         var hasPreOrder = selected.Any(kv => PhienBans.First(p => p.MaPhienBan == kv.Key).IsPreOrder);
         var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
-        if (isCashPayment && string.IsNullOrWhiteSpace(DiaDiemGap))
+        if (string.IsNullOrWhiteSpace(DiaDiemGap))
         {
-            var msgDiaDiem = "Vui lòng chọn địa điểm gặp trên bản đồ khi thanh toán tiền mặt.";
+            var msgDiaDiem = "Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.";
             if (IsAjaxSubmit) return JsonError(msgDiaDiem);
             ModelState.AddModelError("", msgDiaDiem);
             await LoadShowroomsAsync();
@@ -340,27 +340,29 @@ public class DepositFormModel : PageModel
         _db.DonDatCoc.Add(deposit);
         await _db.SaveChangesAsync();
 
+var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
+        var showroomName = showroom?.TenChiNhanh ?? MaChiNhanh;
+
         if (isCashPayment)
         {
-            var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
-            var showroomName = showroom?.TenChiNhanh ?? MaChiNhanh;
             await _notif.SendToRoleAsync("Admin", "Đơn đặt cọc mới - chờ thanh toán",
                 $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Đơn #{deposit.MaDonCoc} đang chờ thanh toán tại {showroomName}.",
                 $"/Admin/DonCoc/Index");
+        }
 
-            if (!string.IsNullOrEmpty(MaChiNhanh))
+        // Gửi toạ độ địa điểm hẹn cho quản lý showroom để đến đúng chỗ thu tiền cọc
+        var diaDiemGui = string.IsNullOrWhiteSpace(DiaDiemGap)
+            ? "Chưa chọn địa điểm"
+            : $"{DiaDiemGap} (Toạ độ: {ToaDoGap ?? "N/A"})";
+        var managerMaQuanLy = showroom?.MaQuanLy;
+        if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
+        {
+            var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
+            if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
             {
-                var managerMaQuanLy = showroom?.MaQuanLy;
-                if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
-                {
-                    var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
-                    if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
-                    {
-                        await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - chờ thanh toán",
-                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Địa điểm gặp: {DiaDiemGap ?? "chưa chọn"}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
-                            $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
-                    }
-                }
+                await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - địa điểm thu tiền cọc",
+                    $"Khách {HoTen} đã đặt cọc {totalXe} xe. Vị trí đến thu tiền cọc: {diaDiemGui}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                    $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
             }
         }
 

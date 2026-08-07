@@ -180,6 +180,19 @@ public class DonCocModel : PageModel
             ErrorMessage = "Vui lòng chốt ngày/giờ hẹn gặp trước khi tiếp nhận đơn cọc.";
             return RedirectToPage();
         }
+        if (ngayHenChot < DateTime.Now.AddMinutes(-1))
+        {
+            ErrorMessage = "Không thể chọn thời điểm trong quá khứ. Vui lòng chọn giờ hẹn trong tương lai.";
+            return RedirectToPage();
+        }
+        // Giờ hành chính 08:00 – 17:30, và phải ít nhất 3 tiếng trước khi hết giờ hành chính (tối đa 14:30)
+        var trongGioHanhChinh = ngayHenChot.Hour >= 8
+            && (ngayHenChot.Hour < 14 || (ngayHenChot.Hour == 14 && ngayHenChot.Minute <= 30));
+        if (!trongGioHanhChinh)
+        {
+            ErrorMessage = "Giờ hẹn phải nằm trong giờ hành chính (08:00) và phải ít nhất 3 tiếng trước giờ kết thúc (tối đa 14:30). Vui lòng chọn lại.";
+            return RedirectToPage();
+        }
         don.NgayHenNhanXe = ngayHenChot;
         don.TrangThaiDonHang = "Đã xác nhận";
         don.MaQuanLyDuyet = userName;

@@ -151,15 +151,30 @@
                                 </select>
                                 <small style="color: var(--text-faint); font-size: 0.72rem;">Chỉ hiển thị các showroom đang có xe nguồn của đơn hàng để tránh phát sinh chi phí vận chuyển. Xe sẽ ưu tiên lấy từ showroom này trước.</small>
                             </div>
-                            <div class="col-12" id="cashMapBlock" style="display:none;">
-                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
-                                        <label class="form-label" style="font-size: 0.85rem;"><i class="fas fa-map-marker-alt me-1" style="color: var(--brand-gold);"></i> Địa điểm gặp (thanh toán tiền mặt) <span style="color: var(--brand-gold);">*</span></label>
-                                        <input asp-for="DiaDiemGap" type="text" class="form-control" placeholder="Nhấp trên bản đồ để chọn vị trí gặp" readonly />
-                                        <input asp-for="ToaDoGap" type="hidden" />
-                                        <div id="checkoutMap" style="height: 300px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;"></div>
-                                        <small style="color: var(--text-faint); font-size: 0.72rem;">Nhấp vào bản đồ để chọn vị trí gặp mặt. Showroom sẽ gửi kèm địa điểm này khi chốt lịch hẹn.</small>
+                            <div class="col-12" id="cashMapBlock">
+                                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
+                                            <label class="form-label" style="font-size: 0.85rem;"><i class="fas fa-map-marker-alt me-1" style="color: var(--brand-gold);"></i> Địa điểm nhân viên quản lý đến thu tiền cọc <span style="color: var(--brand-gold);">*</span></label>
+                                            <input asp-for="DiaDiemGap" type="hidden" />
+                                            <input asp-for="ToaDoGap" type="hidden" />
+                                            <div class="row g-2">
+                                                <div class="col-md-4">
+                                                    <select id="vnProvince" class="form-control">
+                                                        <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <select id="vnDistrict" class="form-control" disabled>
+                                                        <option value="">-- Chọn Quận / Huyện --</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input id="vnDetail" class="form-control" placeholder="Số nhà / Thôn / Xóm / Chi tiết" />
+                                                </div>
+                                            </div>
+                                            <div id="checkoutMap" style="height: 300px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;"></div>
+                                            <small style="color: var(--text-faint); font-size: 0.72rem;">Chọn tỉnh/huyện, nhập số nhà/thôn, rồi <strong>bấm vào bản đồ</strong> để trỏ đúng vị trí gặp. Toạ độ được chọn sẽ được gửi tới nhân viên quản lý đến đúng chỗ thu tiền cọc.</small>
+                                        </div>
                                     </div>
-                                </div>
                             <div class="col-12">
                                 <label class="form-label">Ghi chú</label>
                                 <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
@@ -194,30 +209,36 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="~/js/vn-admin.js"></script>
 
 <script>
     var checkoutMap = null;
     var checkoutMarker = null;
 
     function toggleCheckoutMap() {
-        var paymentEl = document.querySelector('[name="PhuongThucThanhToan"]');
         var block = document.getElementById('cashMapBlock');
-        var isCash = paymentEl && paymentEl.value === 'Tiền mặt';
-        if (block) block.style.display = isCash ? '' : 'none';
-        if (isCash) initCheckoutMap();
+        if (block) block.style.display = '';
+        initCheckoutMap();
     }
 
-    function initCheckoutMap() {
-        var container = document.getElementById('checkoutMap');
-        if (!container || typeof L === 'undefined') return;
-        if (checkoutMap) { checkoutMap.invalidateSize(); return; }
-        checkoutMap = L.map('checkoutMap', { zoomControl: true }).setView([21.0285, 105.8542], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(checkoutMap);
-        checkoutMap.on('click', function(e) {
-            setCheckoutLocation(e.latlng.lat, e.latlng.lng);
-        });
+    function provinceCenter(prov) {
+        var c = (typeof VNCENTROID !== 'undefined') ? VNCENTROID[prov] : null;
+        if (c) {
+            var p = c.split(',');
+            return [parseFloat(p[0]), parseFloat(p[1])];
+        }
+        return [16.0, 108.0];
+    }
+
+    function buildDiaDiem() {
+        var provEl = document.getElementById('vnProvince');
+        var distEl = document.getElementById('vnDistrict');
+        var detEl = document.getElementById('vnDetail');
+        var parts = [];
+        if (detEl && detEl.value.trim()) parts.push(detEl.value.trim());
+        if (distEl && distEl.value) parts.push(distEl.value);
+        if (provEl && provEl.value) parts.push(provEl.value);
+        return parts.join(', ');
     }
 
     function setCheckoutLocation(lat, lng) {
@@ -230,14 +251,58 @@
         var toaDo = document.querySelector('[name="ToaDoGap"]');
         var diaDiem = document.querySelector('[name="DiaDiemGap"]');
         if (toaDo) toaDo.value = lat.toFixed(6) + ',' + lng.toFixed(6);
-        if (diaDiem) diaDiem.value = lat.toFixed(5) + ', ' + lng.toFixed(5);
-        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi')
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                var name = d && (d.display_name || d.name) ? (d.display_name || d.name) : '';
-                if (diaDiem) diaDiem.value = name || (lat.toFixed(5) + ', ' + lng.toFixed(5));
-            })
-            .catch(function() {});
+        if (diaDiem) diaDiem.value = buildDiaDiem() || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+    }
+
+    function initCheckoutMap() {
+        var container = document.getElementById('checkoutMap');
+        if (!container || typeof L === 'undefined') return;
+        if (checkoutMap) { checkoutMap.invalidateSize(); return; }
+        checkoutMap = L.map('checkoutMap', { zoomControl: true, attributionControl: false }).setView([16.821, 108.0], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(checkoutMap);
+        checkoutMap.on('click', function(e) {
+            setCheckoutLocation(e.latlng.lat, e.latlng.lng);
+        });
+        populateCascade();
+    }
+
+    function populateCascade() {
+        if (typeof VNCITY === 'undefined') return;
+        var provEl = document.getElementById('vnProvince');
+        if (!provEl) return;
+        var keys = Object.keys(VNCITY).sort(function (a,b) { return a.localeCompare(b, 'vi'); });
+        keys.forEach(function(k) {
+            var o = document.createElement('option');
+            o.value = k; o.textContent = k;
+            provEl.appendChild(o);
+        });
+        var distEl = document.getElementById('vnDistrict');
+        provEl.addEventListener('change', function() {
+            distEl.innerHTML = '<option value="">-- Chọn Quận / Huyện --</option>';
+            var dl = VNCITY[provEl.value];
+            if (dl && dl.length) {
+                distEl.disabled = false;
+                dl.forEach(function(d) {
+                    var o = document.createElement('option');
+                    o.value = d; o.textContent = d;
+                    distEl.appendChild(o);
+                });
+            } else {
+                distEl.disabled = true;
+            }
+            if (checkoutMap) checkoutMap.setView(provinceCenter(provEl.value), 11);
+            var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+            if (diaDiem) diaDiem.value = buildDiaDiem();
+        });
+        distEl.addEventListener('change', function() {
+            var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+            if (diaDiem) diaDiem.value = buildDiaDiem();
+        });
+        var detEl = document.getElementById('vnDetail');
+        if (detEl) detEl.addEventListener('input', function() {
+            var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+            if (diaDiem) diaDiem.value = buildDiaDiem();
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -255,6 +320,11 @@
     document.querySelector('.deposit-card form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         var form = this;
+        var diaDiemEl = form.querySelector('[name="DiaDiemGap"]');
+        if (!diaDiemEl || !diaDiemEl.value) {
+            alert('Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.');
+            return;
+        }
         var formData = new FormData(form);
         formData.append('_ajax', 'true');
 

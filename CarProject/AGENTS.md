@@ -1,13 +1,13 @@
-# Agents Summary
+﻿# Agents Summary
 
 ## Goal
-- Build luxury car showroom website with full UI/UX + admin CRUD using ASP.NET Core / Razor Pages / SQL Server Docker, integrating friend's Mercedes-Benz React design; added Quản Lý role with showroom revenue dashboard + admin revenue chart (line + bar via Chart.js)
+- Build luxury car showroom website with full UI/UX + admin CRUD using ASP.NET Core / Razor Pages / SQL Server Docker, integrating friend's Mercedes-Benz React design; added Quáº£n LÃ½ role with showroom revenue dashboard + admin revenue chart (line + bar via Chart.js)
 - Currently: `SQL_ThaoTac.sql` rewritten to safe/idempotent UPSERT so user can run on production `mylxcar.online` to sync business data + stock from local without losing server-uploaded images
 
 ## Constraints & Preferences
 - Primary theme: Mercedes-Benz dark luxury (black/silver, glassmorphism, premium buttons)
 - Bootstrap 5 grid + custom CSS; no Tailwind
-- Session-based auth (no ASP.NET Identity); roles: Admin / Quản Lý / User
+- Session-based auth (no ASP.NET Identity); roles: Admin / Quáº£n LÃ½ / User
 - SQL Server via Docker (localhost:1433, SA password `Iumaioanhh@2024`)
 - App runs on `http://0.0.0.0:5001` HTTP + `https://localhost:7185` HTTPS (profile `http`); accessed via LAN IP `192.168.1.5:5001`
 - Run from: `dotnet run --project CarProject\CarProject\CarProject.csproj` in `D:\Code\Code\WebMVC`
@@ -17,29 +17,29 @@
 
 ## Progress
 ### Done
-- **Nhiều ảnh xe: model HinhAnhXe + gallery slide + quản lý ảnh admin + hover theo phiên bản** (yêu cầu người dùng):
-  - Model mới `HinhAnhXe` (MoreEntities.cs): `MaHinhAnh` (PK), `MaDong` (FK → DongXe, Restrict), `DuongDanAnh`, `LaChinh`, `ThuTu`; nav `ICollection<HinhAnhXe>` trong `DongXe` (Entities.cs); `AppDbContext` có `DbSet<HinhAnhXe>`, table `"HinhAnhXe"`, index IX_HinhAnhXe_MaDong
-  - Migration mới: `Migrations/20260802140351_AddHinhAnhXe.cs` (chưa đẩy production)
-  - **Fix showroom 0 xe**: `Details.cshtml.cs` thêm `&& t.SoLuong > 0` vào query `TonKhoTheoPhienBan` → "Phân bổ showroom" (phiên bản + sidebar) bỏ hẳn showroom stock 0
-  - **Gallery slide Details**: `DetailsModel.HinhAnhXes` load theo MaDong + OrderBy(ThuTu); Details.cshtml render `.car-gallery` (stage/slide active, prev/next, thumbs 72×48 chỉ hiện khi >1 ảnh); fallback `carImg`/🚗 giữ nguyên; JS `galleryGo/galleryMove` + init DOMContentLoaded; CSS `.car-gallery*` trong site.css
-  - **Hover theo phiên bản**: Cars.cshtml + Showroom.cshtml JSON showroomGroups thêm `PhienBans:[{TenPhienBan,SoLuong}]` sắp desc; `car-hover-preview.js` render `.chp-sr-vers/.chp-sr-ver` (tên PB + số xe màu stock); CSS `.chp-sr-vers*`
-  - **Endpoints admin** (Program.cs): `GET /api/admin/dongxe/{id}` trả thêm `images`; `POST /api/admin/dongxe/images/upload` (multipart nhiều file → `wwwroot/uploads/admin`, trả urls); `POST .../images/save` (replace toàn bộ ảnh, tự set ảnh đầu làm chính, sync `DongXe.DuongDanAnh` = ảnh chính, trả list có id); `POST .../images/setmain` (bỏ chính cũ, set mới, sync DuongDanAnh); `POST .../images/delete` (xoá; ảnh chính bị xoá → chuyển cho ảnh kế + sync); lỗi ghi `%TEMP%\dongxe_images_{save,setmain,delete}_error.log`
-  - **UI admin**: Index.cshtml (`editModelImagesList`, input multiple, `_carImages`, `renderModelImages/uploadModelImages/setMainCarImage/deleteCarImage`) + Cars.cshtml (`carsEditModelImagesList`, `_carsImages`, `renderCarsModelImages/carsUploadModelImages/carsSetMainImage/carsDeleteImage`); cả hai `open*EditorFull` gán `d.images`
-  - E2E verified (port 5002, app HTTP): bảng HinhAnhXe tồn tại; save/setmain/delete/upload qua curl hoạt động; Details hiện slideshow + thumbs khi có nhiều ảnh; Details "Phân bổ" không còn showroom stock 0; Cars + Showroom hover JSON có `PhienBans` (VD `A3 35 TFSI:3`); Cars card-image + `data-car-img` dùng ảnh chính mới khi lưu HinhAnhXe (sync DongXe.DuongDanAnh); build Release 0 lỗi; test data đã xoá (HinhAnhXe 0 rows, DongXe.DuongDanAnh xe 5/28 restore NULL)
-  - **Ghi chú toolchain**: `dotnet ef migrations add` bắt buộc `--configuration Release` (Debug bin bị lock bởi CarProject cũ); build Release cũng phải dừng mọi instance CarProject đang chạy (MSB3027 lock DLL)
-- **Fix hover panel biến mất + khôi phục localhost:7185** (feedback người dùng):
-  - `car-hover-preview.js`: hover panel trước bị ẩn khi di chuột từ card sang panel (mouseleave card → scheduleHide ẩn trong lúc chuột còn ở khoảng trống 14px giữa card-panel); thêm `inHoverZone()` gộp rect card + panel + padding 12px, theo dõi `mouseX/mouseY` trên mousemove, `scheduleHide` chỉ ẩn khi chuột ra ngoài zone; thêm biến `overCard`/`activeCard`
-  - `launchSettings.json` profile `http`: `applicationUrl` từ `http://0.0.0.0:5001` → `https://localhost:7185;http://0.0.0.0:5001` (mở lại HTTPS 7185 khi chạy profile http; không có UseHttpsRedirection trong Program.cs nên HTTP 5001/LAN vẫn hoạt động)
-  - E2E verified (curl): 7185 HTTPS 200 + 5001 HTTP 200 cùng listen; JS hover mới có `inHoverZone`/`overCard` được serve; build Release 0 lỗi
-  - **Ghi chú**: process CarProject cũ chạy Session 0 (service) giữ port 5001 không kill được bằng Stop-Process/taskkill thường → phải `Start-Process taskkill.exe -Verb RunAs` (UAC) để kill; nếu cổng 5001 vẫn bị chiếm kiểm tra `Get-CimInstance Win32_Process` SessionId
-- **Brand scroll tự động + quản lý thương hiệu** (yêu cầu người dùng):
-  - Bỏ nút mũi tên `brand-scroll-left/right` + hàm `scrollBrands()`; brand-scroll giờ là **marquee tự động** trái→phải: `brand-track` (display:flex, width:max-content) chứa **2 bản sao** `brand-group` (lặp `@for copy 0..1`), animation CSS `brandMarquee` translateX 0→-50% 45s linear infinite, pause khi hover; thêm CSS `.brand-track`/`.brand-group`/`@keyframes brandMarquee`
-  - **Bút chì duy nhất góc trên phải** `.brand-manage-btn` (chỉ admin view) → mở modal `brandListModal` "Quản lý Thương Hiệu": liệt kê từng hàng giống banner editor (tên thương hiệu + nút Sửa + nút Xoá), nút "Thêm Thương Hiệu Mới" link `/Admin/HangXe/Create`; xoá bỏ overlay sửa/xoá per-item trên từng brand card cũ
-  - Endpoint mới **`POST /api/admin/hangxe/delete`** (Program.cs): JSON `{maHang}` → nếu hãng có dòng xe trả 400 `{success:false,error:"...có dòng xe thuộc hãng..."}` (chặn FK), không có thì xoá + trả `{success:true}`; lỗi khác ghi `%TEMP%\hangxe_delete_error.log`
-  - JS mới: `openBrandListEditor()`, `deleteBrand(id,name)` (confirm + apiPost + toast + reload)
-  - **Giới hạn xe nổi bật trang chủ**: `Index.cshtml.cs` lấy NoiBat rồi cắt xuống **bội số 12** (`(count/12)*12`, chia hết cho 2/3/4 cột; 25 → 24 xe) để hàng cuối không thiếu xe trên mọi cỡ màn hình
-  - E2E verified (build 0 lỗi, HTTP 200): homepage anon = 2 bản sao brand (30 item), 24 car-card, không có bút chì; admin login (`e2e_admin_test`/`test123`) = 1 bút chì + modal list 15 brand + `deleteBrand`/`openBrandEditor` render đúng; delete brand có xe → 400, brand không xe → `{"success":true}`; test data đã xoá khỏi DB
-- **Banner homepage thành slideshow + upload/crop** (chi tiết đầy đủ ở các mục trước)
+- **Nhiá»u áº£nh xe: model HinhAnhXe + gallery slide + quáº£n lÃ½ áº£nh admin + hover theo phiÃªn báº£n** (yÃªu cáº§u ngÆ°á»i dÃ¹ng):
+  - Model má»›i `HinhAnhXe` (MoreEntities.cs): `MaHinhAnh` (PK), `MaDong` (FK â†’ DongXe, Restrict), `DuongDanAnh`, `LaChinh`, `ThuTu`; nav `ICollection<HinhAnhXe>` trong `DongXe` (Entities.cs); `AppDbContext` cÃ³ `DbSet<HinhAnhXe>`, table `"HinhAnhXe"`, index IX_HinhAnhXe_MaDong
+  - Migration má»›i: `Migrations/20260802140351_AddHinhAnhXe.cs` (chÆ°a Ä‘áº©y production)
+  - **Fix showroom 0 xe**: `Details.cshtml.cs` thÃªm `&& t.SoLuong > 0` vÃ o query `TonKhoTheoPhienBan` â†’ "PhÃ¢n bá»• showroom" (phiÃªn báº£n + sidebar) bá» háº³n showroom stock 0
+  - **Gallery slide Details**: `DetailsModel.HinhAnhXes` load theo MaDong + OrderBy(ThuTu); Details.cshtml render `.car-gallery` (stage/slide active, prev/next, thumbs 72Ã—48 chá»‰ hiá»‡n khi >1 áº£nh); fallback `carImg`/ðŸš— giá»¯ nguyÃªn; JS `galleryGo/galleryMove` + init DOMContentLoaded; CSS `.car-gallery*` trong site.css
+  - **Hover theo phiÃªn báº£n**: Cars.cshtml + Showroom.cshtml JSON showroomGroups thÃªm `PhienBans:[{TenPhienBan,SoLuong}]` sáº¯p desc; `car-hover-preview.js` render `.chp-sr-vers/.chp-sr-ver` (tÃªn PB + sá»‘ xe mÃ u stock); CSS `.chp-sr-vers*`
+  - **Endpoints admin** (Program.cs): `GET /api/admin/dongxe/{id}` tráº£ thÃªm `images`; `POST /api/admin/dongxe/images/upload` (multipart nhiá»u file â†’ `wwwroot/uploads/admin`, tráº£ urls); `POST .../images/save` (replace toÃ n bá»™ áº£nh, tá»± set áº£nh Ä‘áº§u lÃ m chÃ­nh, sync `DongXe.DuongDanAnh` = áº£nh chÃ­nh, tráº£ list cÃ³ id); `POST .../images/setmain` (bá» chÃ­nh cÅ©, set má»›i, sync DuongDanAnh); `POST .../images/delete` (xoÃ¡; áº£nh chÃ­nh bá»‹ xoÃ¡ â†’ chuyá»ƒn cho áº£nh káº¿ + sync); lá»—i ghi `%TEMP%\dongxe_images_{save,setmain,delete}_error.log`
+  - **UI admin**: Index.cshtml (`editModelImagesList`, input multiple, `_carImages`, `renderModelImages/uploadModelImages/setMainCarImage/deleteCarImage`) + Cars.cshtml (`carsEditModelImagesList`, `_carsImages`, `renderCarsModelImages/carsUploadModelImages/carsSetMainImage/carsDeleteImage`); cáº£ hai `open*EditorFull` gÃ¡n `d.images`
+  - E2E verified (port 5002, app HTTP): báº£ng HinhAnhXe tá»“n táº¡i; save/setmain/delete/upload qua curl hoáº¡t Ä‘á»™ng; Details hiá»‡n slideshow + thumbs khi cÃ³ nhiá»u áº£nh; Details "PhÃ¢n bá»•" khÃ´ng cÃ²n showroom stock 0; Cars + Showroom hover JSON cÃ³ `PhienBans` (VD `A3 35 TFSI:3`); Cars card-image + `data-car-img` dÃ¹ng áº£nh chÃ­nh má»›i khi lÆ°u HinhAnhXe (sync DongXe.DuongDanAnh); build Release 0 lá»—i; test data Ä‘Ã£ xoÃ¡ (HinhAnhXe 0 rows, DongXe.DuongDanAnh xe 5/28 restore NULL)
+  - **Ghi chÃº toolchain**: `dotnet ef migrations add` báº¯t buá»™c `--configuration Release` (Debug bin bá»‹ lock bá»Ÿi CarProject cÅ©); build Release cÅ©ng pháº£i dá»«ng má»i instance CarProject Ä‘ang cháº¡y (MSB3027 lock DLL)
+- **Fix hover panel biáº¿n máº¥t + khÃ´i phá»¥c localhost:7185** (feedback ngÆ°á»i dÃ¹ng):
+  - `car-hover-preview.js`: hover panel trÆ°á»›c bá»‹ áº©n khi di chuá»™t tá»« card sang panel (mouseleave card â†’ scheduleHide áº©n trong lÃºc chuá»™t cÃ²n á»Ÿ khoáº£ng trá»‘ng 14px giá»¯a card-panel); thÃªm `inHoverZone()` gá»™p rect card + panel + padding 12px, theo dÃµi `mouseX/mouseY` trÃªn mousemove, `scheduleHide` chá»‰ áº©n khi chuá»™t ra ngoÃ i zone; thÃªm biáº¿n `overCard`/`activeCard`
+  - `launchSettings.json` profile `http`: `applicationUrl` tá»« `http://0.0.0.0:5001` â†’ `https://localhost:7185;http://0.0.0.0:5001` (má»Ÿ láº¡i HTTPS 7185 khi cháº¡y profile http; khÃ´ng cÃ³ UseHttpsRedirection trong Program.cs nÃªn HTTP 5001/LAN váº«n hoáº¡t Ä‘á»™ng)
+  - E2E verified (curl): 7185 HTTPS 200 + 5001 HTTP 200 cÃ¹ng listen; JS hover má»›i cÃ³ `inHoverZone`/`overCard` Ä‘Æ°á»£c serve; build Release 0 lá»—i
+  - **Ghi chÃº**: process CarProject cÅ© cháº¡y Session 0 (service) giá»¯ port 5001 khÃ´ng kill Ä‘Æ°á»£c báº±ng Stop-Process/taskkill thÆ°á»ng â†’ pháº£i `Start-Process taskkill.exe -Verb RunAs` (UAC) Ä‘á»ƒ kill; náº¿u cá»•ng 5001 váº«n bá»‹ chiáº¿m kiá»ƒm tra `Get-CimInstance Win32_Process` SessionId
+- **Brand scroll tá»± Ä‘á»™ng + quáº£n lÃ½ thÆ°Æ¡ng hiá»‡u** (yÃªu cáº§u ngÆ°á»i dÃ¹ng):
+  - Bá» nÃºt mÅ©i tÃªn `brand-scroll-left/right` + hÃ m `scrollBrands()`; brand-scroll giá» lÃ  **marquee tá»± Ä‘á»™ng** trÃ¡iâ†’pháº£i: `brand-track` (display:flex, width:max-content) chá»©a **2 báº£n sao** `brand-group` (láº·p `@for copy 0..1`), animation CSS `brandMarquee` translateX 0â†’-50% 45s linear infinite, pause khi hover; thÃªm CSS `.brand-track`/`.brand-group`/`@keyframes brandMarquee`
+  - **BÃºt chÃ¬ duy nháº¥t gÃ³c trÃªn pháº£i** `.brand-manage-btn` (chá»‰ admin view) â†’ má»Ÿ modal `brandListModal` "Quáº£n lÃ½ ThÆ°Æ¡ng Hiá»‡u": liá»‡t kÃª tá»«ng hÃ ng giá»‘ng banner editor (tÃªn thÆ°Æ¡ng hiá»‡u + nÃºt Sá»­a + nÃºt XoÃ¡), nÃºt "ThÃªm ThÆ°Æ¡ng Hiá»‡u Má»›i" link `/Admin/HangXe/Create`; xoÃ¡ bá» overlay sá»­a/xoÃ¡ per-item trÃªn tá»«ng brand card cÅ©
+  - Endpoint má»›i **`POST /api/admin/hangxe/delete`** (Program.cs): JSON `{maHang}` â†’ náº¿u hÃ£ng cÃ³ dÃ²ng xe tráº£ 400 `{success:false,error:"...cÃ³ dÃ²ng xe thuá»™c hÃ£ng..."}` (cháº·n FK), khÃ´ng cÃ³ thÃ¬ xoÃ¡ + tráº£ `{success:true}`; lá»—i khÃ¡c ghi `%TEMP%\hangxe_delete_error.log`
+  - JS má»›i: `openBrandListEditor()`, `deleteBrand(id,name)` (confirm + apiPost + toast + reload)
+  - **Giá»›i háº¡n xe ná»•i báº­t trang chá»§**: `Index.cshtml.cs` láº¥y NoiBat rá»“i cáº¯t xuá»‘ng **bá»™i sá»‘ 12** (`(count/12)*12`, chia háº¿t cho 2/3/4 cá»™t; 25 â†’ 24 xe) Ä‘á»ƒ hÃ ng cuá»‘i khÃ´ng thiáº¿u xe trÃªn má»i cá»¡ mÃ n hÃ¬nh
+  - E2E verified (build 0 lá»—i, HTTP 200): homepage anon = 2 báº£n sao brand (30 item), 24 car-card, khÃ´ng cÃ³ bÃºt chÃ¬; admin login (`e2e_admin_test`/`test123`) = 1 bÃºt chÃ¬ + modal list 15 brand + `deleteBrand`/`openBrandEditor` render Ä‘Ãºng; delete brand cÃ³ xe â†’ 400, brand khÃ´ng xe â†’ `{"success":true}`; test data Ä‘Ã£ xoÃ¡ khá»i DB
+- **Banner homepage thÃ nh slideshow + upload/crop** (chi tiáº¿t Ä‘áº§y Ä‘á»§ á»Ÿ cÃ¡c má»¥c trÆ°á»›c)
 - Added `Models/NhatKyHeThong` entity for activity logging with fields: MaTaiKhoan, TenDangNhap, VaiTro, HanhDong, ChiTiet, DiaChiIP, TrinhDuyet, DuongDan, ThoiGian
 - Added `NhatKyHeThong` DbSet and table mapping in AppDbContext
 - Created migration `AddNhatKyHeThong` for new log table
@@ -59,70 +59,72 @@
 - Updated `Pages/Index.cshtml.cs` to remove BannerList (simplification)
 - Removed stale `Controllers/AccountController.cs` (moved to Razor Pages)
 - Admin avatar upload fixed via `/api/upload-avatar-admin` endpoint (session-independent)
-- User account delete with transaction-based clean up (parents: Nhật ký, Đơn cọc, Lịch hẹn, Banner)
+- User account delete with transaction-based clean up (parents: Nháº­t kÃ½, ÄÆ¡n cá»c, Lá»‹ch háº¹n, Banner)
 - TempData["Success"] + TempData["Error"] displayed on all admin CRUD pages
-- **Quản Lý role + Showroom doanh thu**:
+- **Quáº£n LÃ½ role + Showroom doanh thu**:
   - New `Pages/QuanLy/Dashboard.cshtml + .cs`: manager dashboard with assigned showroom info, daily revenue stats, 30-day line chart (Chart.js)
   - New `Pages/Admin/ThongKe/DoanhThu.cshtml + .cs`: admin revenue page with date picker + showroom filter, daily line chart + showroom bar chart
-  - Auth middleware updated: `/QuanLy/*` requires login; `Quản Lý` role redirects to `/QuanLy/Dashboard` after login
-  - Admin sidebar + main layout dropdown updated for Quản Lý navigation
-- **Module đặt cọc xe hoàn thiện (9 yêu cầu)**:
-  - Rename Quanly1–6 → QuanlyCS1–6 trong DB (NOCHECK + UPDATE 9 bảng + WITH CHECK, 24 FK đã verify trusted); chuẩn hóa tên showroom: CN01→Showroom TP. Hồ Chí Minh (Cơ sở 1)…CN06→Showroom Hải Phòng (Cơ sở 6); đồng bộ `SQL_ThaoTac.sql`
-  - `Details.cshtml(.cs)`: đếm đã cọc theo (phiên bản, showroom) qua `DaDatCocTheoPhienBanVaChiNhanh` + `TongDaDatCocTheoPhienBan`; khối "Đã được đặt cọc" theo từng showroom, "Phân bổ showroom" (đã cọc X, còn Y), badge trạng thái Còn hàng/Đã đặt cọc/Sắp hết
-  - `Checkout.cshtml.cs` (viết lại): 1 đơn duy nhất từ giỏ ≥3 xe; `AllocateSource` ưu tiên showroom chọn → showroom hẹn gặp → showroom khác (tồn kho cao trước); khóa dòng `UPDLOCK, HOLDLOCK` trên `TonKhoTheoChiNhanh` chống oversell; trạng thái `Chờ xử lý` nếu có xe đặt trước, ngược lại `Chờ xác nhận`; `NotifyShowroomsAsync` gửi mọi showroom có xe: showroom hẹn gặp "Tiếp nhận/Không tiếp nhận", showroom nguồn khác "Đồng ý vận chuyển?"
-  - `DepositForm.cshtml.cs`: single-car deposit với lock + reserved theo chi tiết; sửa bug trạng thái luôn "Chờ xử lý" → `IsPreOrder ? "Chờ xử lý" : "Chờ xác nhận"`
-  - `Program.cs` webhook Sepay: giữ nguyên trạng thái đơn (không ép "Chờ xác nhận") để đặt trước vẫn "Chờ xử lý"
-  - `DepositResult.cshtml(.cs)`: tiến trình từng xe + lý do từ chối; `Cars.cshtml`: badge Còn hàng/Hết hàng; `QuanLy/DonCoc.cshtml`: nút "Tiếp nhận"/"Đồng ý vận chuyển" theo vai trò, reject bắt buộc lý do → báo Admin
-  - **E2E verified** (POST qua HTTP + antiforgery): checkout 3 xe → Don 7003 cọc 250M=20% trạng thái "Chờ xác nhận", thông báo QuanlyCS1 + Admin; đặt trước hết hàng PB24 → Don 7004 cọc 418M (15%+20%) "Chờ xử lý"; accept/reject chi tiết bởi QuanlyCS1 (CT16 "Đã tiếp nhận", CT17 "Từ chối" kèm lý do → Admin + khách nhận thông báo); DepositForm xe còn hàng → "Chờ xác nhận"; dữ liệu test đã xóa
-  - Note: `GetJwtUserName()` dùng `ClaimTypes.NameIdentifier`; API không dùng Bearer header — app xác thực qua cookie `MyLxCarJwt` (JWT cookie middleware), test HTTP phải set cookie session
-- **Fix lỗi AJAX "Lỗi kết nối: Unexpected token '<'"** (trả HTML thay vì JSON khi đặt cọc thất bại):
-  - Root cause 1: `DepositRequest.GhiChu` là `string` không-nullable → implicit `[Required]` khiến ModelState invalid khi GhiChu trống (user bỏ trống là fail) → đổi thành `string?`
-  - Root cause 2: các nhánh lỗi trong `Checkout.OnPostAsync` + `DepositForm.OnPostAsync` trả `Page()` (HTML) kể cả khi `_ajax=true` → thêm `if (IsAjaxSubmit) return JsonError("...")` ở mọi nhánh lỗi (thiếu xe, thiếu thông tin, hết hàng, ModelState invalid); helper `JsonError()` + `Fail()` trong CheckoutModel/DepositFormModel
-- **Hover preview cho danh sách xe** (trang /Cars + /Showroom):
-  - Mới `wwwroot/js/car-hover-preview.js`: khi hover 1 card xe hiện panel thông tin (ảnh/icon, brand, tên, kiểu dáng, quốc gia, giá, badge tồn kho, số phiên bản, link chi tiết) nằm **bên phải hoặc bên trái** card (tùy vị trí card trong viewport) để KHÔNG che xe đang trỏ; clamp trong viewport, mũi tên chỉ về card; ẩn trên mobile (<992px); chỉ kích hoạt với card có `data-car-name`
-  - CSS `.car-hover-preview` + `.chp-*` thêm vào site.css
-  - Thêm `data-car-*` attributes vào card `car-card-premium` của Cars.cshtml + Showroom.cshtml (Showroom: `carImg`/`carPriceText` dời lên trước card div) và include script vào `@section Scripts`
-  - **Phân bổ showroom trong hover panel**: `data-car-showrooms` JSON mỗi chi nhánh `{ Key, SoLuong, Ten }` (sắp SoLuong giảm, ẩn xe 0), render khối `.chp-showrooms` (icon map-marker, tên + số xe màu theo ngưỡng) giữa `.chp-price` và `.chp-versions`; `Cars.cshtml.cs` + `Showroom.cshtml.cs` thêm `TonKhoTheoPhienBan` (Dictionary<int, List<TonKhoTheoChiNhanh>>, chỉ SoLuong>0) + `TenChiNhanhLut` (Dictionary<string,string>); badge/stock trên card dùng **tổng** `SoLuongTrongKho` của mọi phiên bản (không chỉ phiên bản đầu); ngưỡng: 0=Hết hàng, 1–5=Sắp hết, >=6=Còn hàng
-  - E2E verified: 2 trang đều có data attrs + script, JS/CSS phục vụ 200; DepositForm PB24 hết hàng ajax → JSON `{success:true}` (Don 7008), Checkout có xe hết hàng → JSON success (Don 7009), lỗi thiếu HoTen → JSON `{success:false,error:...}`; dữ liệu test đã xóa
-- **Đặt cọc 1 xe chỉ hiệu nghiệm khi hết hàng** (quy tắc sản phẩm mới):
-  - `Details.cshtml`: nút "Đặt cọc ngay" chỉ sáng khi `SoLuongTrongKho <= 0` (đặt trước); còn hàng → class `btn-deposit-disabled` (mờ, viền dashed, cursor not-allowed) + `onclick` gọi `showToast(msg, true)` (toast đỏ góc phải) "Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua."
-  - CSS `.btn-deposit-disabled` thêm sau `.btn-deposit:hover` trong site.css
-  - `DepositForm.cshtml.cs`: **OnGet** nếu còn hàng → `TempData["DepositError"]` + redirect về `/Details/{MaDong}`; **OnPost** nếu còn hàng → JSON error (ajax) / ModelState error (page); bỏ block kiểm tra tồn kho theo showroom cũ (dead code); lưu ý chỉ đơn "Chờ xử lý" (pre-order) được tạo nữa
-  - `Details.cshtml` thêm script hiển thị `TempData["DepositError"]` thành toast đỏ sau khi redirect
-  - E2E verified: /Details/14 PB24 (hết hàng) → nút sáng link `/Orders/DepositForm/24`; PB25 (còn hàng) → disabled + toast đỏ; GET DepositForm/9 → 302 `/Details/5`; POST ajax PB25 → `{"success":false,"error":"Xe đang còn hàng..."}`; POST ajax PB24 → `{success:true}` (Don 7010, đã xóa; DB về 27 đơn, max 6009)
-- **Fix hiển thị + hover** (feedback người dùng):
-  - Toast lỗi bị màu xanh: `_Layout.cshtml` `showToast(message, isError)` không gắn class `toast-error` → icon/nền vẫn xanh; đã thêm `' toast-error'` khi isError=true → đỏ
-  - `card-image` ấn được vào chi tiết: thêm `onclick="location.href='/Details/@MaDong'"` + cursor:pointer vào Cars/Showroom/Index; action buttons bên trong thêm `event.stopPropagation()`
-  - Hover "Xem chi tiết" bị lỗi: `data-car-detail` dùng `/Details?id=N` (query string) không khớp route `{id:int}` → đổi thành `/Details/N` (path) ở Cars + Showroom
-  - Hero ảnh che breadcrumb (Trang chủ / Showroom / ...): breadcrumb Details đổi thành pill (nền rgba đen + blur, padding, border-radius) + z-index 5
-  - Hover panel mở ngay sau khi chuyển trang/ vào danh sách che nửa ảnh hàng xe đầu: `car-hover-preview.js` thêm delay 220ms + gate `pointerActive` (chỉ hiện sau khi chuột thật sự di chuyển ít nhất 1 lần trên trang) → không popup khi trỏ đứng yên sau navigate
-- **Input tối (order/cart/Checkout)**: `deposit-card .form-control` thêm `color-scheme: dark`, `-webkit-text-fill-color`, `caret-color`, `::placeholder`, `option` nền tối, fix `:-webkit-autofill` (chống mất chữ khi focus/native date-time/select dropdown); kèm override `[data-theme="light"] .deposit-card .form-control` cho chế độ sáng
-- **Bỏ inline background/color khỏi Checkout.cshtml** (fix select "gạch" light mode): nguyên nhân = input/select mang inline style `background:rgba(255,255,255,0.05); color:var(--brand-white)` nên override CSS light `#f9f9f9` bị bỏ qua. Đã xóa inline style khỏi mọi `.form-control`: `QuantityInput[...]`, select `SourceChiNhanh`, input `LichHenNgay`, `LichHenGio` (giữ lại `font-size`/`padding` vô hại). E2E verified: Checkout (session user1 + giỏ 2 xe) còn 0 inline background; app build 0 lỗi, port 5001 up
-- **Xoá chức năng Banner khỏi admin + hover hiện phân bổ showroom** (feedback người dùng):
-  - Banner: bỏ link menu ở 3 chỗ (`_Layout.cshtml` desktop + mobile, `_AdminLayout.cshtml`), xoá thẻ Banner + `TotalBanner` khỏi `Pages/Admin/Index.cshtml(.cs)`, xoá folder `Pages/Admin/Banner/` (CRUD rời), xoá `BannerId` + nút delete hero khỏi `Index.cshtml(.cs)`; **giữ nguyên** modal `bannerEditorModal`/`openBannerEditor`/`saveBanner` + endpoint `/api/admin/banner/save` (sửa tại chỗ trên trang chủ), `QuangCaoBanner` model/bảng, hiển thị hero `BannerUrl` — **dữ liệu banner trong DB không bị ảnh hưởng**
-  - Fix build: `data-car-showrooms` anonymous type bị `(object)` cast + `.OrderByDescending(x => x.SoLuong)` → lỗi CS1061/CS0019; sửa bằng cách bỏ cast, group/order trước, serialize sau; null-chain `?.` + `?? new object[0]` → đổi `(d.item.PhienBanXes ?? new List<PhienBanXe>())`
-  - E2E verified (build 0 lỗi, app up HTTP 200): `/Admin` (đăng nhập admin qua curl cookie JWT) có 12 card, **không còn Banner**; `/Cars` `data-car-showrooms` render đúng JSON showroom (Key, SoLuong, Ten) sắp giảm dần, ẩn xe 0; trang chủ vẫn có `openBannerEditor`/`saveBanner`/`bannerEditorModal`/endpoint save; account test `e2e_admin_test` đã xóa khỏi DB
-- **Fix 3 bug crop banner + endpoint save robust** (feedback người dùng "ảnh mờ, tỷ lệ, zoom từ tâm, save báo lỗi"):
-  - **Mờ**: `applyCrop()` trong `Pages/Index.cshtml` trước đây xuất canvas theo kích thước **viewport** (~600px) → fullscreen bị mờ; đã rewrite: output = độ phân giải **pixel gốc** của vùng cắt (`Math.round(sw)×Math.round(sh)`), `imageSmoothingQuality='high'`, JPEG 0.95
-  - **Vỡ/đen**: frame cắt giờ khớp chính xác khung người dùng thấy (hệ số `0.85` giống `updateCropFrame`), dùng `getBoundingClientRect()` cho `sx/sy/sw/sh` trên pixel gốc, **clamp biên ảnh** (`sx<0→0`, `sy<0→0`, `sx+sw>iw→sw=iw-sx`, `sy+sh>ih→sh=ih-sy`), alert nếu `sw/sh<=0` (trước: crop vùng tràn ra ngoài ảnh → ảnh đen/vỡ)
-  - **Zoom từ tâm**: thêm `baseScale()` + `applyCropZoom(val)` — giữ `cx = drag.x + oldW/2`, `cy = drag.y + oldH/2` cố định khi phóng/thu (clamp 10–300); `onCropZoom()` + wheel handler đều gọi chung (trước: giữ `drag.x/y` → phóng từ góc trên-trái)
-  - **Save báo lỗi**: `/api/admin/banner/save` (Program.cs) trước trả **500** khi body thiếu property (`body.GetProperty(...)`) và **FK violation** khi tạo banner mới với user `"admin"` không tồn tại trong `TaiKhoan`; đã sửa: `TryGetProperty` + trả **400** `{"success":false,"error":"Vui lòng cung cấp đường dẫn ảnh"}`, khi banner null → dùng JWT username hiện tại, fallback admin đầu tiên trong DB, wrap try/catch log ra `%TEMP%\banner_save_error.log` trả JSON (không 500)
-  - E2E verified (build 0 lỗi, app HTTP 200): save body hợp lệ → `{"success":true}`; body `{}` → 400; **tạo banner mới sau khi DELETE hết 5 banner** → `{"success":true}` + `MaQuanLyCapNhat=fntzzs682@gmail.com` (không FK error); đã khôi phục 5 banner gốc (`/uploads/admin/5b79b64b-...` + `/images/banners/banner2..5.jpg`); hero vẫn hiển thị banner OK
-- **Showroom khả dụng + cân đối tồn kho** (feedback người dùng):
-  - `Checkout.cshtml`: select "Showroom hẹn gặp (nhận xe)" giờ **chỉ hiển thị showroom có xe nguồn của đơn hàng** (lọc từ `TonKhoTheoPhienBan` có `SoLuong > 0`, fallback toàn bộ nếu rỗng để tránh select trống); nhãn per-car đổi "Showroom nguồn:" → "Showroom khả dụng:"
-  - `SQL_ThaoTac.sql` **PHẦN 16**: cân đối tồn kho mẫu ~70% Hà Nội (CN03 42% + CN04 28%), còn lại CN01 10%, CN02 5%, CN05 5%, CN06 = còn lại; đa số 3–10 xe, 17 PB sắp hết (1–2), 5 PB hết hàng (0); kiểm tra cuối: tổng TonKhoTheoChiNhanh khớp `SoLuongTrongKho` (0 dòng lệch)
-  - Build mới chưa chạy sau khi sửa Checkout.cshtml — cần kill `CarProject` + giải phóng port 5001 trước build (tránh MSB3027 exe lock)
+  - Auth middleware updated: `/QuanLy/*` requires login; `Quáº£n LÃ½` role redirects to `/QuanLy/Dashboard` after login
+  - Admin sidebar + main layout dropdown updated for Quáº£n LÃ½ navigation
+- **Module Ä‘áº·t cá»c xe hoÃ n thiá»‡n (9 yÃªu cáº§u)**:
+  - Rename Quanly1â€“6 â†’ QuanlyCS1â€“6 trong DB (NOCHECK + UPDATE 9 báº£ng + WITH CHECK, 24 FK Ä‘Ã£ verify trusted); chuáº©n hÃ³a tÃªn showroom: CN01â†’Showroom TP. Há»“ ChÃ­ Minh (CÆ¡ sá»Ÿ 1)â€¦CN06â†’Showroom Háº£i PhÃ²ng (CÆ¡ sá»Ÿ 6); Ä‘á»“ng bá»™ `SQL_ThaoTac.sql`
+  - `Details.cshtml(.cs)`: Ä‘áº¿m Ä‘Ã£ cá»c theo (phiÃªn báº£n, showroom) qua `DaDatCocTheoPhienBanVaChiNhanh` + `TongDaDatCocTheoPhienBan`; khá»‘i "ÄÃ£ Ä‘Æ°á»£c Ä‘áº·t cá»c" theo tá»«ng showroom, "PhÃ¢n bá»• showroom" (Ä‘Ã£ cá»c X, cÃ²n Y), badge tráº¡ng thÃ¡i CÃ²n hÃ ng/ÄÃ£ Ä‘áº·t cá»c/Sáº¯p háº¿t
+  - `Checkout.cshtml.cs` (viáº¿t láº¡i): 1 Ä‘Æ¡n duy nháº¥t tá»« giá» â‰¥3 xe; `AllocateSource` Æ°u tiÃªn showroom chá»n â†’ showroom háº¹n gáº·p â†’ showroom khÃ¡c (tá»“n kho cao trÆ°á»›c); khÃ³a dÃ²ng `UPDLOCK, HOLDLOCK` trÃªn `TonKhoTheoChiNhanh` chá»‘ng oversell; tráº¡ng thÃ¡i `Chá» xá»­ lÃ½` náº¿u cÃ³ xe Ä‘áº·t trÆ°á»›c, ngÆ°á»£c láº¡i `Chá» xÃ¡c nháº­n`; `NotifyShowroomsAsync` gá»­i má»i showroom cÃ³ xe: showroom háº¹n gáº·p "Tiáº¿p nháº­n/KhÃ´ng tiáº¿p nháº­n", showroom nguá»“n khÃ¡c "Äá»“ng Ã½ váº­n chuyá»ƒn?"
+  - `DepositForm.cshtml.cs`: single-car deposit vá»›i lock + reserved theo chi tiáº¿t; sá»­a bug tráº¡ng thÃ¡i luÃ´n "Chá» xá»­ lÃ½" â†’ `IsPreOrder ? "Chá» xá»­ lÃ½" : "Chá» xÃ¡c nháº­n"`
+  - `Program.cs` webhook Sepay: giá»¯ nguyÃªn tráº¡ng thÃ¡i Ä‘Æ¡n (khÃ´ng Ã©p "Chá» xÃ¡c nháº­n") Ä‘á»ƒ Ä‘áº·t trÆ°á»›c váº«n "Chá» xá»­ lÃ½"
+  - `DepositResult.cshtml(.cs)`: tiáº¿n trÃ¬nh tá»«ng xe + lÃ½ do tá»« chá»‘i; `Cars.cshtml`: badge CÃ²n hÃ ng/Háº¿t hÃ ng; `QuanLy/DonCoc.cshtml`: nÃºt "Tiáº¿p nháº­n"/"Äá»“ng Ã½ váº­n chuyá»ƒn" theo vai trÃ², reject báº¯t buá»™c lÃ½ do â†’ bÃ¡o Admin
+  - **E2E verified** (POST qua HTTP + antiforgery): checkout 3 xe â†’ Don 7003 cá»c 250M=20% tráº¡ng thÃ¡i "Chá» xÃ¡c nháº­n", thÃ´ng bÃ¡o QuanlyCS1 + Admin; Ä‘áº·t trÆ°á»›c háº¿t hÃ ng PB24 â†’ Don 7004 cá»c 418M (15%+20%) "Chá» xá»­ lÃ½"; accept/reject chi tiáº¿t bá»Ÿi QuanlyCS1 (CT16 "ÄÃ£ tiáº¿p nháº­n", CT17 "Tá»« chá»‘i" kÃ¨m lÃ½ do â†’ Admin + khÃ¡ch nháº­n thÃ´ng bÃ¡o); DepositForm xe cÃ²n hÃ ng â†’ "Chá» xÃ¡c nháº­n"; dá»¯ liá»‡u test Ä‘Ã£ xÃ³a
+  - Note: `GetJwtUserName()` dÃ¹ng `ClaimTypes.NameIdentifier`; API khÃ´ng dÃ¹ng Bearer header â€” app xÃ¡c thá»±c qua cookie `MyLxCarJwt` (JWT cookie middleware), test HTTP pháº£i set cookie session
+- **Fix lá»—i AJAX "Lá»—i káº¿t ná»‘i: Unexpected token '<'"** (tráº£ HTML thay vÃ¬ JSON khi Ä‘áº·t cá»c tháº¥t báº¡i):
+  - Root cause 1: `DepositRequest.GhiChu` lÃ  `string` khÃ´ng-nullable â†’ implicit `[Required]` khiáº¿n ModelState invalid khi GhiChu trá»‘ng (user bá» trá»‘ng lÃ  fail) â†’ Ä‘á»•i thÃ nh `string?`
+  - Root cause 2: cÃ¡c nhÃ¡nh lá»—i trong `Checkout.OnPostAsync` + `DepositForm.OnPostAsync` tráº£ `Page()` (HTML) ká»ƒ cáº£ khi `_ajax=true` â†’ thÃªm `if (IsAjaxSubmit) return JsonError("...")` á»Ÿ má»i nhÃ¡nh lá»—i (thiáº¿u xe, thiáº¿u thÃ´ng tin, háº¿t hÃ ng, ModelState invalid); helper `JsonError()` + `Fail()` trong CheckoutModel/DepositFormModel
+- **Hover preview cho danh sÃ¡ch xe** (trang /Cars + /Showroom):
+  - Má»›i `wwwroot/js/car-hover-preview.js`: khi hover 1 card xe hiá»‡n panel thÃ´ng tin (áº£nh/icon, brand, tÃªn, kiá»ƒu dÃ¡ng, quá»‘c gia, giÃ¡, badge tá»“n kho, sá»‘ phiÃªn báº£n, link chi tiáº¿t) náº±m **bÃªn pháº£i hoáº·c bÃªn trÃ¡i** card (tÃ¹y vá»‹ trÃ­ card trong viewport) Ä‘á»ƒ KHÃ”NG che xe Ä‘ang trá»; clamp trong viewport, mÅ©i tÃªn chá»‰ vá» card; áº©n trÃªn mobile (<992px); chá»‰ kÃ­ch hoáº¡t vá»›i card cÃ³ `data-car-name`
+  - CSS `.car-hover-preview` + `.chp-*` thÃªm vÃ o site.css
+  - ThÃªm `data-car-*` attributes vÃ o card `car-card-premium` cá»§a Cars.cshtml + Showroom.cshtml (Showroom: `carImg`/`carPriceText` dá»i lÃªn trÆ°á»›c card div) vÃ  include script vÃ o `@section Scripts`
+  - **PhÃ¢n bá»• showroom trong hover panel**: `data-car-showrooms` JSON má»—i chi nhÃ¡nh `{ Key, SoLuong, Ten }` (sáº¯p SoLuong giáº£m, áº©n xe 0), render khá»‘i `.chp-showrooms` (icon map-marker, tÃªn + sá»‘ xe mÃ u theo ngÆ°á»¡ng) giá»¯a `.chp-price` vÃ  `.chp-versions`; `Cars.cshtml.cs` + `Showroom.cshtml.cs` thÃªm `TonKhoTheoPhienBan` (Dictionary<int, List<TonKhoTheoChiNhanh>>, chá»‰ SoLuong>0) + `TenChiNhanhLut` (Dictionary<string,string>); badge/stock trÃªn card dÃ¹ng **tá»•ng** `SoLuongTrongKho` cá»§a má»i phiÃªn báº£n (khÃ´ng chá»‰ phiÃªn báº£n Ä‘áº§u); ngÆ°á»¡ng: 0=Háº¿t hÃ ng, 1â€“5=Sáº¯p háº¿t, >=6=CÃ²n hÃ ng
+  - E2E verified: 2 trang Ä‘á»u cÃ³ data attrs + script, JS/CSS phá»¥c vá»¥ 200; DepositForm PB24 háº¿t hÃ ng ajax â†’ JSON `{success:true}` (Don 7008), Checkout cÃ³ xe háº¿t hÃ ng â†’ JSON success (Don 7009), lá»—i thiáº¿u HoTen â†’ JSON `{success:false,error:...}`; dá»¯ liá»‡u test Ä‘Ã£ xÃ³a
+- **Äáº·t cá»c 1 xe chá»‰ hiá»‡u nghiá»‡m khi háº¿t hÃ ng** (quy táº¯c sáº£n pháº©m má»›i):
+  - `Details.cshtml`: nÃºt "Äáº·t cá»c ngay" chá»‰ sÃ¡ng khi `SoLuongTrongKho <= 0` (Ä‘áº·t trÆ°á»›c); cÃ²n hÃ ng â†’ class `btn-deposit-disabled` (má», viá»n dashed, cursor not-allowed) + `onclick` gá»i `showToast(msg, true)` (toast Ä‘á» gÃ³c pháº£i) "Xe Ä‘ang cÃ²n hÃ ng trong kho, khÃ´ng cáº§n Ä‘áº·t cá»c trÆ°á»›c. HÃ£y thÃªm vÃ o giá» hÃ ng Ä‘á»ƒ Ä‘áº·t mua."
+  - CSS `.btn-deposit-disabled` thÃªm sau `.btn-deposit:hover` trong site.css
+  - `DepositForm.cshtml.cs`: **OnGet** náº¿u cÃ²n hÃ ng â†’ `TempData["DepositError"]` + redirect vá» `/Details/{MaDong}`; **OnPost** náº¿u cÃ²n hÃ ng â†’ JSON error (ajax) / ModelState error (page); bá» block kiá»ƒm tra tá»“n kho theo showroom cÅ© (dead code); lÆ°u Ã½ chá»‰ Ä‘Æ¡n "Chá» xá»­ lÃ½" (pre-order) Ä‘Æ°á»£c táº¡o ná»¯a
+  - `Details.cshtml` thÃªm script hiá»ƒn thá»‹ `TempData["DepositError"]` thÃ nh toast Ä‘á» sau khi redirect
+  - E2E verified: /Details/14 PB24 (háº¿t hÃ ng) â†’ nÃºt sÃ¡ng link `/Orders/DepositForm/24`; PB25 (cÃ²n hÃ ng) â†’ disabled + toast Ä‘á»; GET DepositForm/9 â†’ 302 `/Details/5`; POST ajax PB25 â†’ `{"success":false,"error":"Xe Ä‘ang cÃ²n hÃ ng..."}`; POST ajax PB24 â†’ `{success:true}` (Don 7010, Ä‘Ã£ xÃ³a; DB vá» 27 Ä‘Æ¡n, max 6009)
+- **Fix hiá»ƒn thá»‹ + hover** (feedback ngÆ°á»i dÃ¹ng):
+  - Toast lá»—i bá»‹ mÃ u xanh: `_Layout.cshtml` `showToast(message, isError)` khÃ´ng gáº¯n class `toast-error` â†’ icon/ná»n váº«n xanh; Ä‘Ã£ thÃªm `' toast-error'` khi isError=true â†’ Ä‘á»
+  - `card-image` áº¥n Ä‘Æ°á»£c vÃ o chi tiáº¿t: thÃªm `onclick="location.href='/Details/@MaDong'"` + cursor:pointer vÃ o Cars/Showroom/Index; action buttons bÃªn trong thÃªm `event.stopPropagation()`
+  - Hover "Xem chi tiáº¿t" bá»‹ lá»—i: `data-car-detail` dÃ¹ng `/Details?id=N` (query string) khÃ´ng khá»›p route `{id:int}` â†’ Ä‘á»•i thÃ nh `/Details/N` (path) á»Ÿ Cars + Showroom
+  - Hero áº£nh che breadcrumb (Trang chá»§ / Showroom / ...): breadcrumb Details Ä‘á»•i thÃ nh pill (ná»n rgba Ä‘en + blur, padding, border-radius) + z-index 5
+  - Hover panel má»Ÿ ngay sau khi chuyá»ƒn trang/ vÃ o danh sÃ¡ch che ná»­a áº£nh hÃ ng xe Ä‘áº§u: `car-hover-preview.js` thÃªm delay 220ms + gate `pointerActive` (chá»‰ hiá»‡n sau khi chuá»™t tháº­t sá»± di chuyá»ƒn Ã­t nháº¥t 1 láº§n trÃªn trang) â†’ khÃ´ng popup khi trá» Ä‘á»©ng yÃªn sau navigate
+- **Input tá»‘i (order/cart/Checkout)**: `deposit-card .form-control` thÃªm `color-scheme: dark`, `-webkit-text-fill-color`, `caret-color`, `::placeholder`, `option` ná»n tá»‘i, fix `:-webkit-autofill` (chá»‘ng máº¥t chá»¯ khi focus/native date-time/select dropdown); kÃ¨m override `[data-theme="light"] .deposit-card .form-control` cho cháº¿ Ä‘á»™ sÃ¡ng
+- **Bá» inline background/color khá»i Checkout.cshtml** (fix select "gáº¡ch" light mode): nguyÃªn nhÃ¢n = input/select mang inline style `background:rgba(255,255,255,0.05); color:var(--brand-white)` nÃªn override CSS light `#f9f9f9` bá»‹ bá» qua. ÄÃ£ xÃ³a inline style khá»i má»i `.form-control`: `QuantityInput[...]`, select `SourceChiNhanh`, input `LichHenNgay`, `LichHenGio` (giá»¯ láº¡i `font-size`/`padding` vÃ´ háº¡i). E2E verified: Checkout (session user1 + giá» 2 xe) cÃ²n 0 inline background; app build 0 lá»—i, port 5001 up
+- **XoÃ¡ chá»©c nÄƒng Banner khá»i admin + hover hiá»‡n phÃ¢n bá»• showroom** (feedback ngÆ°á»i dÃ¹ng):
+  - Banner: bá» link menu á»Ÿ 3 chá»— (`_Layout.cshtml` desktop + mobile, `_AdminLayout.cshtml`), xoÃ¡ tháº» Banner + `TotalBanner` khá»i `Pages/Admin/Index.cshtml(.cs)`, xoÃ¡ folder `Pages/Admin/Banner/` (CRUD rá»i), xoÃ¡ `BannerId` + nÃºt delete hero khá»i `Index.cshtml(.cs)`; **giá»¯ nguyÃªn** modal `bannerEditorModal`/`openBannerEditor`/`saveBanner` + endpoint `/api/admin/banner/save` (sá»­a táº¡i chá»— trÃªn trang chá»§), `QuangCaoBanner` model/báº£ng, hiá»ƒn thá»‹ hero `BannerUrl` â€” **dá»¯ liá»‡u banner trong DB khÃ´ng bá»‹ áº£nh hÆ°á»Ÿng**
+  - Fix build: `data-car-showrooms` anonymous type bá»‹ `(object)` cast + `.OrderByDescending(x => x.SoLuong)` â†’ lá»—i CS1061/CS0019; sá»­a báº±ng cÃ¡ch bá» cast, group/order trÆ°á»›c, serialize sau; null-chain `?.` + `?? new object[0]` â†’ Ä‘á»•i `(d.item.PhienBanXes ?? new List<PhienBanXe>())`
+  - E2E verified (build 0 lá»—i, app up HTTP 200): `/Admin` (Ä‘Äƒng nháº­p admin qua curl cookie JWT) cÃ³ 12 card, **khÃ´ng cÃ²n Banner**; `/Cars` `data-car-showrooms` render Ä‘Ãºng JSON showroom (Key, SoLuong, Ten) sáº¯p giáº£m dáº§n, áº©n xe 0; trang chá»§ váº«n cÃ³ `openBannerEditor`/`saveBanner`/`bannerEditorModal`/endpoint save; account test `e2e_admin_test` Ä‘Ã£ xÃ³a khá»i DB
+- **Fix 3 bug crop banner + endpoint save robust** (feedback ngÆ°á»i dÃ¹ng "áº£nh má», tá»· lá»‡, zoom tá»« tÃ¢m, save bÃ¡o lá»—i"):
+  - **Má»**: `applyCrop()` trong `Pages/Index.cshtml` trÆ°á»›c Ä‘Ã¢y xuáº¥t canvas theo kÃ­ch thÆ°á»›c **viewport** (~600px) â†’ fullscreen bá»‹ má»; Ä‘Ã£ rewrite: output = Ä‘á»™ phÃ¢n giáº£i **pixel gá»‘c** cá»§a vÃ¹ng cáº¯t (`Math.round(sw)Ã—Math.round(sh)`), `imageSmoothingQuality='high'`, JPEG 0.95
+  - **Vá»¡/Ä‘en**: frame cáº¯t giá» khá»›p chÃ­nh xÃ¡c khung ngÆ°á»i dÃ¹ng tháº¥y (há»‡ sá»‘ `0.85` giá»‘ng `updateCropFrame`), dÃ¹ng `getBoundingClientRect()` cho `sx/sy/sw/sh` trÃªn pixel gá»‘c, **clamp biÃªn áº£nh** (`sx<0â†’0`, `sy<0â†’0`, `sx+sw>iwâ†’sw=iw-sx`, `sy+sh>ihâ†’sh=ih-sy`), alert náº¿u `sw/sh<=0` (trÆ°á»›c: crop vÃ¹ng trÃ n ra ngoÃ i áº£nh â†’ áº£nh Ä‘en/vá»¡)
+  - **Zoom tá»« tÃ¢m**: thÃªm `baseScale()` + `applyCropZoom(val)` â€” giá»¯ `cx = drag.x + oldW/2`, `cy = drag.y + oldH/2` cá»‘ Ä‘á»‹nh khi phÃ³ng/thu (clamp 10â€“300); `onCropZoom()` + wheel handler Ä‘á»u gá»i chung (trÆ°á»›c: giá»¯ `drag.x/y` â†’ phÃ³ng tá»« gÃ³c trÃªn-trÃ¡i)
+  - **Save bÃ¡o lá»—i**: `/api/admin/banner/save` (Program.cs) trÆ°á»›c tráº£ **500** khi body thiáº¿u property (`body.GetProperty(...)`) vÃ  **FK violation** khi táº¡o banner má»›i vá»›i user `"admin"` khÃ´ng tá»“n táº¡i trong `TaiKhoan`; Ä‘Ã£ sá»­a: `TryGetProperty` + tráº£ **400** `{"success":false,"error":"Vui lÃ²ng cung cáº¥p Ä‘Æ°á»ng dáº«n áº£nh"}`, khi banner null â†’ dÃ¹ng JWT username hiá»‡n táº¡i, fallback admin Ä‘áº§u tiÃªn trong DB, wrap try/catch log ra `%TEMP%\banner_save_error.log` tráº£ JSON (khÃ´ng 500)
+  - E2E verified (build 0 lá»—i, app HTTP 200): save body há»£p lá»‡ â†’ `{"success":true}`; body `{}` â†’ 400; **táº¡o banner má»›i sau khi DELETE háº¿t 5 banner** â†’ `{"success":true}` + `MaQuanLyCapNhat=fntzzs682@gmail.com` (khÃ´ng FK error); Ä‘Ã£ khÃ´i phá»¥c 5 banner gá»‘c (`/uploads/admin/5b79b64b-...` + `/images/banners/banner2..5.jpg`); hero váº«n hiá»ƒn thá»‹ banner OK
+- **Showroom kháº£ dá»¥ng + cÃ¢n Ä‘á»‘i tá»“n kho** (feedback ngÆ°á»i dÃ¹ng):
+  - `Checkout.cshtml`: select "Showroom háº¹n gáº·p (nháº­n xe)" giá» **chá»‰ hiá»ƒn thá»‹ showroom cÃ³ xe nguá»“n cá»§a Ä‘Æ¡n hÃ ng** (lá»c tá»« `TonKhoTheoPhienBan` cÃ³ `SoLuong > 0`, fallback toÃ n bá»™ náº¿u rá»—ng Ä‘á»ƒ trÃ¡nh select trá»‘ng); nhÃ£n per-car Ä‘á»•i "Showroom nguá»“n:" â†’ "Showroom kháº£ dá»¥ng:"
+  - `SQL_ThaoTac.sql` **PHáº¦N 16**: cÃ¢n Ä‘á»‘i tá»“n kho máº«u ~70% HÃ  Ná»™i (CN03 42% + CN04 28%), cÃ²n láº¡i CN01 10%, CN02 5%, CN05 5%, CN06 = cÃ²n láº¡i; Ä‘a sá»‘ 3â€“10 xe, 17 PB sáº¯p háº¿t (1â€“2), 5 PB háº¿t hÃ ng (0); kiá»ƒm tra cuá»‘i: tá»•ng TonKhoTheoChiNhanh khá»›p `SoLuongTrongKho` (0 dÃ²ng lá»‡ch)
+  - Build má»›i chÆ°a cháº¡y sau khi sá»­a Checkout.cshtml â€” cáº§n kill `CarProject` + giáº£i phÃ³ng port 5001 trÆ°á»›c build (trÃ¡nh MSB3027 exe lock)
 
-### Total Rewrite SQL_ThaoTac.sql — bản AN TOÀN + IDEMPOTENT (không mất ảnh server)
-- **Vấn đề**: `SQL_ThaoTac.sql` cũ dòng 63–79 DELETE sạch + INSERT lại → mất ảnh upload trên server (DuongDanAnh/HinhAnhXe/banner) + lỗi FK HinhAnhXe; user cần chạy lên production (`mylxcar.online`) đồng bộ dữ liệu kinh doanh + tồn kho từ local mà **giữ nguyên ảnh**
-- **Giải pháp**: toàn bộ chuyển sang UPSERT (không xoá gì, idempotent, chạy lại nhiều lần OK); sinh lại **toàn bộ giá trị từ DB local thật** (ngày 2026-08-04) bằng generator PowerShell `gen_sql.ps1` → ghi đè `SQL_ThaoTac.sql` UTF-8 BOM
-- **Bảo vệ ảnh**: khi hàng ĐÃ tồn tại → `UPDATE` chỉ cột text/kinh doanh (KHÔNG chạm `DuongDanLogo`/`DuongDanAnh`); khi chưa có → mới `INSERT` kèm ảnh; `HinhAnhXe` không đụng tới
-- **Các bảng identity** (HangXe, DongXe, PhienBanXe_SanPham, QuangCaoBanner, KenhTuVan): MERGE bị cấm với IDENTITY_INSERT → dùng pattern `IF NOT EXISTS (SELECT...) BEGIN SET IDENTITY_INSERT ON; INSERT; SET IDENTITY_INSERT OFF; END ELSE UPDATE ...` (UPDATE bằng literal, không no-op)
-- **Các bảng non-identity** (ChiNhanhShowroom, ChuongTrinhKhuyenMai, TonKhoTheoChiNhanh): dùng MERGE theokhoá text
-- **Tài khoản**: 16 account (5 admin + 5 user + 6 Quản Lý) UPSERT theo TenDangNhap, email phải bọc `N'...'` (lỗi cũ 4104 "multi-part identifier" vì thiếu quote); email rỗng → `NULL`
-- **Sửa bug generator**: bitmap BIT `True`→`1/0` (hàm `Lit()`); KenhTuVan bị flatten `@(@(1,...))` → scalar value nên pipeline tách thành ký tự `h,t,t,p` → hardcode `$ktvSql` trực tiếp
-- **E2E verified (chạy nguyên file trên local DB)**: **12/12 batch OK, 0 lỗi** (không còn 4104/544); counts đúng 15/58/96/6/3/1/410; **0 dòng lệch** tồn kho; ảnh giữ nguyên (DongXe_CoAnh=16, HinhAnhXe=0); script chạy `UPDATE ... SET SoLuongTrongKho=SUM, TrangThai(Còn hàng≥6/Sắp hết1-5/Hết hàng0)`
-- **Lưu ý test**: sửa file bằng PowerShell generator `WriteAllText` (UTF-8 BOM); console font hiển thị `?`/`�` cho tiếng Việt chỉ là lỗi hiển thị terminal, file thực sự đúng UTF-8
+- **Chọn vị trí thu cọc dạng cascade (DepositForm + Checkout)**: thay map chọn tự do bằng chuỗi dropdown **Tỉnh/Thành phố (63) → Quận/Huyện (696)** nhúng sẵn từ API provinces.open-api.vn (snapshot tĩnh wwwroot/js/vn-admin.js, UTF-8 BOM, cùng VNCENTROID căn giữa bản đồ) + ô nhập Số nhà/Thôn/Xóm; người dùng bấm vào bản đồ để **trỏ vị trí cụ thể** → uildDiaDiem() ghép [chi tiết], [quận/huyện], [tỉnh] vào DiaDiemGap, ToaDoGap lấy lat,lng; submit gửi địa chỉ+toạ độ tới Quản Lý ((Toạ độ: ...)) như đường cũ. Kèm populateCascade/provinceCenter, map ttributionControl:false (chống mở tab OSM). E2E verified: vn-admin.js served charset=utf-8; DepositForm render đủ select + JS; POST đặt cọc PB24/Dong14 lưu toạ độ + ThongBao tới QuanlyCS1 ... (Toạ độ: 21.033333,105.816667); đã dọn test. Note encoding: script gen (powershell) phải fetch raw bytes rồi UTF8 decode (Invoke-WebRequest .RawContentStream.ToArray()), ghi BOM; PS đọc file không BOM thành mojibake.?
+?
+### Total Rewrite SQL_ThaoTac.sql â€” báº£n AN TOÃ€N + IDEMPOTENT (khÃ´ng máº¥t áº£nh server)
+- **Váº¥n Ä‘á»**: `SQL_ThaoTac.sql` cÅ© dÃ²ng 63â€“79 DELETE sáº¡ch + INSERT láº¡i â†’ máº¥t áº£nh upload trÃªn server (DuongDanAnh/HinhAnhXe/banner) + lá»—i FK HinhAnhXe; user cáº§n cháº¡y lÃªn production (`mylxcar.online`) Ä‘á»“ng bá»™ dá»¯ liá»‡u kinh doanh + tá»“n kho tá»« local mÃ  **giá»¯ nguyÃªn áº£nh**
+- **Giáº£i phÃ¡p**: toÃ n bá»™ chuyá»ƒn sang UPSERT (khÃ´ng xoÃ¡ gÃ¬, idempotent, cháº¡y láº¡i nhiá»u láº§n OK); sinh láº¡i **toÃ n bá»™ giÃ¡ trá»‹ tá»« DB local tháº­t** (ngÃ y 2026-08-04) báº±ng generator PowerShell `gen_sql.ps1` â†’ ghi Ä‘Ã¨ `SQL_ThaoTac.sql` UTF-8 BOM
+- **Báº£o vá»‡ áº£nh**: khi hÃ ng ÄÃƒ tá»“n táº¡i â†’ `UPDATE` chá»‰ cá»™t text/kinh doanh (KHÃ”NG cháº¡m `DuongDanLogo`/`DuongDanAnh`); khi chÆ°a cÃ³ â†’ má»›i `INSERT` kÃ¨m áº£nh; `HinhAnhXe` khÃ´ng Ä‘á»¥ng tá»›i
+- **CÃ¡c báº£ng identity** (HangXe, DongXe, PhienBanXe_SanPham, QuangCaoBanner, KenhTuVan): MERGE bá»‹ cáº¥m vá»›i IDENTITY_INSERT â†’ dÃ¹ng pattern `IF NOT EXISTS (SELECT...) BEGIN SET IDENTITY_INSERT ON; INSERT; SET IDENTITY_INSERT OFF; END ELSE UPDATE ...` (UPDATE báº±ng literal, khÃ´ng no-op)
+- **CÃ¡c báº£ng non-identity** (ChiNhanhShowroom, ChuongTrinhKhuyenMai, TonKhoTheoChiNhanh): dÃ¹ng MERGE theokhoÃ¡ text
+- **TÃ i khoáº£n**: 16 account (5 admin + 5 user + 6 Quáº£n LÃ½) UPSERT theo TenDangNhap, email pháº£i bá»c `N'...'` (lá»—i cÅ© 4104 "multi-part identifier" vÃ¬ thiáº¿u quote); email rá»—ng â†’ `NULL`
+- **Sá»­a bug generator**: bitmap BIT `True`â†’`1/0` (hÃ m `Lit()`); KenhTuVan bá»‹ flatten `@(@(1,...))` â†’ scalar value nÃªn pipeline tÃ¡ch thÃ nh kÃ½ tá»± `h,t,t,p` â†’ hardcode `$ktvSql` trá»±c tiáº¿p
+- **E2E verified (cháº¡y nguyÃªn file trÃªn local DB)**: **12/12 batch OK, 0 lá»—i** (khÃ´ng cÃ²n 4104/544); counts Ä‘Ãºng 15/58/96/6/3/1/410; **0 dÃ²ng lá»‡ch** tá»“n kho; áº£nh giá»¯ nguyÃªn (DongXe_CoAnh=16, HinhAnhXe=0); script cháº¡y `UPDATE ... SET SoLuongTrongKho=SUM, TrangThai(CÃ²n hÃ ngâ‰¥6/Sáº¯p háº¿t1-5/Háº¿t hÃ ng0)`
+- **LÆ°u Ã½ test**: sá»­a file báº±ng PowerShell generator `WriteAllText` (UTF-8 BOM); console font hiá»ƒn thá»‹ `?`/`ï¿½` cho tiáº¿ng Viá»‡t chá»‰ lÃ  lá»—i hiá»ƒn thá»‹ terminal, file thá»±c sá»± Ä‘Ãºng UTF-8
 
 ### In Progress
 - (none)
@@ -140,42 +142,42 @@
 - Remove stale Controller files in favor of Razor Pages
 - Admin area uses Bootstrap (not luxury theme) for functional CRUD UX
 - **JWT authentication** added alongside existing session auth:
-  - Session (cookie) → Razor Pages (existing, unchanged)
-  - JWT (Bearer `/api/login`) → API clients / React frontend
-  - JWT key: `appsettings.json → Jwt:Key`, expiry: 30 phút
-  - Token lưu trong session (`JwtToken`) khi login qua form, có sẵn cho API calls sau đó
+  - Session (cookie) â†’ Razor Pages (existing, unchanged)
+  - JWT (Bearer `/api/login`) â†’ API clients / React frontend
+  - JWT key: `appsettings.json â†’ Jwt:Key`, expiry: 30 phÃºt
+  - Token lÆ°u trong session (`JwtToken`) khi login qua form, cÃ³ sáºµn cho API calls sau Ä‘Ã³
 
 ## Next Steps
-- **Next user action**: mở SSMS trên production `mylxcar.online`, chọn DB `CarShopDb`, chạy nguyên `SQL_ThaoTac.sql` (bản mới an toàn — không mất ảnh server, không xoá dữ liệu) — script đã test sạch 0 lỗi trên local
-- Try running Aspire AppHost with the signed DLL — if signing doesn't resolve WDAC block, disable Memory Integrity (Windows Security → Device Security → Core Isolation → Off → reboot)
+- **Next user action**: má»Ÿ SSMS trÃªn production `mylxcar.online`, chá»n DB `CarShopDb`, cháº¡y nguyÃªn `SQL_ThaoTac.sql` (báº£n má»›i an toÃ n â€” khÃ´ng máº¥t áº£nh server, khÃ´ng xoÃ¡ dá»¯ liá»‡u) â€” script Ä‘Ã£ test sáº¡ch 0 lá»—i trÃªn local
+- Try running Aspire AppHost with the signed DLL â€” if signing doesn't resolve WDAC block, disable Memory Integrity (Windows Security â†’ Device Security â†’ Core Isolation â†’ Off â†’ reboot)
 - If Aspire still fails, use `run.bat` or VS Code launch config "CarProject (http)" for daily work
 - Commit + push clean code to GitHub
 
 ## Critical Context
-- **Sepay webhook**: Endpoint `POST /api/sepay-webhook` in Program.cs. Cập nhật `DonDatCoc.SepayTransactionId`, `TrangThaiThanhToan = "Đã thanh toán"`, gửi notification. Verify HMAC-SHA256 signature từ header `X-SePay-Signature`.
-- **Sepay config**: `appsettings.json → Sepay` section: ApiKey, WebhookBaseUrl=`https://mylxcar.online`, WebhookSecret (trống — cần copy từ SePay dashboard).
-- **Trên form SePay**: Tên="Web ô tô", URL=`https://mylxcar.online/api/sepay-webhook`, Loại="Tất cả", Định dạng=JSON, Bật "Tự động gửi lại". HMAC-SHA256 secret=`whsec_mylxcar2024`. Lọc mã thanh toán=`DH`.
+- **Sepay webhook**: Endpoint `POST /api/sepay-webhook` in Program.cs. Cáº­p nháº­t `DonDatCoc.SepayTransactionId`, `TrangThaiThanhToan = "ÄÃ£ thanh toÃ¡n"`, gá»­i notification. Verify HMAC-SHA256 signature tá»« header `X-SePay-Signature`.
+- **Sepay config**: `appsettings.json â†’ Sepay` section: ApiKey, WebhookBaseUrl=`https://mylxcar.online`, WebhookSecret (trá»‘ng â€” cáº§n copy tá»« SePay dashboard).
+- **TrÃªn form SePay**: TÃªn="Web Ã´ tÃ´", URL=`https://mylxcar.online/api/sepay-webhook`, Loáº¡i="Táº¥t cáº£", Äá»‹nh dáº¡ng=JSON, Báº­t "Tá»± Ä‘á»™ng gá»­i láº¡i". HMAC-SHA256 secret=`whsec_mylxcar2024`. Lá»c mÃ£ thanh toÃ¡n=`DH`.
 - Build: 0 errors, CS8618 nullable warnings (same pattern, no functional impact)
 - DB: `CarShopDb`; server `localhost,1433`; SA password `Iumaioanhh@2024`
 - **WDAC/Smart App Control fix**: Self-signed code signing cert created, CarProject.dll signed automatically after each build via post-build event in `.csproj`. Cert installed in LocalMachine\Root + LocalMachine\TrustedPublisher, CurrentUser\My, CurrentUser\TrustedPublisher. Post-build script: `build/sign-after-build.ps1`.
-- **Smart App Control** is in "Enforce" mode (Windows Insider build). If signing doesn't help, turn off: Windows Settings → Privacy & security → Windows Security → App & browser control → Smart App Control → Off
-- **Memory Integrity** (Virtualization-based security) is enabled. If needed, disable: Windows Security → Device Security → Core Isolation → Memory Integrity → Off → reboot
+- **Smart App Control** is in "Enforce" mode (Windows Insider build). If signing doesn't help, turn off: Windows Settings â†’ Privacy & security â†’ Windows Security â†’ App & browser control â†’ Smart App Control â†’ Off
+- **Memory Integrity** (Virtualization-based security) is enabled. If needed, disable: Windows Security â†’ Device Security â†’ Core Isolation â†’ Memory Integrity â†’ Off â†’ reboot
 - Port 5001 often held by stale `dcp.exe` (Aspire DCP) after previous run; kill with `taskkill /F /IM dcp.exe`
 - `.vscode/launch.json` has two configurations: "Aspire AppHost" (with `postDebugTask: kill-dcp`) and "CarProject (http)"
 - `builder.Build().Run();` was added to `AppHost.cs` (was missing, causing immediate exit)
-- `setup-cert.bat` at workspace root — for other developers who need signing (run as admin)
-- `run.bat` at workspace root — quick launch: `dotnet run --project CarProject\CarProject\CarProject.csproj --launch-profile http`
-- `rebuild-and-run.bat` at workspace root — build + run in one click
+- `setup-cert.bat` at workspace root â€” for other developers who need signing (run as admin)
+- `run.bat` at workspace root â€” quick launch: `dotnet run --project CarProject\CarProject\CarProject.csproj --launch-profile http`
+- `rebuild-and-run.bat` at workspace root â€” build + run in one click
 
 ## Relevant Files
-- `CarProject/wwwroot/css/site.css`: complete luxury theme (all CSS) — gồm `.car-gallery*`, `.chp-sr-vers/.chp-sr-ver*`
-- `CarProject/wwwroot/js/car-hover-preview.js`: render phiên bản per showroom (`.chp-sr-vers`)
-- `CarProject/Models/MoreEntities.cs`: class `HinhAnhXe` mới
+- `CarProject/wwwroot/css/site.css`: complete luxury theme (all CSS) â€” gá»“m `.car-gallery*`, `.chp-sr-vers/.chp-sr-ver*`
+- `CarProject/wwwroot/js/car-hover-preview.js`: render phiÃªn báº£n per showroom (`.chp-sr-vers`)
+- `CarProject/Models/MoreEntities.cs`: class `HinhAnhXe` má»›i
 - `CarProject/Models/Entities.cs`: `DongXe.HinhAnhXes`
 - `CarProject/Data/AppDbContext.cs`: DbSet + mapping `HinhAnhXe` (FK Restrict)
 - `CarProject/Migrations/20260802140351_AddHinhAnhXe.cs`
-- `CarProject/Pages/Details.cshtml + .cs`: lọc stock >0, load HinhAnhXe, slideshow gallery + JS/CSS
-- `CarProject/Pages/Showroom.cshtml`: hover JSON kèm `PhienBans`
+- `CarProject/Pages/Details.cshtml + .cs`: lá»c stock >0, load HinhAnhXe, slideshow gallery + JS/CSS
+- `CarProject/Pages/Showroom.cshtml`: hover JSON kÃ¨m `PhienBans`
 - `CarProject/Views/Shared/_Layout.cshtml`: premium layout (navbar + footer + floating buttons)
 - `CarProject/Pages/_ViewStart.cshtml`: layout directive for Razor Pages
 - `CarProject/Pages/_ViewImports.cshtml`: tag helpers and usings
@@ -191,4 +193,5 @@
 - `run.bat`: double-click to run
 - `rebuild-and-run.bat`: build + run
 - `setup-cert.bat`: for other developers to install signing cert
-- `CarProject/SQL_ThaoTac.sql`: bản mới AN TOÀN/idempotent UPSERT (đã test sạch 0 lỗi trên local); generator `C:\Users\Tu\AppData\Local\Temp\opencode\gen_sql.ps1` sinh từ DB local (chạy `powershell -NoProfile -ExecutionPolicy Bypass -File ...`)
+- `CarProject/SQL_ThaoTac.sql`: báº£n má»›i AN TOÃ€N/idempotent UPSERT (Ä‘Ã£ test sáº¡ch 0 lá»—i trÃªn local); generator `C:\Users\Tu\AppData\Local\Temp\opencode\gen_sql.ps1` sinh tá»« DB local (cháº¡y `powershell -NoProfile -ExecutionPolicy Bypass -File ...`)
+
