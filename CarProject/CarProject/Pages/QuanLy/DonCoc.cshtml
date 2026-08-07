@@ -124,8 +124,12 @@
                                 <td>
                                     @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && d.TrangThaiDonHang == "Chờ xác nhận" && d.ChiTiets.Any() && d.ChiTiets.All(c => c.TrangThaiTiepNhan == "Đã tiếp nhận"))
                                     {
-                                        <form method="post" asp-page-handler="AcceptOrder" onsubmit="return confirm('Tiếp nhận toàn bộ đơn cọc này?');">
+                                        <form method="post" asp-page-handler="AcceptOrder" onsubmit="return confirmAccept(event);">
                                             <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <div class="input-group input-group-sm mb-1" style="max-width:220px;">
+                                                <span class="input-group-text" style="background:#fff;"><i class="fas fa-clock"></i></span>
+                                                <input type="datetime-local" name="ngayHenNhanXe" class="form-control" required />
+                                            </div>
                                             <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Tiếp nhận đơn cọc</button>
                                         </form>
                                     }
@@ -134,6 +138,13 @@
                                         <form method="post" asp-page-handler="Sold" onsubmit="return confirm('Xác nhận bán xe và tạo hoá đơn?');">
                                             <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
                                             <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-receipt"></i> Bán thành công</button>
+                                        </form>
+                                    }
+                                    @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && (d.TrangThaiDonHang == "Đã xác nhận" || d.TrangThaiDonHang == "Hoàn tất"))
+                                    {
+                                        <form method="post" asp-page-handler="CancelSale" class="mt-1" onsubmit="return confirm('Xác nhận KHÔNG BÁN / hủy giao dịch này? Tiền cọc sẽ được hoàn lại.');">
+                                            <input type="hidden" name="maDonCoc" value="@d.MaDonCoc" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-ban"></i> Không bán</button>
                                         </form>
                                     }
                                     @if (d.TrangThaiDonHang == "Hoàn tất")
@@ -196,5 +207,20 @@
         document.getElementById('rejectLyDo').value = '';
         document.getElementById('rejectTitle').textContent = actionLabel || 'Từ chối tiếp nhận xe';
         new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function confirmAccept(event) {
+        var form = event.target.closest('form');
+        var ngay = form ? form.querySelector('[name="ngayHenNhanXe"]') : null;
+        if (ngay && !ngay.value) {
+            alert('Vui lòng chọn ngày/giờ hẹn gặp trước khi tiếp nhận đơn cọc.');
+            event.preventDefault();
+            return false;
+        }
+        if (!confirm('Tiếp nhận toàn bộ đơn cọc này và gửi lịch hẹn cho khách?')) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
     }
 </script>

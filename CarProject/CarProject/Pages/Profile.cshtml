@@ -238,7 +238,7 @@ else
                             <div style="background: var(--brand-light-gray); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="font-family: var(--font-title); font-weight: 600; color: var(--brand-white);">@l.DongXe?.TenDong</span>
-                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@l.NgayHen.ToString("dd/MM/yyyy")</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">@(l.NgayHen?.ToString("dd/MM/yyyy") ?? "Chưa chốt")</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.82rem;">
                                     <span style="color: var(--text-muted);">@l.GioHen</span>

@@ -2,7 +2,7 @@
 @model CarProject.Pages.Orders.DepositFormModel
 
 @{
-    ViewData["Title"] = "Đặt cọc xe";
+    ViewData["Title"] = "Đặt trước xe";
     var soPhienBanKhaDung = Model.PhienBans.Count;
 }
 
@@ -18,7 +18,7 @@
                 <a asp-page="/Details" asp-route-id="@Model.Dong.MaDong">Chi tiết</a>
                 <span>/</span>
             }
-            <span>Đặt cọc</span>
+            <span>Đặt trước</span>
         </nav>
 
         @if (Model.Dong == null)
@@ -69,8 +69,8 @@
 
                 <div class="col-lg-7">
                     <div class="deposit-card">
-                        <h4>Thông tin đặt cọc</h4>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Chọn số lượng phiên bản và số xe tương ứng, trong showroom có xe.</p>
+                        <h4>Thông tin đặt trước</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Xe hết hàng tại các showroom nên bạn cần đặt trước. Showroom sẽ chốt lịch hẹn và gửi lại cho bạn.</p>
 
                         <form method="post">
                             @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -179,24 +179,19 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="PhuongThucThanhToan" class="form-label">Phương thức thanh toán</label>
-                                    <select asp-for="PhuongThucThanhToan" class="form-control" required>
+                                    <select asp-for="PhuongThucThanhToan" class="form-control" required onchange="toggleCashMap()">
                                         <option value="">-- Chọn --</option>
                                         <option value="Tiền mặt">Tiền mặt</option>
                                         <option value="Chuyển khoản">Chuyển khoản</option>
                                         <option value="Thẻ tín dụng">Thẻ tín dụng</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="LichHenNgay" class="form-label">Ngày hẹn nhận xe <span style="color: var(--brand-gold);">*</span></label>
-                                    <input asp-for="LichHenNgay" type="date" class="form-control" required
-                                           min="@Model.NgayHenToiThieu.ToString("yyyy-MM-dd")"
-                                           max="@Model.NgayHenToiDa.ToString("yyyy-MM-dd")" />
-                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Trên 3 ngày và dưới 1 tháng kể từ hôm nay (@Model.NgayHenToiThieu.ToString("dd/MM") – @Model.NgayHenToiDa.ToString("dd/MM/yyyy")).</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="LichHenGio" class="form-label">Giờ hẹn nhận xe <span style="color: var(--brand-gold);">*</span></label>
-                                    <input asp-for="LichHenGio" type="time" class="form-control" required min="08:00" max="17:00" step="900" />
-                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Giờ hành chính 08:00 – 17:00.</small>
+                                <div class="col-12" id="cashMapBlock" style="display:none;">
+                                    <label asp-for="DiaDiemGap" class="form-label">Địa điểm gặp (thanh toán tiền mặt) <span style="color: var(--brand-gold);">*</span></label>
+                                    <input asp-for="DiaDiemGap" type="text" class="form-control" placeholder="Nhấp trên bản đồ để chọn vị trí gặp" readonly />
+                                    <input asp-for="ToaDoGap" type="hidden" />
+                                    <div id="cashMap" style="height: 320px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;"></div>
+                                    <small style="color: var(--text-faint); font-size: 0.72rem;">Nhấp vào bản đồ để chọn vị trí gặp mặt. Showroom sẽ gửi kèm địa điểm này khi chốt lịch hẹn.</small>
                                 </div>
                                 <div class="col-12">
                                     <label asp-for="GhiChu" class="form-label">Ghi chú</label>
@@ -207,7 +202,7 @@
                             <div class="d-flex gap-3 mt-4">
                                 <div style="flex:1;">
                                     <button type="submit" id="depositSubmitBtn" class="btn-premium btn-premium-solid" style="width: 100%; justify-content: center; padding: 0.7rem;">
-                                        <i class="fas fa-check"></i> Xác nhận đặt cọc
+                                        <i class="fas fa-check"></i> Xác nhận đặt trước
                                     </button>
                                 </div>
                                 <a asp-page="/Details" asp-route-id="@Model.Dong.MaDong" class="btn-premium btn-premium-outline" style="flex: 0 0 auto; padding: 0.7rem 1.5rem;">
@@ -225,13 +220,71 @@
 <!-- Loading overlay -->
 <div id="depositLoadingOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items:center; justify-content:center; flex-direction:column;">
     <div style="width:60px;height:60px;border:4px solid rgba(255,255,255,0.1);border-top-color:var(--brand-gold);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:1.5rem;"></div>
-    <div style="color:var(--brand-white);font-size:1.1rem;font-weight:600;">Đang xử lý đặt cọc...</div>
+    <div style="color:var(--brand-white);font-size:1.1rem;font-weight:600;">Đang xử lý đặt trước...</div>
     <div style="color:var(--text-muted);font-size:0.82rem;margin-top:0.5rem;">Vui lòng chờ trong giây lát</div>
 </div>
 
 <style>
 @@keyframes spin { to { transform: rotate(360deg); } }
 </style>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    var cashMap = null;
+    var cashMarker = null;
+
+    function toggleCashMap() {
+        var paymentEl = document.querySelector('[name="PhuongThucThanhToan"]');
+        var block = document.getElementById('cashMapBlock');
+        var isCash = paymentEl && paymentEl.value === 'Tiền mặt';
+        if (block) block.style.display = isCash ? '' : 'none';
+        if (isCash) initCashMap();
+    }
+
+    function initCashMap() {
+        var container = document.getElementById('cashMap');
+        if (!container || typeof L === 'undefined') return;
+        if (cashMap) { cashMap.invalidateSize(); return; }
+        cashMap = L.map('cashMap', { zoomControl: true }).setView([21.0285, 105.8542], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(cashMap);
+        cashMap.on('click', function(e) {
+            var lat = e.latlng.lat, lng = e.latlng.lng;
+            setCashLocation(lat, lng);
+        });
+    }
+
+    function setCashLocation(lat, lng) {
+        if (!cashMap) return;
+        if (!cashMarker) {
+            cashMarker = L.marker([lat, lng]).addTo(cashMap);
+        } else {
+            cashMarker.setLatLng([lat, lng]);
+        }
+        var toaDo = document.querySelector('[name="ToaDoGap"]');
+        var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+        if (toaDo) toaDo.value = lat.toFixed(6) + ',' + lng.toFixed(6);
+        if (diaDiem) diaDiem.value = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var name = d && (d.display_name || d.name) ? (d.display_name || d.name) : '';
+                if (diaDiem) diaDiem.value = name || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+            })
+            .catch(function() {});
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var paymentEl = document.querySelector('[name="PhuongThucThanhToan"]');
+        if (paymentEl) {
+            paymentEl.addEventListener('change', toggleCashMap);
+            toggleCashMap();
+        }
+    });
+</script>
 
 <script>
     function versionRows() { return document.querySelectorAll('#versionRows .version-check'); }
@@ -336,22 +389,12 @@
             return;
         }
 
-        // Ngày hẹn: TRÊN 3 ngày và DƯỚI 1 tháng
-        var ngayEl = form.querySelector('[name="LichHenNgay"]');
-        var gioEl = form.querySelector('[name="LichHenGio"]');
-        var ngay = ngayEl ? new Date(ngayEl.value + 'T00:00:00') : null;
-        var toiThieu = new Date(); toiThieu.setDate(toiThieu.getDate() + 4);
-        var toiDa = new Date(); toiDa.setMonth(toiDa.getMonth() + 1); toiDa.setDate(toiDa.getDate() - 1);
-        if (!ngay || isNaN(ngay.getTime())) { alert('Vui lòng chọn ngày hẹn nhận xe.'); return; }
-        if (ngay < toiThieu || ngay > toiDa) {
-            alert('Ngày hẹn nhận xe phải TRÊN 3 ngày và DƯỚI 1 tháng kể từ hôm nay.');
-            return;
-        }
-        // Giờ hẹn: giờ hành chính 08:00 - 17:00
-        if (!gioEl || !gioEl.value) { alert('Vui lòng chọn giờ hẹn nhận xe.'); return; }
-        var gioVal = gioEl.value;
-        if (('08:00' > gioVal) || (gioVal > '17:00')) {
-            alert('Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).');
+        // Phương thức tiền mặt: bắt buộc chọn địa điểm gặp trên bản đồ
+        var paymentEl = form.querySelector('[name="PhuongThucThanhToan"]');
+        var isCash = paymentEl && paymentEl.value === 'Tiền mặt';
+        var diaDiemEl = form.querySelector('[name="DiaDiemGap"]');
+        if (isCash && (!diaDiemEl || !diaDiemEl.value)) {
+            alert('Vui lòng chọn địa điểm gặp trên bản đồ khi thanh toán tiền mặt.');
             return;
         }
 

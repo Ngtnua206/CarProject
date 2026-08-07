@@ -24,6 +24,8 @@ namespace CarProject.Models;
     public string? MaGiaoDich { get; set; }
     public long? SepayTransactionId { get; set; }
     public bool DaTinhDoanhThu { get; set; }
+    public string? DiaDiemGap { get; set; }
+    public string? ToaDoGap { get; set; }
 
     [ForeignKey("MaKhachHang")]
     public TaiKhoan? KhachHang { get; set; }
@@ -105,8 +107,8 @@ public class LichHenLaiThu
     public string HoTenNguoiLai { get; set; }
     public string SoDienThoai { get; set; }
     public string SoBangLaiXe { get; set; }
-    public DateTime NgayHen { get; set; }
-    public string GioHen { get; set; }
+    public DateTime? NgayHen { get; set; }
+    public string? GioHen { get; set; }
     public string TrangThai { get; set; }
     public string YKienKhachHang { get; set; }
     [NotMapped]
@@ -263,7 +265,7 @@ public class PhieuNhapXe
 {
     [Key]
     public int MaPhieuNhap { get; set; }
-    public int MaDonCoc { get; set; }
+    public int? MaDonCoc { get; set; }
     public int MaPhienBan { get; set; }
     public string MaChiNhanh { get; set; }
     public int SoLuongNhap { get; set; }

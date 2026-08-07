@@ -37,6 +37,7 @@ public class PhienBanXe
     public int MaDong { get; set; }
     public string? TenPhienBan { get; set; }
     public long GiaNiemYet { get; set; }
+    public long GiaNhap { get; set; }
     public string? MauSac { get; set; }
     public string? DongCo { get; set; }
     public string? HopSo { get; set; }

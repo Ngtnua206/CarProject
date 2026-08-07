@@ -167,13 +167,13 @@
                             @if (pbAvailable <= 0)
                             {
                                 <a asp-page="/Orders/DepositForm" asp-route-id="@Model.Dong?.MaDong" class="btn-cta btn-deposit">
-                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                    <i class="fas fa-clock"></i> Đặt trước
                                 </a>
                             }
                             else
                             {
-                                <a href="#" class="btn-cta btn-deposit btn-deposit-disabled" onclick="showToast('Xe đang còn hàng trong kho, không cần đặt cọc trước. Hãy thêm vào giỏ hàng để đặt mua.', true); return false;">
-                                    <i class="fas fa-credit-card"></i> Đặt cọc ngay
+                                <a href="#" class="btn-cta btn-deposit btn-deposit-disabled" onclick="showToast('Xe đang còn hàng trong kho, không cần đặt trước. Hãy thêm vào giỏ hàng để đặt mua.', true); return false;">
+                                    <i class="fas fa-clock"></i> Đặt trước
                                 </a>
                             }
                             <a asp-page="/TestDrive" class="btn-cta btn-testdrive">

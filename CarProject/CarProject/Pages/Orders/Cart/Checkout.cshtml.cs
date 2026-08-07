@@ -37,9 +37,9 @@ public class CheckoutModel : PageModel
     public Dictionary<int, string> SourceChiNhanh { get; set; } = new();
 
     [BindProperty]
-    public string? LichHenNgay { get; set; }
+    public string? DiaDiemGap { get; set; }
     [BindProperty]
-    public string? LichHenGio { get; set; }
+    public string? ToaDoGap { get; set; }
 
     [BindProperty(Name = "_ajax")]
     public bool IsAjaxSubmit { get; set; }
@@ -139,23 +139,6 @@ public class CheckoutModel : PageModel
         var userName = User.GetJwtUserName();
         var groupCode = $"DH{DateTime.Now:yyMMddHHmmss}";
 
-        if (string.IsNullOrEmpty(LichHenNgay) || !DateTime.TryParse(LichHenNgay, out var ngayHen))
-        {
-            return Fail("Vui lòng chọn ngày hẹn nhận xe.");
-        }
-
-        if (string.IsNullOrEmpty(LichHenGio) || !TimeOnly.TryParse(LichHenGio, out var gio))
-        {
-            return Fail("Vui lòng chọn giờ hẹn nhận xe trong giờ hành chính (08:00 - 17:00).");
-        }
-
-        var gioStart = new TimeOnly(8, 0);
-        var gioEnd = new TimeOnly(17, 0);
-        if (gio < gioStart || gio > gioEnd)
-        {
-            return Fail("Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).");
-        }
-
         // Áp dụng số lượng người dùng đã chọn
         foreach (var item in CartItems)
         {
@@ -233,6 +216,11 @@ public class CheckoutModel : PageModel
         var hasPreOrder = CartItems.Any(c => c.SoLuongTrongKho <= 0);
         var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
+        if (isCashPayment && string.IsNullOrWhiteSpace(DiaDiemGap))
+        {
+            return Fail("Vui lòng chọn địa điểm gặp trên bản đồ khi thanh toán tiền mặt.");
+        }
+
         // ===== Tạo MỘT đơn cọc duy nhất =====
         // Tiền mặt -> chờ thanh toán; xe hết hàng -> chờ xử lý; xe còn hàng -> chờ xác nhận
         var deposit = new DonDatCoc
@@ -248,6 +236,8 @@ public class CheckoutModel : PageModel
             SoDienThoai = SoDienThoai,
             DiaChi = DiaChi,
             GhiChu = GhiChu,
+            DiaDiemGap = DiaDiemGap,
+            ToaDoGap = ToaDoGap,
             MaGiaoDich = groupCode
         };
 
@@ -292,7 +282,7 @@ foreach (var (item, parts) in allocated)
                     if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
                     {
                         await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - chờ thanh toán",
-                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Địa điểm gặp: {DiaDiemGap ?? "chưa chọn"}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
                             $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
                     }
                 }
@@ -301,26 +291,6 @@ foreach (var (item, parts) in allocated)
 
         await tx.CommitAsync();
         await _cart.ClearCartAsync();
-
-        // Tạo lịch hẹn nhận xe tại showroom hẹn gặp nếu có chọn
-        if (!string.IsNullOrEmpty(LichHenNgay) && !string.IsNullOrEmpty(LichHenGio))
-        {
-            var lichHen = new LichHenLaiThu
-            {
-                MaKhachHang = userName ?? "",
-                MaDong = CartItems.FirstOrDefault()?.MaPhienBan ?? 0,
-                MaChiNhanh = MaChiNhanh,
-                HoTenNguoiLai = HoTen,
-                SoDienThoai = SoDienThoai,
-                SoBangLaiXe = "",
-                NgayHen = ngayHen,
-                GioHen = LichHenGio,
-                TrangThai = "Chờ xác nhận",
-                YKienKhachHang = GhiChu ?? ""
-            };
-            _db.LichHenLaiThu.Add(lichHen);
-            await _db.SaveChangesAsync();
-        }
 
         await _log.LogAsync("Đặt cọc giỏ hàng",
             $"{HoTen} - {SoDienThoai} - {totalXe} xe - Tổng cọc: {TotalDeposit:N0}VNĐ - Nhận tại: {MaChiNhanh}");

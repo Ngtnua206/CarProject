@@ -12,10 +12,12 @@ public interface ISaleService
 public class SaleService : ISaleService
 {
     private readonly AppDbContext _db;
+    private readonly IRevenueService _revenue;
 
-    public SaleService(AppDbContext db)
+    public SaleService(AppDbContext db, IRevenueService revenue)
     {
         _db = db;
+        _revenue = revenue;
     }
 
     public async Task<(HoaDonMuaXe, string)> SellAsync(DonDatCoc don, string nguoiXuat)
@@ -89,6 +91,7 @@ public class SaleService : ISaleService
         }
 
         don.TrangThaiDonHang = "Hoàn tất";
+        await _revenue.RevertDepositRevenueAsync(don.MaDonCoc);
         await _db.SaveChangesAsync();
 
         return (hoaDon, tenXe);

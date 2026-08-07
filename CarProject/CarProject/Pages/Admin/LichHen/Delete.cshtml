@@ -16,7 +16,7 @@
                     <br />Khách hàng: <strong>@Model.LichHen.KhachHang?.TenDangNhap</strong>
                     <br />Dòng xe: <strong>@Model.LichHen.DongXe?.TenDong</strong>
                     <br />Chi nhánh: <strong>@Model.LichHen.ChiNhanh?.TenChiNhanh</strong>
-                    <br />Ngày hẹn: <strong>@Model.LichHen.NgayHen.ToString("dd/MM/yyyy")</strong>
+                    <br />Ngày hẹn: <strong>@(Model.LichHen.NgayHen?.ToString("dd/MM/yyyy") ?? "Chưa chốt")</strong>
                 </div>
                 <form method="post">
                     <input type="hidden" asp-for="LichHen.MaLichHen" />

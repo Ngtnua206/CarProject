@@ -60,7 +60,7 @@
                                 <td><div class="db-name">@(l.KhachHang?.TenDangNhap ?? "—")</div></td>
                                 <td><div class="db-name">@(l.DongXe?.TenDong ?? "—")</div></td>
                                 <td><div class="db-2line">@(l.ChiNhanh?.TenChiNhanh ?? "—")</div></td>
-                                <td><div class="db-date">@l.NgayHen.ToString("dd/MM/yyyy")</div></td>
+                                <td><div class="db-date">@(l.NgayHen?.ToString("dd/MM/yyyy") ?? "Chưa chốt")</div></td>
                                 <td><div class="db-name">@l.GioHen</div></td>
                                 <td>
                                     @switch (l.TrangThai)

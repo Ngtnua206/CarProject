@@ -68,7 +68,7 @@
                                 <td><strong>@l.HoTenNguoiLai</strong><br><small class="text-muted">@l.KhachHang?.TenDangNhap</small></td>
                                 <td>@l.SoDienThoai</td>
                                 <td>@l.DongXe?.TenDong</td>
-                                <td>@l.NgayHen.ToString("dd/MM/yyyy")</td>
+                                <td>@(l.NgayHen?.ToString("dd/MM/yyyy") ?? "Chưa chốt")</td>
                                 <td>@l.GioHen</td>
                                 <td>
                                     @switch (l.TrangThai)

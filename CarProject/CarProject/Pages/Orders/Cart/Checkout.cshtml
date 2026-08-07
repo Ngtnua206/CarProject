@@ -124,7 +124,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Phương thức thanh toán</label>
-                                <select asp-for="PhuongThucThanhToan" class="form-control" required>
+                                <select asp-for="PhuongThucThanhToan" class="form-control" required onchange="toggleCheckoutMap()">
                                     <option value="">-- Chọn --</option>
                                     <option value="Chuyển khoản">Chuyển khoản</option>
                                     <option value="Tiền mặt">Tiền mặt</option>
@@ -151,19 +151,15 @@
                                 </select>
                                 <small style="color: var(--text-faint); font-size: 0.72rem;">Chỉ hiển thị các showroom đang có xe nguồn của đơn hàng để tránh phát sinh chi phí vận chuyển. Xe sẽ ưu tiên lấy từ showroom này trước.</small>
                             </div>
-                            <div class="col-12">
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
-                                    <label style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem;"><i class="fas fa-calendar-check me-1" style="color: var(--brand-gold);"></i> Đặt lịch hẹn nhận xe (tùy chọn)</label>
-                                    <div class="row g-2">
-                                        <div class="col-md-6">
-                                            <input type="date" asp-for="LichHenNgay" class="form-control" style="font-size: 0.82rem;" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                                        </div>
-                                        <div class="col-md-6">
-                                            <input type="time" asp-for="LichHenGio" class="form-control" style="font-size: 0.82rem;" />
-                                        </div>
+                            <div class="col-12" id="cashMapBlock" style="display:none;">
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.8rem;">
+                                        <label class="form-label" style="font-size: 0.85rem;"><i class="fas fa-map-marker-alt me-1" style="color: var(--brand-gold);"></i> Địa điểm gặp (thanh toán tiền mặt) <span style="color: var(--brand-gold);">*</span></label>
+                                        <input asp-for="DiaDiemGap" type="text" class="form-control" placeholder="Nhấp trên bản đồ để chọn vị trí gặp" readonly />
+                                        <input asp-for="ToaDoGap" type="hidden" />
+                                        <div id="checkoutMap" style="height: 300px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;"></div>
+                                        <small style="color: var(--text-faint); font-size: 0.72rem;">Nhấp vào bản đồ để chọn vị trí gặp mặt. Showroom sẽ gửi kèm địa điểm này khi chốt lịch hẹn.</small>
                                     </div>
                                 </div>
-                            </div>
                             <div class="col-12">
                                 <label class="form-label">Ghi chú</label>
                                 <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
@@ -195,6 +191,63 @@
 <style>
 @@keyframes spin { to { transform: rotate(360deg); } }
 </style>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    var checkoutMap = null;
+    var checkoutMarker = null;
+
+    function toggleCheckoutMap() {
+        var paymentEl = document.querySelector('[name="PhuongThucThanhToan"]');
+        var block = document.getElementById('cashMapBlock');
+        var isCash = paymentEl && paymentEl.value === 'Tiền mặt';
+        if (block) block.style.display = isCash ? '' : 'none';
+        if (isCash) initCheckoutMap();
+    }
+
+    function initCheckoutMap() {
+        var container = document.getElementById('checkoutMap');
+        if (!container || typeof L === 'undefined') return;
+        if (checkoutMap) { checkoutMap.invalidateSize(); return; }
+        checkoutMap = L.map('checkoutMap', { zoomControl: true }).setView([21.0285, 105.8542], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(checkoutMap);
+        checkoutMap.on('click', function(e) {
+            setCheckoutLocation(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    function setCheckoutLocation(lat, lng) {
+        if (!checkoutMap) return;
+        if (!checkoutMarker) {
+            checkoutMarker = L.marker([lat, lng]).addTo(checkoutMap);
+        } else {
+            checkoutMarker.setLatLng([lat, lng]);
+        }
+        var toaDo = document.querySelector('[name="ToaDoGap"]');
+        var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+        if (toaDo) toaDo.value = lat.toFixed(6) + ',' + lng.toFixed(6);
+        if (diaDiem) diaDiem.value = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var name = d && (d.display_name || d.name) ? (d.display_name || d.name) : '';
+                if (diaDiem) diaDiem.value = name || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+            })
+            .catch(function() {});
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var paymentEl = document.querySelector('[name="PhuongThucThanhToan"]');
+        if (paymentEl) {
+            paymentEl.addEventListener('change', toggleCheckoutMap);
+            toggleCheckoutMap();
+        }
+    });
+</script>
 
 
 

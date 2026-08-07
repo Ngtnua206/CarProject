@@ -4,6 +4,7 @@ using CarProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807055517_AddGiaNhapAndPhieuNhapNullable")]
+    partial class AddGiaNhapAndPhieuNhapNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,12 +172,6 @@ namespace CarProject.Migrations
 
                     b.Property<long?>("SepayTransactionId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("DiaDiemGap")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ToaDoGap")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SoDienThoai")
                         .HasColumnType("nvarchar(max)");
@@ -463,6 +460,7 @@ namespace CarProject.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLichHen"));
 
                     b.Property<string>("GioHen")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HoTenNguoiLai")
@@ -480,7 +478,7 @@ namespace CarProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime?>("NgayHen")
+                    b.Property<DateTime>("NgayHen")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SoBangLaiXe")

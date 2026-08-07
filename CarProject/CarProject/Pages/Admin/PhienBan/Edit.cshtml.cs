@@ -78,6 +78,7 @@ public class EditModel : PageModel
         existing.MaDong = PhienBan.MaDong;
         existing.TenPhienBan = PhienBan.TenPhienBan;
         existing.GiaNiemYet = PhienBan.GiaNiemYet;
+        existing.GiaNhap = PhienBan.GiaNhap;
         existing.MauSac = PhienBan.MauSac;
         existing.DongCo = PhienBan.DongCo;
         existing.HopSo = PhienBan.HopSo;

@@ -42,10 +42,10 @@ public class DepositFormModel : PageModel
     public string MaChiNhanh { get; set; } = "";
 
     [BindProperty]
-    public string LichHenNgay { get; set; } = "";
+    public string? DiaDiemGap { get; set; }
 
     [BindProperty]
-    public string LichHenGio { get; set; } = "";
+    public string? ToaDoGap { get; set; }
 
     [BindProperty]
     public int SoLuongPhienBan { get; set; } = 1;
@@ -252,7 +252,8 @@ public class DepositFormModel : PageModel
                 .SumAsync(c => (int?)c.SoLuong) ?? 0;
             var available = Math.Max(0, stockInShowroom - cartReserved - depositReserved);
 
-            if (kv.Value > available)
+            // Phiên bản hết hàng (đặt trước) không bị ràng buộc tồn kho hiện tại
+            if (!opt.IsPreOrder && kv.Value > available)
             {
                 var msg = $"Phiên bản \"{opt.TenPhienBan}\" đã có người đặt cọc hoặc đang có người khác thêm vào giỏ hàng. Hiện chỉ còn {available} xe chưa bị đặt cọc ở showroom này.";
                 if (IsAjaxSubmit) return JsonError(msg);
@@ -262,50 +263,7 @@ public class DepositFormModel : PageModel
             }
         }
 
-        // Ngày hẹn nhận xe: TRÊN 3 ngày và DƯỚI 1 tháng kể từ hôm nay
-        DateTime? ngayHen = null;
-        var fromDate = NgayHenToiThieu.Date;
-        var toDate = NgayHenToiDa.Date;
-        if (string.IsNullOrEmpty(LichHenNgay) || !DateTime.TryParse(LichHenNgay, out var dn))
-        {
-            var msgDate = $"Vui lòng chọn ngày hẹn nhận xe (từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}).";
-            if (IsAjaxSubmit) return JsonError(msgDate);
-            ModelState.AddModelError("", msgDate);
-            await LoadShowroomsAsync();
-            return Page();
-        }
-        if (dn.Date < fromDate || dn.Date > toDate)
-        {
-            var msgDate = $"Ngày hẹn nhận xe phải TRÊN 3 ngày và DƯỚI 1 tháng (từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}).";
-            if (IsAjaxSubmit) return JsonError(msgDate);
-            ModelState.AddModelError("", msgDate);
-            await LoadShowroomsAsync();
-            return Page();
-        }
-        ngayHen = dn.Date;
-
-        // Giờ hẹn nhận xe: giờ hành chính 08:00 - 17:00
-        var gioHen = "";
-        if (string.IsNullOrEmpty(LichHenGio) || !TimeOnly.TryParse(LichHenGio, out var gio))
-        {
-            var msgGio = "Vui lòng chọn giờ hẹn nhận xe trong giờ hành chính (08:00 - 17:00).";
-            if (IsAjaxSubmit) return JsonError(msgGio);
-            ModelState.AddModelError("", msgGio);
-            await LoadShowroomsAsync();
-            return Page();
-        }
-        var gioStart = new TimeOnly(8, 0);
-        var gioEnd = new TimeOnly(17, 0);
-        if (gio < gioStart || gio > gioEnd)
-        {
-            var msgGio = "Giờ hẹn nhận xe phải trong giờ hành chính (08:00 - 17:00).";
-            if (IsAjaxSubmit) return JsonError(msgGio);
-            ModelState.AddModelError("", msgGio);
-            await LoadShowroomsAsync();
-            return Page();
-        }
-        gioHen = gio.ToString("HH:mm");
-
+        // Ngày hẹn nhận xe do Quản lý chốt sau khi tiếp nhận đơn — user không tự chọn
         var depositRate = totalXe <= 2 ? DepositCalculator.PreOrderRate : DepositCalculator.InStockRate;
         TotalDeposit = selected.Sum(kv =>
         {
@@ -315,6 +273,15 @@ public class DepositFormModel : PageModel
         TongXe = totalXe;
         var hasPreOrder = selected.Any(kv => PhienBans.First(p => p.MaPhienBan == kv.Key).IsPreOrder);
         var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
+
+        if (isCashPayment && string.IsNullOrWhiteSpace(DiaDiemGap))
+        {
+            var msgDiaDiem = "Vui lòng chọn địa điểm gặp trên bản đồ khi thanh toán tiền mặt.";
+            if (IsAjaxSubmit) return JsonError(msgDiaDiem);
+            ModelState.AddModelError("", msgDiaDiem);
+            await LoadShowroomsAsync();
+            return Page();
+        }
 
         // ===== Transaction + khoá dòng để chống bán vượt tồn kho =====
         await using var tx = await _db.Database.BeginTransactionAsync();
@@ -343,11 +310,13 @@ public class DepositFormModel : PageModel
             TrangThaiThanhToan = isCashPayment ? "Chờ thanh toán" : "Chưa thanh toán",
             TrangThaiDonHang = isCashPayment ? "Chờ thanh toán" : (hasPreOrder ? "Chờ xử lý" : "Chờ xác nhận"),
             NgayTaoDon = DateTime.Now,
-            NgayHenNhanXe = ngayHen.Value.Add(gio.ToTimeSpan()),
+            NgayHenNhanXe = null,
             HoTen = HoTen,
             SoDienThoai = SoDienThoai,
             DiaChi = DiaChi ?? "",
             GhiChu = GhiChu ?? "",
+            DiaDiemGap = DiaDiemGap,
+            ToaDoGap = ToaDoGap,
             MaGiaoDich = maGiaoDich
         };
 
@@ -388,7 +357,7 @@ public class DepositFormModel : PageModel
                     if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
                     {
                         await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - chờ thanh toán",
-                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                            $"Khách {HoTen} đã đặt cọc {totalXe} xe bằng tiền mặt. Địa điểm gặp: {DiaDiemGap ?? "chưa chọn"}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
                             $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
                     }
                 }
@@ -404,8 +373,8 @@ public class DepositFormModel : PageModel
             HoTenNguoiLai = HoTen,
             SoDienThoai = SoDienThoai,
             SoBangLaiXe = "",
-            NgayHen = ngayHen.Value,
-            GioHen = gioHen,
+            NgayHen = null,
+            GioHen = null,
             TrangThai = "Chờ xác nhận",
             YKienKhachHang = GhiChu ?? ""
         };
