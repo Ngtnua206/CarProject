@@ -6,6 +6,7 @@ using CarProject.Data;
 using CarProject.Models;
 using CarProject.Services;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace CarProject.Pages.Orders.Cart;
 
@@ -51,17 +52,19 @@ public class CheckoutModel : PageModel
     public Dictionary<(int, string), int> TonKhoConLaiLut { get; set; } = new();
     public decimal TotalDeposit { get; set; }
     public string? ErrorMessage { get; set; }
+    public string GoogleMapsApiKey { get; set; } = "";
 
     private Dictionary<(int, string), int> _reservedLut = new();
     private Dictionary<(int, string), int> _tonKhoLut = new();
     private Dictionary<string, string> _tenChiNhanhLut = new();
 
-    public CheckoutModel(AppDbContext db, ICartService cart, IActivityLogService log, INotificationService notif)
+    public CheckoutModel(AppDbContext db, ICartService cart, IActivityLogService log, INotificationService notif, IConfiguration config)
     {
         _db = db;
         _cart = cart;
         _log = log;
         _notif = notif;
+        GoogleMapsApiKey = config["GoogleMaps:ApiKey"]?.Trim() ?? "";
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -216,9 +219,15 @@ public class CheckoutModel : PageModel
         var hasPreOrder = CartItems.Any(c => c.SoLuongTrongKho <= 0);
         var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
-        if (string.IsNullOrWhiteSpace(DiaDiemGap))
+        if (isCashPayment)
         {
-            return Fail("Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.");
+            if (string.IsNullOrWhiteSpace(DiaDiemGap))
+                return Fail("Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.");
+        }
+        else
+        {
+            DiaDiemGap = null;
+            ToaDoGap = null;
         }
 
         // ===== Tạo MỘT đơn cọc duy nhất =====
@@ -275,19 +284,22 @@ foreach (var (item, parts) in allocated)
                 $"/Admin/DonCoc/Index");
         }
 
-        // Gửi toạ độ địa điểm hẹn cho quản lý showroom để đến đúng chỗ thu tiền cọc
-        var diaDiemGui = string.IsNullOrWhiteSpace(DiaDiemGap)
-            ? "Chưa chọn địa điểm"
-            : $"{DiaDiemGap} (Toạ độ: {ToaDoGap ?? "N/A"})";
-        var managerMaQuanLy = showroom?.MaQuanLy;
-        if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
+        // Gửi toạ độ địa điểm hẹn cho quản lý showroom (chỉ với tiền mặt) để đến đúng chỗ thu tiền cọc
+        if (isCashPayment)
         {
-            var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
-            if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+            var diaDiemGui = string.IsNullOrWhiteSpace(DiaDiemGap)
+                ? "Chưa chọn địa điểm"
+                : $"{DiaDiemGap} (Toạ độ: {ToaDoGap ?? "N/A"})";
+            var managerMaQuanLy = showroom?.MaQuanLy;
+            if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
             {
-                await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - địa điểm thu tiền cọc",
-                    $"Khách {HoTen} đã đặt cọc {totalXe} xe. Vị trí đến thu tiền cọc: {diaDiemGui}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
-                    $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
+                if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+                {
+                    await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - địa điểm thu tiền cọc",
+                        $"Khách {HoTen} đã đặt cọc {totalXe} xe. Vị trí đến thu tiền cọc: {diaDiemGui}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                        $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                }
             }
         }
 
@@ -387,6 +399,9 @@ foreach (var (item, parts) in allocated)
             .ToListAsync();
         TonKhoTheoPhienBan = tonKhoList.GroupBy(t => t.MaPhienBan)
             .ToDictionary(g => g.Key, g => g.ToList());
+        _tonKhoLut = new Dictionary<(int, string), int>();
+        foreach (var r in tonKhoList)
+            _tonKhoLut[(r.MaPhienBan, r.MaChiNhanh)] = r.SoLuong;
     }
 
     private async Task LoadReservedAsync(string currentUser)

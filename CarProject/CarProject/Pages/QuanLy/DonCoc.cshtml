@@ -78,18 +78,34 @@
                                             "Từ chối" => $"<span class='badge badge-rejected'>Từ chối</span><br><small class='text-muted'>{(ct.LyDoTuChoi ?? "")}</small>",
                                             _ => "<span class='badge badge-waiting'>Chờ xác nhận</span>"
                                         };
-                                        <div style="border:1px solid #eee;border-radius:6px;padding:0.5rem;margin-bottom:0.4rem;">
+<div style="border:1px solid #eee;border-radius:6px;padding:0.5rem;margin-bottom:0.4rem;">
                                             <div>@ctTen <small class="text-muted">x@(ct.SoLuong)</small> @Html.Raw(tienNhanBadge)</div>
                                             <div style="font-size:0.7rem;color:#999;">Showroom: @(ct.ChiNhanh?.TenChiNhanh ?? ct.MaChiNhanh)@(isMine ? " (của bạn)" : "")</div>
+                                            @if (ct.SoLuongThieu > 0)
+                                            {
+                                                <div style="font-size:0.72rem;color:#b45309;">
+                                                    Cần nhập thêm: <strong>@ct.SoLuongThieu xe</strong>
+                                                    @if (ct.DaNhapKho)
+                                                    {
+                                                        <span class="badge" style="background:#dbeafe;color:#1e40af;">Đã nhập đủ</span>
+                                                    }
+                                                </div>
+                                            }
                                             @if (isMine && ct.TrangThaiTiepNhan == "Chờ xác nhận")
                                             {
                                                 var isReceive = ct.MaChiNhanh == d.MaChiNhanh;
                                                 <div style="margin-top:0.3rem;">
+                                                    @if (ct.SoLuongThieu > 0 && !ct.DaNhapKho)
+                                                    {
+                                                        <button type="button" class="btn btn-warning btn-sm me-1" onclick="openNhapHang(@ct.MaChiTiet, '@(System.Text.Json.JsonEncodedText.Encode(ctTen))', @ct.SoLuongThieu)">
+                                                            <i class="fas fa-box"></i> Nhập xe
+                                                        </button>
+                                                    }
                                                     <form method="post" asp-page-handler="Accept" style="display:inline" onsubmit="return confirm('@(isReceive ? "Tiếp nhận xe này?" : "Đồng ý vận chuyển xe này?")');">
                                                         <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
                                                         <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> @(isReceive ? "Tiếp nhận" : "Đồng ý vận chuyển")</button>
                                                     </form>
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@ct.MaChiTiet, '@ctTen.Replace("'", "\\'")', @(isReceive ? "'Không tiếp nhận'" : "'Từ chối vận chuyển'"))">
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@ct.MaChiTiet, '@(ctTen.Replace("'", "\\'"))', @(isReceive ? "'Không tiếp nhận'" : "'Từ chối vận chuyển'"))">
                                                         <i class="fas fa-times"></i> @(isReceive ? "Không tiếp nhận" : "Từ chối vận chuyển")
                                                     </button>
                                                 </div>
@@ -147,6 +163,12 @@
                                             </div>
                                             <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Tiếp nhận đơn cọc</button>
                                         </form>
+                                    }
+                                    @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && (d.TrangThaiDonHang == "Chờ xác nhận" || d.TrangThaiDonHang == "Chờ xử lý"))
+                                    {
+                                        <button type="button" class="btn btn-outline-danger btn-sm mt-1" onclick="openDeclineOrder(@d.MaDonCoc, '@((d.HoTen ?? "").Replace("'", "\\'"))', @(d.TrangThaiDonHang == "Chờ xử lý"))">
+                                            <i class="fas fa-ban"></i> Từ chối đơn cọc
+                                        </button>
                                     }
                                     @if (d.MaChiNhanh == Model.Showroom?.MaChiNhanh && d.TrangThaiDonHang == "Đã xác nhận")
                                     {
@@ -234,6 +256,64 @@
     </div>
 </div>
 
+<!-- Modal nhập hàng bổ sung cho xe thiếu -->
+<div class="modal fade" id="nhapHangModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" asp-page-handler="NhapHang" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-box"></i> Nhập hàng bổ sung cho đơn cọc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="maChiTiet" id="nhapHangMaChiTiet" />
+                <div class="mb-2" id="nhapHangTenXe"></div>
+                <div class="mb-3">
+                    <label class="form-label">Số lượng xe nhập</label>
+                    <input type="number" class="form-control" name="soLuongNhap" id="nhapHangSoLuong" min="1" required />
+                    <small class="text-muted">Nhập đủ số lượng thiếu để xe được tự động tiếp nhận.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số tiền nhập mỗi xe (VNĐ)</label>
+                    <input type="number" class="form-control" name="soTienNhapMoiXe" id="nhapHangSoTien" min="0" step="100000" value="0" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" class="form-control" name="ghiChu" id="nhapHangGhiChu" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-box"></i> Xác nhận nhập hàng</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal từ chối toàn bộ đơn cọc -->
+<div class="modal fade" id="declineOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" asp-page-handler="DeclineOrder" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-ban"></i> Từ chối đơn cọc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="maDonCoc" id="declineMaDonCoc" />
+                <div class="mb-3" id="declineOrderInfo"></div>
+                <div class="mb-3">
+                    <label class="form-label">Lý do từ chối <span style="color:red;">*</span></label>
+                    <textarea name="lyDoTuChoi" id="declineLyDo" class="form-control" rows="3" required placeholder="Bắt buộc nhập lý do từ chối đơn cọc"></textarea>
+                    <small class="text-muted">Toàn bộ xe chưa phản hồi của đơn sẽ bị từ chối. Lý do được gửi tới Admin và khách hàng.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-danger"><i class="fas fa-ban"></i> Xác nhận từ chối đơn cọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openRejectModal(maChiTiet, tenXe, actionLabel) {
         document.getElementById('rejectMaChiTiet').value = maChiTiet;
@@ -241,6 +321,24 @@
         document.getElementById('rejectLyDo').value = '';
         document.getElementById('rejectTitle').textContent = actionLabel || 'Từ chối tiếp nhận xe';
         new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function openNhapHang(maChiTiet, tenXe, soLuongThieu) {
+        document.getElementById('nhapHangMaChiTiet').value = maChiTiet;
+        document.getElementById('nhapHangTenXe').innerHTML = '<strong>' + tenXe + '</strong> <span class="text-danger">(cần nhập ' + soLuongThieu + ' xe)</span>';
+        document.getElementById('nhapHangSoLuong').value = soLuongThieu;
+        document.getElementById('nhapHangSoTien').value = '';
+        document.getElementById('nhapHangGhiChu').value = '';
+        new bootstrap.Modal(document.getElementById('nhapHangModal')).show();
+    }
+
+    var declineOrderIsXuly = false;
+    function openDeclineOrder(maDonCoc, khachHang, isXuLy) {
+        declineOrderIsXuly = isXuLy;
+        document.getElementById('declineMaDonCoc').value = maDonCoc;
+        document.getElementById('declineOrderInfo').innerHTML = '<strong>Đơn cọc #' + maDonCoc + '</strong> - Khách: ' + khachHang;
+        document.getElementById('declineLyDo').value = '';
+        new bootstrap.Modal(document.getElementById('declineOrderModal')).show();
     }
 
     var GIO_HANH_CHINH_BAT_DAU = 8;          // 08:00

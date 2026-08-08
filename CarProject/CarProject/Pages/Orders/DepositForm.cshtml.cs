@@ -274,13 +274,21 @@ public class DepositFormModel : PageModel
         var hasPreOrder = selected.Any(kv => PhienBans.First(p => p.MaPhienBan == kv.Key).IsPreOrder);
         var isCashPayment = string.Equals(PhuongThucThanhToan, "Tiền mặt", StringComparison.OrdinalIgnoreCase);
 
-        if (string.IsNullOrWhiteSpace(DiaDiemGap))
+        if (isCashPayment)
         {
-            var msgDiaDiem = "Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.";
-            if (IsAjaxSubmit) return JsonError(msgDiaDiem);
-            ModelState.AddModelError("", msgDiaDiem);
-            await LoadShowroomsAsync();
-            return Page();
+            if (string.IsNullOrWhiteSpace(DiaDiemGap))
+            {
+                var msgDiaDiem = "Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.";
+                if (IsAjaxSubmit) return JsonError(msgDiaDiem);
+                ModelState.AddModelError("", msgDiaDiem);
+                await LoadShowroomsAsync();
+                return Page();
+            }
+        }
+        else
+        {
+            DiaDiemGap = null;
+            ToaDoGap = null;
         }
 
         // ===== Transaction + khoá dòng để chống bán vượt tồn kho =====
@@ -350,19 +358,22 @@ var showroom = await _db.ChiNhanhShowroom.FindAsync(MaChiNhanh);
                 $"/Admin/DonCoc/Index");
         }
 
-        // Gửi toạ độ địa điểm hẹn cho quản lý showroom để đến đúng chỗ thu tiền cọc
-        var diaDiemGui = string.IsNullOrWhiteSpace(DiaDiemGap)
-            ? "Chưa chọn địa điểm"
-            : $"{DiaDiemGap} (Toạ độ: {ToaDoGap ?? "N/A"})";
-        var managerMaQuanLy = showroom?.MaQuanLy;
-        if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
+        // Gửi toạ độ địa điểm hẹn cho quản lý showroom (chỉ với tiền mặt) để đến đúng chỗ thu tiền cọc
+        if (isCashPayment)
         {
-            var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
-            if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+            var diaDiemGui = string.IsNullOrWhiteSpace(DiaDiemGap)
+                ? "Chưa chọn địa điểm"
+                : $"{DiaDiemGap} (Toạ độ: {ToaDoGap ?? "N/A"})";
+            var managerMaQuanLy = showroom?.MaQuanLy;
+            if (!string.IsNullOrWhiteSpace(managerMaQuanLy))
             {
-                await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - địa điểm thu tiền cọc",
-                    $"Khách {HoTen} đã đặt cọc {totalXe} xe. Vị trí đến thu tiền cọc: {diaDiemGui}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
-                    $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                var manager = await _db.TaiKhoan.FirstOrDefaultAsync(t => t.TenDangNhap == managerMaQuanLy);
+                if (manager != null && !string.IsNullOrWhiteSpace(manager.TenDangNhap))
+                {
+                    await _notif.SendAsync(manager.TenDangNhap, "Đơn đặt cọc mới - địa điểm thu tiền cọc",
+                        $"Khách {HoTen} đã đặt cọc {totalXe} xe. Vị trí đến thu tiền cọc: {diaDiemGui}. Vui lòng kiểm tra đơn #{deposit.MaDonCoc}.",
+                        $"/QuanLy/DonCoc?highlight={deposit.MaDonCoc}");
+                }
             }
         }
 

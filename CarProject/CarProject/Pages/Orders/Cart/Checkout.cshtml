@@ -63,13 +63,20 @@
                                 }
                                 else if (Model.TonKhoTheoPhienBan.TryGetValue(item.MaPhienBan, out var tonKhoList) && tonKhoList.Any())
                                 {
+                                    var coSoHangXe = tonKhoList
+                                        .Select(tk => (tk, avail: Model.TonKhoConLaiLut.TryGetValue((item.MaPhienBan, tk.MaChiNhanh), out var a) ? a : tk.SoLuong))
+                                        .Where(x => x.avail > 0)
+                                        .ToList();
                                     <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.04); font-size: 0.72rem; color: var(--text-faint); display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                                        @foreach (var tk in tonKhoList)
+                                        @foreach (var x in coSoHangXe)
                                         {
-                                            var avail = Model.TonKhoConLaiLut.TryGetValue((item.MaPhienBan, tk.MaChiNhanh), out var a) ? a : tk.SoLuong;
                                             <span style="background: rgba(255,255,255,0.04); padding: 0.15rem 0.5rem; border-radius: 4px;">
-                                                @tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">@(avail > 0 ? $"còn {avail}" : "hết")</strong>
+                                                @x.tk.ChiNhanh?.TenChiNhanh: <strong style="color: var(--brand-gold);">còn @x.avail</strong>
                                             </span>
+                                        }
+                                        @if (!coSoHangXe.Any())
+                                        {
+                                            <span style="color: var(--text-faint);">Xe này hiện không còn hàng thực tế tại các showroom — showroom hẹn gặp sẽ chuẩn bị/xử lý.</span>
                                         }
                                     </div>
                                 }
@@ -134,7 +141,11 @@
                                 @{
                                     var cnCoXe = Model.TonKhoTheoPhienBan.Values
                                         .SelectMany(l => l)
-                                        .Where(t => t.SoLuong > 0)
+                                        .Where(t =>
+                                        {
+                                            var a = Model.TonKhoConLaiLut.TryGetValue((t.MaPhienBan, t.MaChiNhanh), out var av) ? av : t.SoLuong;
+                                            return a > 0;
+                                        })
                                         .Select(t => t.MaChiNhanh)
                                         .Distinct()
                                         .ToHashSet();
@@ -171,7 +182,14 @@
                                                     <input id="vnDetail" class="form-control" placeholder="Số nhà / Thôn / Xóm / Chi tiết" />
                                                 </div>
                                             </div>
-                                            <div id="checkoutMap" style="height: 300px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;"></div>
+                                            <div class="d-flex gap-2 mt-2" style="position:relative;">
+                                                <input id="checkoutMapSearch" class="form-control" placeholder="Gõ địa chỉ cần tìm (VD: 321 Giải Phóng, Hà Nội)..." autocomplete="off" />
+                                                <button type="button" class="btn-premium btn-premium-solid" style="flex:0 0 auto;padding:0.5rem 1rem;" onclick="searchCheckoutAddress()"><i class="fas fa-search me-1"></i> Tìm</button>
+                                                <div id="checkoutSearchResults" style="position:absolute; top:100%; left:0; right:0; z-index:1200; max-height:240px; overflow:auto; display:none; background:var(--surface,#1f2430); border:1px solid rgba(255,255,255,0.14); border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5);"></div>
+                                            </div>
+                                            <div id="checkoutMapWrap" style="height: 300px; border-radius: 10px; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.12); z-index: 0;">
+                                                <iframe id="checkoutMap" title="Google Maps" style="width:100%;height:100%;border:0;border-radius:10px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                                            </div>
                                             <small style="color: var(--text-faint); font-size: 0.72rem;">Chọn tỉnh/huyện, nhập số nhà/thôn, rồi <strong>bấm vào bản đồ</strong> để trỏ đúng vị trí gặp. Toạ độ được chọn sẽ được gửi tới nhân viên quản lý đến đúng chỗ thu tiền cọc.</small>
                                         </div>
                                     </div>
@@ -207,17 +225,28 @@
 @@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="~/js/vn-admin.js"></script>
 
 <script>
     var checkoutMap = null;
-    var checkoutMarker = null;
+    var checkoSuggestTimer = null;
+
+    function isCashPayment() {
+        var el = document.querySelector('[name="PhuongThucThanhToan"]');
+        return !!(el && el.value && el.value.trim() === 'Tiền mặt');
+    }
 
     function toggleCheckoutMap() {
         var block = document.getElementById('cashMapBlock');
-        if (block) block.style.display = '';
+        var cash = isCashPayment();
+        if (block) block.style.display = cash ? '' : 'none';
+        if (!cash) {
+            var d = document.querySelector('[name="DiaDiemGap"]');
+            var t = document.querySelector('[name="ToaDoGap"]');
+            if (d) d.value = '';
+            if (t) t.value = '';
+            return;
+        }
         initCheckoutMap();
     }
 
@@ -241,28 +270,159 @@
         return parts.join(', ');
     }
 
-    function setCheckoutLocation(lat, lng) {
-        if (!checkoutMap) return;
-        if (!checkoutMarker) {
-            checkoutMarker = L.marker([lat, lng]).addTo(checkoutMap);
-        } else {
-            checkoutMarker.setLatLng([lat, lng]);
+    function previewCheckoutMap(q, zoom) {
+        var frame = document.getElementById('checkoutMap');
+        if (frame) {
+            var src = 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed&z=' + (zoom || 16);
+            if (frame.getAttribute('src') !== src) frame.setAttribute('src', src);
         }
+    }
+
+    function centerCheckoutMap(lat, lng, zoom) {
+        previewCheckoutMap(lat.toFixed(6) + ',' + lng.toFixed(6), zoom || 11);
+        var toaDo = document.querySelector('[name="ToaDoGap"]');
+        if (toaDo && !toaDo.value) toaDo.value = lat.toFixed(6) + ',' + lng.toFixed(6);
+    }
+
+    function setCheckoutLocation(lat, lng, displayName) {
         var toaDo = document.querySelector('[name="ToaDoGap"]');
         var diaDiem = document.querySelector('[name="DiaDiemGap"]');
         if (toaDo) toaDo.value = lat.toFixed(6) + ',' + lng.toFixed(6);
-        if (diaDiem) diaDiem.value = buildDiaDiem() || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+        if (diaDiem) diaDiem.value = displayName || buildDiaDiem() || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+        previewCheckoutMap(lat.toFixed(6) + ',' + lng.toFixed(6));
+    }
+
+    function updateSearchBox() {
+        var s = document.getElementById('checkoutMapSearch');
+        if (s) s.value = buildDiaDiem();
+    }
+
+    function applyCheckout(lat, lon, displayName) {
+        var toaDo = document.querySelector('[name="ToaDoGap"]');
+        var diaDiem = document.querySelector('[name="DiaDiemGap"]');
+        if (toaDo) toaDo.value = lat.toFixed(6) + ',' + lon.toFixed(6);
+        if (diaDiem) diaDiem.value = displayName || buildDiaDiem();
+        previewCheckoutMap(lat.toFixed(6) + ',' + lon.toFixed(6));
+    }
+
+    function hideCheckoutResults() {
+        var r = document.getElementById('checkoutSearchResults');
+        if (r) r.style.display = 'none';
+    }
+
+    function renderCheckoutResults(items) {
+        var r = document.getElementById('checkoutSearchResults');
+        if (!r) return;
+        r.innerHTML = '';
+        if (!items || !items.length) {
+            r.style.display = 'none';
+            return;
+        }
+        items.forEach(function(it) {
+            var d = document.createElement('div');
+            d.textContent = it.display_name || '';
+            d.style.cssText = 'padding:0.5rem 0.75rem;font-size:0.78rem;color:var(--brand-white,#eee);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);';
+            d.onmouseover = function(){ d.style.background = 'rgba(255,255,255,0.08)'; };
+            d.onmouseout = function(){ d.style.background = 'transparent'; };
+            d.onclick = function() {
+                var s = document.getElementById('checkoutMapSearch');
+                if (s) s.value = it.display_name;
+                applyCheckout(parseFloat(it.lat), parseFloat(it.lon), it.display_name);
+                hideCheckoutResults();
+            };
+            r.appendChild(d);
+        });
+        r.style.display = 'block';
+    }
+
+    function geocodeCheckout(q) {
+        var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&addressdetails=1&accept-language=vi&q=' + encodeURIComponent(q);
+        return fetch(url, { headers: { 'Accept': 'application/json', 'Referer': location.origin } })
+            .then(function(r) { return r.json(); })
+            .catch(function() { return []; });
+    }
+
+    async function geocodeSmart(q) {
+        var parts = q.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        var cands = [];
+        function push(s) {
+            var v = (s || '').trim();
+            if (v && cands.indexOf(v) === -1) cands.push(v);
+        }
+        var jo = parts.join(', ');
+        push(jo);
+        push(parts.join(' '));
+        if (parts.length > 1) {
+            push(parts.slice(0, -1).join(', '));
+            push(parts.slice(0, -1).join(' '));
+            push(parts[0] + ' ' + parts[parts.length - 1]);
+            push(parts[0] + ', ' + parts[parts.length - 1]);
+        }
+        if (parts.length) push(parts[0]);
+        for (var i = 0; i < cands.length; i++) {
+            var res = await geocodeCheckout(cands[i]);
+            if (res && res.length) return res;
+        }
+        // Dự phòng: Photon (komoot) — nhận biết tốt địa chỉ Việt Nam, không cần key
+        var ph = await geocodePhoton(parts.join(' '));
+        if (ph && ph.length) return ph;
+        return [];
+    }
+
+    function geocodePhoton(q) {
+        var url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=5&lang=vi';
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                return (d.features || []).map(function(f) {
+                    var p = f.properties || {};
+                    var name = p.name || '';
+                    var city = p.city || p.state || p.county || '';
+                    var country = p.country || '';
+                    var parts2 = [name, city, country].filter(function(x){ return !!x; });
+                    return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name: parts2.join(', ') };
+                });
+            })
+            .catch(function() { return []; });
+    }
+
+    var checkoSuggestTimer = null;
+    function suggestCheck() {
+        var s = document.getElementById('checkoutMapSearch');
+        var q = (s ? s.value : '').trim();
+        if (q.length < 3) { hideCheckoutResults(); return; }
+        clearTimeout(checkoSuggestTimer);
+        checkoSuggestTimer = setTimeout(function() {
+            if (!checkoutMap) initCheckoutMap();
+            var lastQ = q;
+            geocodeCheckout(q).then(function(items) {
+                if ((document.getElementById('checkoutMapSearch') || {}).value !== lastQ) return;
+                renderCheckoutResults(items);
+            });
+        }, 400);
+    }
+
+    async function searchCheckoutAddress() {
+        var s = document.getElementById('checkoutMapSearch');
+        initCheckoutMap();
+        var q = (s ? s.value : '').trim() || buildDiaDiem();
+        if (!q) { alert('Vui lòng nhập địa chỉ cần tìm hoặc chọn Tỉnh/Quận'); return; }
+        var items = await geocodeSmart(q);
+        if (!items || !items.length) {
+            // Không geocode được nhưng vẫn cho Google Maps hiển thị đúng nơi cần tìm
+            setCheckoutLocation(provinceCenter(document.getElementById('vnProvince').value)[0], provinceCenter(document.getElementById('vnProvince').value)[1], q);
+            alert('Không lấy được tọa độ chính xác cho: ' + q + '.\nBản đồ đã hiển thị khu vực (lấy tâm tỉnh). Bạn có thể dùng tâm tỉnh này hoặc rút gọn địa chỉ để lấy tọa độ chính xác hơn.');
+            return;
+        }
+        var it = items[0];
+        applyCheckout(parseFloat(it.lat), parseFloat(it.lon), it.display_name || buildDiaDiem());
     }
 
     function initCheckoutMap() {
-        var container = document.getElementById('checkoutMap');
-        if (!container || typeof L === 'undefined') return;
-        if (checkoutMap) { checkoutMap.invalidateSize(); return; }
-        checkoutMap = L.map('checkoutMap', { zoomControl: true, attributionControl: false }).setView([16.821, 108.0], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(checkoutMap);
-        checkoutMap.on('click', function(e) {
-            setCheckoutLocation(e.latlng.lat, e.latlng.lng);
-        });
+        var frame = document.getElementById('checkoutMap');
+        if (frame && !frame.getAttribute('src')) {
+            frame.setAttribute('src', 'https://maps.google.com/maps?q=Vi%E1%BB%87t%20Nam&output=embed&z=5');
+        }
         populateCascade();
     }
 
@@ -290,19 +450,36 @@
             } else {
                 distEl.disabled = true;
             }
-            if (checkoutMap) checkoutMap.setView(provinceCenter(provEl.value), 11);
+            var pc = provinceCenter(provEl.value);
+            centerCheckoutMap(pc[0], pc[1], 11);
             var diaDiem = document.querySelector('[name="DiaDiemGap"]');
             if (diaDiem) diaDiem.value = buildDiaDiem();
+            updateSearchBox();
         });
         distEl.addEventListener('change', function() {
             var diaDiem = document.querySelector('[name="DiaDiemGap"]');
             if (diaDiem) diaDiem.value = buildDiaDiem();
+            updateSearchBox();
         });
         var detEl = document.getElementById('vnDetail');
         if (detEl) detEl.addEventListener('input', function() {
             var diaDiem = document.querySelector('[name="DiaDiemGap"]');
             if (diaDiem) diaDiem.value = buildDiaDiem();
+            updateSearchBox();
         });
+        var searchEl = document.getElementById('checkoutMapSearch');
+        if (searchEl) {
+            searchEl.addEventListener('input', suggestCheck);
+            searchEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('checkoutSearchResults').style.display = 'none';
+                    searchCheckoutAddress();
+                }
+                else if (e.key === 'Escape') { hideCheckoutResults(); }
+            });
+            searchEl.addEventListener('blur', function() { setTimeout(hideCheckoutResults, 200); });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -321,7 +498,7 @@
         e.preventDefault();
         var form = this;
         var diaDiemEl = form.querySelector('[name="DiaDiemGap"]');
-        if (!diaDiemEl || !diaDiemEl.value) {
+        if (isCashPayment() && (!diaDiemEl || !diaDiemEl.value)) {
             alert('Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.');
             return;
         }

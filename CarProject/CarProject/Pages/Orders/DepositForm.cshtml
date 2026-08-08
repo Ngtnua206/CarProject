@@ -251,9 +251,22 @@
     var cashMap = null;
     var cashMarker = null;
 
+    function isCashPayment() {
+        var el = document.querySelector('[name="PhuongThucThanhToan"]');
+        return !!(el && el.value && el.value.trim() === 'Tiền mặt');
+    }
+
     function toggleCashMap() {
         var block = document.getElementById('cashMapBlock');
-        if (block) block.style.display = '';
+        var cash = isCashPayment();
+        if (block) block.style.display = cash ? '' : 'none';
+        if (!cash) {
+            var d = document.querySelector('[name="DiaDiemGap"]');
+            var t = document.querySelector('[name="ToaDoGap"]');
+            if (d) d.value = '';
+            if (t) t.value = '';
+            return;
+        }
         initCashMap();
     }
 
@@ -454,9 +467,9 @@
             return;
         }
 
-        // Địa điểm nhân viên quản lý đến thu tiền cọc: bắt buộc chọn trên bản đồ
+        // Địa điểm nhân viên quản lý đến thu tiền cọc: bắt buộc khi thanh toán bằng TIỀN MẶT
         var diaDiemEl = form.querySelector('[name="DiaDiemGap"]');
-        if (!diaDiemEl || !diaDiemEl.value) {
+        if (isCashPayment() && (!diaDiemEl || !diaDiemEl.value)) {
             alert('Vui lòng chọn địa điểm nhân viên quản lý đến thu tiền cọc trên bản đồ.');
             return;
         }

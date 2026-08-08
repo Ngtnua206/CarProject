@@ -307,6 +307,197 @@ public class DonCocModel : PageModel
         return RedirectToPage();
     }
 
+    // ----- Nhập hàng bổ sung cho xe còn thiếu của đơn (Quản Lý showroom nguồn) -----
+    // Khi showroom nhận đơn thiếu xe (SoLuongThieu > 0), QL có thể chủ động nhập thêm xe
+    // vào showroom của mình để đủ số lượng phục vụ đơn; nếu nhập đủ thì tự tiếp nhận xe đó.
+    public async Task<IActionResult> OnPostNhapHangAsync(int maChiTiet, int soLuongNhap, long soTienNhapMoiXe, string? ghiChu)
+    {
+        var userName = User.GetJwtUserName();
+        if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
+
+        var chiTiet = await _db.DonDatCocChiTiet
+            .Include(c => c.PhienBan)
+            .Include(c => c.DonDatCoc)
+            .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet);
+        if (chiTiet == null) return NotFound();
+
+        // Chỉ quản lý showroom nguồn của xe đó mới được nhập hàng
+        var showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (showroom == null || chiTiet.MaChiNhanh != showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền nhập hàng cho showroom khác.";
+            return RedirectToPage();
+        }
+
+        if (chiTiet.TrangThaiTiepNhan != "Chờ xác nhận")
+        {
+            ErrorMessage = "Xe này không ở trạng thái cần nhập hàng.";
+            return RedirectToPage();
+        }
+
+        if (soLuongNhap <= 0)
+        {
+            ErrorMessage = "Số lượng xe nhập phải lớn hơn 0.";
+            return RedirectToPage();
+        }
+
+        var maChiNhanh = chiTiet.MaChiNhanh ?? "";
+
+        // 1. Tăng tồn kho của showroom nguồn
+        var tonKho = await _db.TonKhoTheoChiNhanh
+            .FirstOrDefaultAsync(t => t.MaPhienBan == chiTiet.MaPhienBan && t.MaChiNhanh == maChiNhanh);
+        if (tonKho == null)
+        {
+            tonKho = new TonKhoTheoChiNhanh
+            {
+                MaPhienBan = chiTiet.MaPhienBan,
+                MaChiNhanh = maChiNhanh,
+                SoLuong = soLuongNhap,
+                NgayCapNhat = DateTime.Now
+            };
+            _db.TonKhoTheoChiNhanh.Add(tonKho);
+        }
+        else
+        {
+            tonKho.SoLuong += soLuongNhap;
+            tonKho.NgayCapNhat = DateTime.Now;
+        }
+
+        // 2. Tăng tổng tồn kho của phiên bản
+        if (chiTiet.PhienBan != null)
+        {
+            chiTiet.PhienBan.SoLuongTrongKho += soLuongNhap;
+        }
+
+        // 3. Ghi phiếu nhập hàng
+        _db.PhieuNhapXe.Add(new PhieuNhapXe
+        {
+            MaDonCoc = chiTiet.MaDonCoc,
+            MaPhienBan = chiTiet.MaPhienBan,
+            MaChiNhanh = maChiNhanh,
+            SoLuongNhap = soLuongNhap,
+            SoTienNhapMoiXe = soTienNhapMoiXe,
+            TongSoTienNhap = soLuongNhap * soTienNhapMoiXe,
+            NguoiNhap = userName,
+            NgayNhap = DateTime.Now,
+            GhiChu = ghiChu
+        });
+
+        // 4. Cập nhật chi tiết đơn: hết thiếu sau nhập thì tự tiếp nhận xe
+        chiTiet.DaNhapKho = true;
+        chiTiet.SoTienNhapMoiXe = soTienNhapMoiXe;
+        chiTiet.SoLuongThieu = Math.Max(0, chiTiet.SoLuongThieu - soLuongNhap);
+        if (chiTiet.SoLuongThieu <= 0)
+        {
+            chiTiet.TrangThaiTiepNhan = "Đã tiếp nhận";
+            chiTiet.NguoiPhanHoi = userName;
+            chiTiet.NgayPhanHoi = DateTime.Now;
+        }
+
+        // 5. Trừ doanh thu showroom do thanh toán nhập hàng
+        await GiamDoanhThuNhapHangAsync(maChiNhanh, soLuongNhap * soTienNhapMoiXe);
+
+        await _db.SaveChangesAsync();
+
+        var tenXe = $"{chiTiet.PhienBan?.DongXe?.TenDong ?? ""} {chiTiet.PhienBan?.TenPhienBan ?? ""}".Trim();
+        await _log.LogAsync($"QL nhập hàng bổ sung xe #{maChiTiet} đơn #{chiTiet.MaDonCoc}",
+            $"Nhập {soLuongNhap} xe vào {showroom.TenChiNhanh} (giá {soTienNhapMoiXe:N0}đ/xe)");
+
+        SuccessMessage = $"Đã nhập {soLuongNhap} xe vào {showroom.TenChiNhanh} cho đơn cọc. " +
+            (chiTiet.SoLuongThieu <= 0 ? "Xe đã đủ số lượng và được tiếp nhận." : $"Còn thiếu {chiTiet.SoLuongThieu} xe.");
+        return RedirectToPage();
+    }
+
+    // ----- Từ chối toàn bộ đơn cọc (Quản Lý showroom nhận xe không đủ điều kiện đáp ứng) -----
+    // Khi showroom nhận đơn k thể đủ xe (các showroom khác từ chối, chưa nhập được hàng...) thì QL
+    // được phép từ chối toàn bộ đơn → đánh dấu hết chi tiết chưa phản hồi là "Từ chối" và báo Admin.
+    public async Task<IActionResult> OnPostDeclineOrderAsync(int maDonCoc, string? lyDoTuChoi)
+    {
+        var userName = User.GetJwtUserName();
+        if (string.IsNullOrEmpty(userName)) return RedirectToPage("/Account/Login");
+
+        if (string.IsNullOrWhiteSpace(lyDoTuChoi))
+        {
+            ErrorMessage = "Vui lòng nhập lý do từ chối đơn cọc.";
+            return RedirectToPage();
+        }
+
+        var don = await _db.DonDatCoc
+            .Include(d => d.ChiTiets).ThenInclude(c => c.PhienBan).ThenInclude(p => p.DongXe)
+            .Include(d => d.KhachHang)
+            .FirstOrDefaultAsync(d => d.MaDonCoc == maDonCoc);
+        if (don == null) return NotFound();
+
+        var showroom = await _db.ChiNhanhShowroom.FirstOrDefaultAsync(c => c.MaQuanLy == userName);
+        if (showroom == null || don.MaChiNhanh != showroom.MaChiNhanh)
+        {
+            ErrorMessage = "Bạn không có quyền từ chối đơn cọc của showroom khác.";
+            return RedirectToPage();
+        }
+
+        if (don.TrangThaiDonHang != "Chờ xác nhận" && don.TrangThaiDonHang != "Chờ xử lý")
+        {
+            ErrorMessage = "Đơn cọc không ở trạng thái có thể từ chối.";
+            return RedirectToPage();
+        }
+
+        var lyDo = lyDoTuChoi.Trim();
+        foreach (var ct in don.ChiTiets.Where(c => c.TrangThaiTiepNhan == "Chờ xác nhận"))
+        {
+            ct.TrangThaiTiepNhan = "Từ chối";
+            ct.LyDoTuChoi = lyDo;
+            ct.NguoiPhanHoi = userName;
+            ct.NgayPhanHoi = DateTime.Now;
+        }
+        don.TrangThaiDonHang = "Đã từ chối";
+        await _db.SaveChangesAsync();
+
+        await _log.LogAsync($"QL từ chối toàn bộ đơn cọc #{maDonCoc}",
+            $"Showroom {showroom.TenChiNhanh} - Lý do: {lyDo}");
+
+        await _notif.SendToRoleAsync("Admin", "Showroom từ chối toàn bộ đơn cọc",
+            $"Showroom {showroom.TenChiNhanh} từ chối nhận đơn cọc #{maDonCoc} - {don.HoTen}. Lý do: {lyDo}",
+            $"/Admin/DonCoc/Edit/{maDonCoc}");
+
+        if (don.MaKhachHang != null)
+        {
+            await _notif.SendAsync(don.MaKhachHang, "Đơn cọc bị từ chối toàn bộ",
+                $"Đơn cọc #{maDonCoc} bị showroom {showroom.TenChiNhanh} từ chối. Lý do: {lyDo}. Chúng tôi sẽ liên hệ để hỗ trợ bạn.",
+                "/Profile");
+        }
+
+        SuccessMessage = $"Đã từ chối toàn bộ đơn #{maDonCoc}. Lý do đã được gửi tới Admin và khách hàng.";
+        return RedirectToPage();
+    }
+
+    private async Task GiamDoanhThuNhapHangAsync(string maChiNhanh, long soTienNhap)
+    {
+        if (string.IsNullOrEmpty(maChiNhanh) || soTienNhap <= 0) return;
+
+        var kyBaoCao = DateTime.Now.ToString("yyyy-MM");
+        var thongKe = await _db.ThongKeTongHop_Boss
+            .FirstOrDefaultAsync(t => t.KyBaoCao == kyBaoCao && t.MaChiNhanh == maChiNhanh);
+
+        if (thongKe == null)
+        {
+            thongKe = new ThongKeTongHop_Boss
+            {
+                KyBaoCao = kyBaoCao,
+                MaChiNhanh = maChiNhanh,
+                TongDoanhThu = 0,
+                TongTienCocThuVe = 0,
+                TongSoXeDaBan = 0,
+                SoDonCocBiHuy = 0,
+                TongLuotXemWeb = 0,
+                TongLuotLaiThu = 0,
+                MaDongXeBanChayNhat = 0
+            };
+            _db.ThongKeTongHop_Boss.Add(thongKe);
+        }
+
+        thongKe.TongDoanhThu = Math.Max(0, thongKe.TongDoanhThu - soTienNhap);
+    }
+
     private async Task HoanTacDoanhThu(string maChiNhanh, long soTien)
     {
         var kyBaoCao = DateTime.Now.ToString("yyyy-MM");

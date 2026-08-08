@@ -17,6 +17,20 @@
 
 ## Progress
 ### Done
+- **Fix hiển thị tồn kho checkout không đồng bộ + réconcile liền số liệu dev** (bug người dùng: Audi A3 hiện "còn mỗi 2" nhưng tồn kho 5; showroom có đơn cọc bị ẩn):
+  - **Root cause display**: `Checkout.cshtml.cs` `LoadTonKhoAsync()` (GET) chỉ nạp `TonKhoTheoPhienBan` nhưng KHÔNG nạp `_tonKhoLut` → `LoadReservedAsync` tính `TonKhoConLaiLut = (_tonKhoLut[?0] - reserved)` = 0 - reserved → showroom có đơn "Đã thanh toán" (VD CN04) ra âm → bị `.Where(x => x.avail > 0)` ẩn như "hết" (đúng lỗi user nhìn: chỉ thấy CN03 còn 2). **Fix**: `LoadTonKhoAsync` bổ sung nạp `_tonKhoLut[(pb,cn)] = SoLuong` từ `tonKhoList` (giống `LoadTonKhoLutAsync`).
+  - **Réconcile dev DB** (`100.108.48.1,1433`): `UPDATE PhienBanXe_SanPham` set `SoLuongTrongKho = SUM(TonKhoTheoChiNhanh.SoLuong)` + set lại `TrangThai` (>=6 Còn hàng) → PB50 (Audi A3) & PB253 (Q5) từ lệch 5 vs 6 → =6 khớp phân bổ showroom (CN01=1+CN03=2+CN04=3).
+  - **E2E verified** (login `zz_e2e_chk` → `/Orders/Cart/Checkout`, cart PB50 x3; đơn paid CN04): chip hiển thị đúng theo tồn thật: CN03 "còn 2", CN04 "còn 1" (3 - 2 cọc) — trước CN04 bị ẩn; CN01 (còn 0) + CN06 (0) đúng bị ẩn theo quy tắc lọc. Test data đã dọn (user + cart + deposit 13015); app ổn home 200.
+  - **Ghi chú PS/sqlcmd**: giá trị enum đầy dấu (N'Đã thanh toán') — sqlcmd `-Q` console làm mojibake → chạy file UTF-8 với `-f 65001`. `GioHang.MaTaiKhoan` lưu giá trị **TenDangNhap** (FK trỏ → TaiKhoan.TenDangNhap, KHÔNG phải MaTaiKhoan) → insert/query theo username; `LichHenLaiThu`/`ThongBao` không có cột user.
+- **Luồng phân nhiều xe / đặt cọc nâng cao + ẩn showroom "hết"** (yêu cầu người dùng):
+  - **Checkout.cshtml**: danh sách "còn X" per xe giờ **ẩn hẳn showroom hết hàng** (`TonKhoConLaiLut` avail<=0) — không còn hiện "hết"; nếu mọi showroom hết thì hiện dòng ghi chú "showroom hẹn gặp sẽ chuẩn bị/xử lý". (Trước: hiện đầy đủ "Showroom X: còn/hết".)
+  - **Quản Lý toàn bộ đơn** theo user đã chốt: đơn gửi về đúng showroom khách chọn; showroom đó thiếu xe (`DonDatCocChiTiet.SoLuongThieu>0`) thì QL chủ động **"Nhập hàng"** hoặc **"Từ chối đơn cọc"**.
+  - **Nhập hàng** (`OnPostNhapHangAsync` DonCoc.cshtml.cs, chỉ QL showroom nguồn của chi tiết): mirror handler Admin/Edit.cshtml.cs (tăng TonKhoTheoChiNhanh + PhienBan.SoLuongTrongKho, tạo PhieuNhapXe, `GiamDoanhThuNhapHangAsync` trừ TongDoanhThu); set `DaNhapKho=true`, `SoLuongThieu -= nhap`; nếu hết thiếu → tự `TrangThaiTiepNhan="Đã tiếp nhận"`.
+  - **Từ chối toàn bộ đơn** (`OnPostDeclineOrderAsync`): chỉ QL showroom nhận đơn (`don.MaChiNhanh==showroom`), state `Chờ xác nhận`/`Chờ xử lý`; set hết chi tiết "Chờ xác nhận" → "Từ chối", `DonCoc.TrangThaiDonHang="Đã từ chối"`, notif Admin + khách (kèm lý do).
+  - **DonCoc.cshtml UI**: badge/cần nhập "Cần nhập thêm: X xe" + "Đã nhập đủ" per chi tiết; nút **"Nhập xe"** (modal `nhapHangModal` handler NhapHang) bên cạnh Tiếp nhận/Từ chối; nút **"Từ chối đơn cọc"** cột hoạt động (modal declineOrderModal handler DeclineOrder). JS `openNhapHang`/`openDeclineOrder`.
+  - Không cần model mới: tận dụng field/cột sẵn (`SoLuongThieu`, `DaNhapKho`, `SoTienNhapMoiXe`, bảng `PhieuNhapXe`) — **không cần migration**.
+  - E2E: Home 200; `/Orders/Cart/Checkout` + `/QuanLy/DonCoc` → 302 /Account/Login (bảo vệ); build Debug **0 lỗi** (Razor compile của cả 2 .cshtml OK).
+  - Ghi chú: PS 5.1 sửa .cshtml bằng replaceAll cẩn thận (Edit có thể làm mất dòng hàm JS / đổi wrong tham chiếu `tenXe`/`is_Receive`); kiểm tra lại sau mỗi edit.
 - **Nhiá»u áº£nh xe: model HinhAnhXe + gallery slide + quáº£n lÃ½ áº£nh admin + hover theo phiÃªn báº£n** (yÃªu cáº§u ngÆ°á»i dÃ¹ng):
   - Model má»›i `HinhAnhXe` (MoreEntities.cs): `MaHinhAnh` (PK), `MaDong` (FK â†’ DongXe, Restrict), `DuongDanAnh`, `LaChinh`, `ThuTu`; nav `ICollection<HinhAnhXe>` trong `DongXe` (Entities.cs); `AppDbContext` cÃ³ `DbSet<HinhAnhXe>`, table `"HinhAnhXe"`, index IX_HinhAnhXe_MaDong
   - Migration má»›i: `Migrations/20260802140351_AddHinhAnhXe.cs` (chÆ°a Ä‘áº©y production)
@@ -115,6 +129,8 @@
 
 - **Chọn vị trí thu cọc dạng cascade (DepositForm + Checkout)**: thay map chọn tự do bằng chuỗi dropdown **Tỉnh/Thành phố (63) → Quận/Huyện (696)** nhúng sẵn từ API provinces.open-api.vn (snapshot tĩnh wwwroot/js/vn-admin.js, UTF-8 BOM, cùng VNCENTROID căn giữa bản đồ) + ô nhập Số nhà/Thôn/Xóm; người dùng bấm vào bản đồ để **trỏ vị trí cụ thể** → uildDiaDiem() ghép [chi tiết], [quận/huyện], [tỉnh] vào DiaDiemGap, ToaDoGap lấy lat,lng; submit gửi địa chỉ+toạ độ tới Quản Lý ((Toạ độ: ...)) như đường cũ. Kèm populateCascade/provinceCenter, map ttributionControl:false (chống mở tab OSM). E2E verified: vn-admin.js served charset=utf-8; DepositForm render đủ select + JS; POST đặt cọc PB24/Dong14 lưu toạ độ + ThongBao tới QuanlyCS1 ... (Toạ độ: 21.033333,105.816667); đã dọn test. Note encoding: script gen (powershell) phải fetch raw bytes rồi UTF8 decode (Invoke-WebRequest .RawContentStream.ToArray()), ghi BOM; PS đọc file không BOM thành mojibake.?
 ?
+- **An map theo phuong thuc thanh toan (DepositForm + Checkout)**: block DiaDiemGap/map cho?n vi tri **chi hien thi & bat buoc khi thanh toan TIEN MAT**; thanh toan CHUYEN KHOAN an block + server set DiaDiemGap=null/ToaDoGap=null + khong gui notif vi tri tai QUan Ly. JS isCashPayment()/	oggleCashMap (an/hien + xoa truong khi doi phuong thuc); submit chi require DiaDiemGap khi tien mat. E2E verified (&#x113;ogo: phai decode entity HTML Ti&#x1EC1;n m&#x1EB7;t -> Ti?n m?t): A chuyen khoan khong vi tri -> success (DB DiaDiemGap NULL, khong notif QL); B tien mat thieu vi tri -> success:false bao lon y; C tien mat du vi tri -> success luu ToaDo + Admin notif + notif QuanlyCS1 kem toa do. Da don test.?
+?
 ### Total Rewrite SQL_ThaoTac.sql â€” báº£n AN TOÃ€N + IDEMPOTENT (khÃ´ng máº¥t áº£nh server)
 - **Váº¥n Ä‘á»**: `SQL_ThaoTac.sql` cÅ© dÃ²ng 63â€“79 DELETE sáº¡ch + INSERT láº¡i â†’ máº¥t áº£nh upload trÃªn server (DuongDanAnh/HinhAnhXe/banner) + lá»—i FK HinhAnhXe; user cáº§n cháº¡y lÃªn production (`mylxcar.online`) Ä‘á»“ng bá»™ dá»¯ liá»‡u kinh doanh + tá»“n kho tá»« local mÃ  **giá»¯ nguyÃªn áº£nh**
 - **Giáº£i phÃ¡p**: toÃ n bá»™ chuyá»ƒn sang UPSERT (khÃ´ng xoÃ¡ gÃ¬, idempotent, cháº¡y láº¡i nhiá»u láº§n OK); sinh láº¡i **toÃ n bá»™ giÃ¡ trá»‹ tá»« DB local tháº­t** (ngÃ y 2026-08-04) báº±ng generator PowerShell `gen_sql.ps1` â†’ ghi Ä‘Ã¨ `SQL_ThaoTac.sql` UTF-8 BOM
@@ -194,4 +210,5 @@
 - `rebuild-and-run.bat`: build + run
 - `setup-cert.bat`: for other developers to install signing cert
 - `CarProject/SQL_ThaoTac.sql`: báº£n má»›i AN TOÃ€N/idempotent UPSERT (Ä‘Ã£ test sáº¡ch 0 lá»—i trÃªn local); generator `C:\Users\Tu\AppData\Local\Temp\opencode\gen_sql.ps1` sinh tá»« DB local (cháº¡y `powershell -NoProfile -ExecutionPolicy Bypass -File ...`)
+
 
